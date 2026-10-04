@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maqueta KP1 · Cota 0</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="escena"></div>
+
+<header id="barra">
+  <div class="titulo">
+    <span class="logo">KP1</span>
+    <div>
+      <h1>Paint Shop KP1 · Cota 0</h1>
+      <p>Stellantis Planta Ferreyra · Maqueta 3D</p>
+    </div>
+  </div>
+  <span class="confidencial">Uso interno · Confidencial</span>
+</header>
+
+<nav id="vistas" aria-label="Vistas">
+  <button data-vista="iso" class="activo">Isométrica</button>
+  <button data-vista="planta">Planta</button>
+  <button data-vista="sitio">Sitio</button>
+  <button data-vista="reset" title="Volver a la vista inicial">⟲</button>
+</nav>
+
+<aside id="capas" aria-label="Capas">
+  <h2>Capas</h2>
+  <label><input type="checkbox" data-capa="techo" checked> Techo</label>
+  <label><input type="checkbox" data-capa="envolvente" checked> Cerramiento nave</label>
+  <label><input type="checkbox" data-capa="anexos" checked> Anexos</label>
+  <label><input type="checkbox" data-capa="internos" checked> Locales y tabiques</label>
+  <label><input type="checkbox" data-capa="columnas" checked> Columnas</label>
+  <label><input type="checkbox" data-capa="calles" checked> Calles peatonales</label>
+  <label><input type="checkbox" data-capa="ejes" checked> Ejes</label>
+  <label><input type="checkbox" data-capa="entorno" checked> Entorno (estimado)</label>
+  <hr>
+  <label><input type="checkbox" id="cortar"> Cortar muros a 3,5 m</label>
+  <button id="ver-supuestos" class="link">ⓘ Supuestos de esta maqueta</button>
+</aside>
+
+<div id="ayuda">Rueda: zoom · Clic izquierdo: rotar · Clic derecho: mover</div>
+
+<dialog id="supuestos">
+  <h2>Supuestos</h2>
+  <p>Valores asumidos porque el plano no los trae. Se reemplazan cuando haya dato real.</p>
+  <ul id="lista-supuestos"></ul>
+  <form method="dialog"><button>Cerrar</button></form>
+</dialog>
+
+<script src="lib/three.min.js"></script>
+<script src="lib/OrbitControls.js"></script>
+<script src="lib/CSS2DRenderer.js"></script>
+<script src="data/nave.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

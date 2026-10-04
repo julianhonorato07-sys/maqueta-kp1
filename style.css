@@ -1,0 +1,100 @@
+:root {
+  --fondo-1: #f5f8fc;
+  --fondo-2: #dce6f1;
+  --panel: rgba(255, 255, 255, 0.92);
+  --borde: #d7e0ea;
+  --texto: #1f2a3a;
+  --texto-suave: #66758a;
+  --azul: #1f6feb;
+  --azul-suave: #e7f0fe;
+  --sombra: 0 6px 24px rgba(30, 50, 80, 0.10);
+  --radio: 12px;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--texto);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { background: linear-gradient(180deg, var(--fondo-1), var(--fondo-2)); }
+
+#escena { position: fixed; inset: 0; }
+#escena canvas { display: block; }
+
+/* Barra superior */
+#barra {
+  position: fixed; top: 16px; left: 16px; right: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; background: var(--panel); border: 1px solid var(--borde);
+  border-radius: var(--radio); box-shadow: var(--sombra); backdrop-filter: blur(6px);
+}
+.titulo { display: flex; align-items: center; gap: 12px; }
+.logo {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px;
+  background: var(--azul); color: #fff; font-weight: 700; letter-spacing: 0.5px;
+}
+h1 { font-size: 17px; margin: 0; font-weight: 650; }
+.titulo p { margin: 2px 0 0; font-size: 12px; color: var(--texto-suave); }
+.confidencial {
+  font-size: 11px; font-weight: 600; color: #a33b2b; background: #fdecea;
+  border: 1px solid #f5c6bf; padding: 4px 10px; border-radius: 999px;
+}
+
+/* Botones de vista */
+#vistas {
+  position: fixed; top: 96px; left: 16px; display: flex; gap: 6px;
+  padding: 6px; background: var(--panel); border: 1px solid var(--borde);
+  border-radius: var(--radio); box-shadow: var(--sombra);
+}
+#vistas button {
+  border: 0; background: transparent; padding: 8px 14px; border-radius: 8px;
+  font: inherit; font-size: 13px; color: var(--texto); cursor: pointer;
+}
+#vistas button:hover { background: var(--azul-suave); }
+#vistas button.activo { background: var(--azul); color: #fff; }
+
+/* Capas */
+#capas {
+  position: fixed; top: 96px; right: 16px; width: 230px; padding: 14px 16px;
+  background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio);
+  box-shadow: var(--sombra); font-size: 13px;
+}
+#capas h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-suave); margin: 0 0 8px; }
+#capas label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
+#capas input { accent-color: var(--azul); }
+#capas hr { border: 0; border-top: 1px solid var(--borde); margin: 8px 0; }
+button.link { border: 0; background: none; padding: 6px 0 0; color: var(--azul); font: inherit; font-size: 12px; cursor: pointer; }
+
+#ayuda {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; color: var(--texto-suave); background: var(--panel);
+  padding: 6px 14px; border-radius: 999px; border: 1px solid var(--borde);
+}
+
+/* Etiquetas de ejes */
+.eje {
+  font-size: 11px; font-weight: 600; color: #5d6b7e; background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #c9d3df; border-radius: 999px; padding: 1px 6px; pointer-events: none;
+}
+
+.eje.destino { background: #fff7d6; border-color: #e3c25b; color: #6b5400; font-size: 12px; }
+.eje.sitio { background: rgba(255, 255, 255, 0.75); border-color: #d5dde6; color: #7a8796; font-weight: 500; }
+body.lejos .eje:not(.sitio):not(.destino):not(.norte) { display: none; }
+body.cerca .eje.sitio { display: none; }
+.eje.norte { background: var(--azul); border-color: var(--azul); color: #fff; font-size: 13px; }
+
+dialog {
+  border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra);
+  max-width: 560px; padding: 20px 24px; color: var(--texto);
+}
+dialog h2 { margin: 0 0 6px; font-size: 16px; }
+dialog p, dialog li { font-size: 13px; line-height: 1.45; }
+dialog p { color: var(--texto-suave); }
+dialog button { margin-top: 8px; border: 0; background: var(--azul); color: #fff; padding: 8px 16px; border-radius: 8px; font: inherit; cursor: pointer; }
+
+@media (max-width: 720px) {
+  #barra { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .confidencial { align-self: flex-start; }
+  #vistas { top: 140px; }
+  #capas { top: auto; bottom: 56px; right: 16px; left: 16px; width: auto; max-height: 40vh; overflow: auto; }
+  #ayuda { display: none; }
+}

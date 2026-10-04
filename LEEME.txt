@@ -1,0 +1,22 @@
+MAQUETA 3D - PAINT SHOP KP1 - COTA 0
+Stellantis Planta Ferreyra - USO INTERNO / CONFIDENCIAL
+
+COMO ABRIRLA
+1. Descomprimir el ZIP (clic derecho > Extraer todo...).
+2. Entrar a la carpeta y hacer doble clic en  index.html
+   Se abre en Chrome o Edge. No necesita internet ni instalar nada.
+
+COMO MOVERSE
+- Rueda del mouse: zoom
+- Clic izquierdo y arrastrar: rotar
+- Clic derecho y arrastrar: mover
+- Botones arriba: Isometrica / Planta / Sitio / volver a la vista inicial
+- Panel "Capas": prender y apagar techo, muros, columnas, entorno, etc.
+- "Supuestos de esta maqueta": lista de valores estimados (no medidos).
+
+IMPORTANTE
+- Contiene el layout de la planta: compartir solo por canales internos de Stellantis
+  (OneDrive/SharePoint/Teams corporativo o mail interno). No subir a servicios publicos.
+- Es una maqueta en construccion: el entorno exterior y varias alturas son estimados.
+
+Contacto: Julian (Unidad de Pintura)
