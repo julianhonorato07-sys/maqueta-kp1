@@ -17,7 +17,7 @@
 html, body { margin: 0; height: 100%; overflow: hidden; }
 body { background: linear-gradient(180deg, var(--fondo-1), var(--fondo-2)); }
 
-#escena { position: fixed; inset: 0; }
+#escena { position: fixed; inset: 0; touch-action: none; }
 #escena canvas { display: block; }
 
 /* Barra superior */
@@ -58,7 +58,13 @@ h1 { font-size: 17px; margin: 0; font-weight: 650; }
   background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio);
   box-shadow: var(--sombra); font-size: 13px;
 }
-#capas h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-suave); margin: 0 0 8px; }
+#capas summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+#capas summary::-webkit-details-marker { display: none; }
+#capas summary::after { content: "▾"; color: var(--texto-suave); font-size: 12px; transition: transform .15s; }
+#capas:not([open]) summary::after { transform: rotate(-90deg); }
+#capas:not([open]) h2 { margin: 0; }
+#capas h2 { display: inline; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-suave); margin: 0 0 8px; }
+#capas[open] summary { margin-bottom: 8px; }
 #capas label { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
 #capas input { accent-color: var(--azul); }
 #capas hr { border: 0; border-top: 1px solid var(--borde); margin: 8px 0; }
@@ -91,10 +97,43 @@ dialog p, dialog li { font-size: 13px; line-height: 1.45; }
 dialog p { color: var(--texto-suave); }
 dialog button { margin-top: 8px; border: 0; background: var(--azul); color: #fff; padding: 8px 16px; border-radius: 8px; font: inherit; cursor: pointer; }
 
+/* Ayuda: mouse o táctil según el dispositivo */
+#ayuda .tactil { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  #ayuda .mouse { display: none; }
+  #ayuda .tactil { display: inline; }
+}
+
+/* Celular */
 @media (max-width: 720px) {
-  #barra { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .confidencial { align-self: flex-start; }
-  #vistas { top: 140px; }
-  #capas { top: auto; bottom: 56px; right: 16px; left: 16px; width: auto; max-height: 40vh; overflow: auto; }
-  #ayuda { display: none; }
+  #barra {
+    top: calc(8px + env(safe-area-inset-top)); left: 8px; right: 8px;
+    padding: 8px 10px; gap: 8px;
+  }
+  .logo { width: 32px; height: 32px; border-radius: 8px; font-size: 13px; }
+  h1 { font-size: 15px; white-space: nowrap; }
+  .confidencial .largo { display: none; }
+  .titulo p { display: none; }
+  .confidencial { font-size: 10px; padding: 3px 8px; white-space: nowrap; }
+
+  /* Vistas abajo, al alcance del pulgar */
+  #vistas {
+    top: auto; bottom: calc(10px + env(safe-area-inset-bottom)); left: 8px; right: 8px;
+    justify-content: space-between;
+  }
+  #vistas button { flex: 1; padding: 11px 6px; font-size: 14px; }
+  #vistas button[data-vista="reset"] { flex: 0 0 48px; }
+
+  /* Capas: botón plegado arriba a la derecha; al abrir, lista con scroll */
+  #capas {
+    top: calc(64px + env(safe-area-inset-top)); right: 8px; left: auto; width: auto;
+    max-width: calc(100vw - 16px); padding: 10px 14px; font-size: 14px;
+    max-height: calc(100vh - 160px); overflow: auto;
+  }
+  #capas label { padding: 7px 0; }
+  #capas input { width: 18px; height: 18px; }
+
+  #ayuda { bottom: calc(74px + env(safe-area-inset-bottom)); font-size: 11px; white-space: nowrap; }
+  .eje { font-size: 10px; padding: 0 5px; }
+  dialog { max-width: calc(100vw - 24px); max-height: 80vh; padding: 16px; }
 }

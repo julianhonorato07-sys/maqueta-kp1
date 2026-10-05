@@ -20,8 +20,10 @@
 
   // ---------------------------------------------------------------- escena
   const cont = document.getElementById("escena");
+  // celular / tablet: menos resolución de sombras y de píxeles para que ande fluido
+  const MOVIL = window.matchMedia("(max-width: 720px), (hover: none) and (pointer: coarse)").matches;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOVIL ? 1.5 : 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -41,7 +43,7 @@
   const sol = new THREE.DirectionalLight(0xffffff, 0.45);
   sol.position.set(-60, 320, 90);   // sol alto: sombras cortas y suaves
   sol.castShadow = true;
-  sol.shadow.mapSize.set(4096, 4096);
+  sol.shadow.mapSize.set(MOVIL ? 2048 : 4096, MOVIL ? 2048 : 4096);
   Object.assign(sol.shadow.camera, { left: -480, right: 480, top: 480, bottom: -480, near: 10, far: 900 });
   sol.shadow.bias = -0.0005;
   scene.add(sol);
@@ -350,9 +352,16 @@
   }
 
   // ---------------------------------------------------------------- cámara y controles
-  let aspecto = window.innerWidth / window.innerHeight;
-  const ALTO = 190;   // metros visibles en vertical con zoom 1
-  const camara = new THREE.OrthographicCamera(-ALTO * aspecto / 2, ALTO * aspecto / 2, ALTO / 2, -ALTO / 2, -1000, 2000);
+  // Encuadre: con zoom 1 se ven al menos 190 m de alto y 330 m de ancho (en pantallas verticales manda el ancho)
+  let aspecto = 1;
+  const camara = new THREE.OrthographicCamera(-1, 1, 1, -1, -1000, 2000);
+  function encuadrar() {
+    aspecto = window.innerWidth / window.innerHeight;
+    const alto = Math.max(190, 330 / aspecto);
+    Object.assign(camara, { left: -alto * aspecto / 2, right: alto * aspecto / 2, top: alto / 2, bottom: -alto / 2 });
+    camara.updateProjectionMatrix();
+  }
+  encuadrar();
   const controles = new THREE.OrbitControls(camara, renderer.domElement);
   Object.assign(controles, { enableDamping: true, dampingFactor: 0.08, screenSpacePanning: true,
     maxPolarAngle: Math.PI / 2 - 0.05, minZoom: 0.12, maxZoom: 25 });
@@ -362,13 +371,15 @@
     planta: { dir: new THREE.Vector3(0, 1, 0.0001), zoom: 1.0 },
     sitio: { dir: new THREE.Vector3(1, 1.1, 1), zoom: 0.24, centro: [120, -80] },
   };
+  // En celular (pantalla vertical) la planta se gira: nave parada y norte arriba, como un mapa
+  if (MOVIL) VISTAS.planta = { dir: new THREE.Vector3(0.001, 1, 0), zoom: 1.7 / 1.35 };
   function vista(nombre) {
     const v = VISTAS[nombre];
     const c0 = v.centro ? W(v.centro[0], v.centro[1], 0) : new THREE.Vector3();
     controles.target.copy(c0);
     camara.position.copy(c0);
     camara.position.add(v.dir.clone().normalize().multiplyScalar(400));
-    camara.zoom = v.zoom;
+    camara.zoom = v.zoom * (MOVIL && nombre !== "sitio" ? 1.35 : 1);
     camara.updateProjectionMatrix();
     controles.update();
     // en planta las sombras de columnas altas se ven como rayado: se apagan
@@ -388,14 +399,21 @@
   document.getElementById("cortar").addEventListener("change", (ev) => {
     for (const t of Object.keys(tipos)) { muroCompleto[t].visible = !ev.target.checked; muroCortado[t].visible = ev.target.checked; }
   });
+  // En celular el panel de capas arranca plegado y se pliega al tocar la maqueta
+  const panelCapas = document.getElementById("capas");
+  if (MOVIL) {
+    panelCapas.open = false;
+    renderer.domElement.addEventListener("pointerdown", () => { panelCapas.open = false; });
+  }
+  // La ayuda desaparece después de la primera interacción
+  const ayuda = document.getElementById("ayuda");
+  controles.addEventListener("start", () => { ayuda.style.transition = "opacity .6s"; ayuda.style.opacity = "0"; }, { once: true });
   const dlg = document.getElementById("supuestos");
   document.getElementById("lista-supuestos").innerHTML = N.supuestos.map(s => `<li>${s}</li>`).join("");
   document.getElementById("ver-supuestos").addEventListener("click", () => dlg.showModal());
 
   window.addEventListener("resize", () => {
-    aspecto = window.innerWidth / window.innerHeight;
-    Object.assign(camara, { left: -ALTO * aspecto / 2, right: ALTO * aspecto / 2 });
-    camara.updateProjectionMatrix();
+    encuadrar();
     renderer.setSize(window.innerWidth, window.innerHeight);
     etiquetas.setSize(window.innerWidth, window.innerHeight);
   });
@@ -406,7 +424,7 @@
     requestAnimationFrame(animar);
     controles.update();
     // de lejos se ocultan las etiquetas de ejes; de cerca, las del entorno
-    document.body.classList.toggle("lejos", camara.zoom < 0.5);
+    document.body.classList.toggle("lejos", camara.zoom < (MOVIL ? 1.3 : 0.5));
     document.body.classList.toggle("cerca", camara.zoom > 1.6);
     renderer.render(scene, camara);
     etiquetas.render(scene, camara);
