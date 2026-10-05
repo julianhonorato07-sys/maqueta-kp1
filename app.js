@@ -401,6 +401,7 @@
   });
   // En celular el panel de capas arranca plegado y se pliega al tocar la maqueta
   const panelCapas = document.getElementById("capas");
+  if (!MOVIL) panelCapas.open = true;   // en compu arranca abierto; en celular, plegado
   if (MOVIL) {
     panelCapas.open = false;
     renderer.domElement.addEventListener("pointerdown", () => { panelCapas.open = false; });
