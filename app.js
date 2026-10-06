@@ -22,6 +22,7 @@
   const cont = document.getElementById("escena");
   // celular / tablet: menos resolución de sombras y de píxeles para que ande fluido
   const MOVIL = window.matchMedia("(max-width: 720px), (hover: none) and (pointer: coarse)").matches;
+  const animar_vida = [];   // funciones (dt) que mueven gente y vehículos
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOVIL ? 1.5 : 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -229,6 +230,8 @@
     for (const x of X.lineas_techo_x) lt.push(W(x, Math.min(...ys), techoZ(x)), W(x, Math.max(...ys), techoZ(x)));
     capa("techo").add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(lt), matBorde));
     if (X.sitio) construirSitio(X.sitio, ent, cajaR);
+    construirDetalles(X, ent, cajaR);
+    construirVida(X);
 
     // Flecha de norte en el piso
     const [nx, ny] = X.norte;
@@ -238,6 +241,141 @@
     ent.add(flecha);
     const nd = document.createElement("div"); nd.className = "eje norte"; nd.textContent = "N";
     const no = new THREE.CSS2DObject(nd); no.position.copy(base.clone().add(dir.clone().multiplyScalar(20))); ent.add(no);
+  }
+
+  // ---------------------------------------------------------------- detalles fijos (puertas, sendas, alumbrado, techo)
+  function construirDetalles(X, grupo, cajaR) {
+    const m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion();
+    // Portones (amarillos, como "PUERTA 4" de las fotos) y puertas de servicio, en su lugar del plano
+    const colPuerta = { amarillo: 0xf2b705, gris: 0x8e99a6 };
+    for (const [x, y, ancho, o, alto, color] of X.puertas || []) {
+      const r = o === "x" ? [x - ancho / 2, y - 0.2, x + ancho / 2, y + 0.2] : [x - 0.2, y - ancho / 2, x + 0.2, y + ancho / 2];
+      const p = malla(armar(cajaR(r, 0, alto)), mat(colPuerta[color]), true, true);
+      p.userData.capa = "puertas";
+      grupo.add(p);
+      if (color === "amarillo") {   // franjas negras de seguridad en los marcos
+        const f = o === "x" ? [x - ancho / 2 - 0.3, y - 0.25, x - ancho / 2, y + 0.25] : [x - 0.25, y - ancho / 2 - 0.3, x + 0.25, y - ancho / 2];
+        const f2 = o === "x" ? [x + ancho / 2, y - 0.25, x + ancho / 2 + 0.3, y + 0.25] : [x - 0.25, y + ancho / 2, x + 0.25, y + ancho / 2 + 0.3];
+        grupo.add(malla(armar([...cajaR(f, 0, alto + 0.3), ...cajaR(f2, 0, alto + 0.3)]), mat(0x2b3440), false, false));
+      }
+    }
+    const S = X.sitio, E = X.equipamiento;
+    if (!S || !E) return;
+    // Sendas peatonales (cebra) en la calle oeste, frente a cada torre de escalera (foto IMG_4987)
+    const oeste = S.calles.find(c => /oeste/i.test(c.nombre));
+    if (oeste) {
+      const [, y0, , y1] = oeste.rect, pos = [];
+      for (const [a, , c, d] of X.torres) {
+        if (d > 0) continue;
+        const xc = (a + c) / 2;
+        for (let k = -3; k <= 3; k++) caja(pos, [[xc + k * 1.1 - 0.25, y0 + 0.5], [xc + k * 1.1 + 0.25, y0 + 0.5], [xc + k * 1.1 + 0.25, y1 - 0.5], [xc + k * 1.1 - 0.25, y1 - 0.5]], 0.05, 0.09);
+      }
+      grupo.add(malla(armar(pos), mat(0xffffff), false, false));
+    }
+    // Alumbrado: columnas cada 30 m a un costado de cada calle exterior
+    const postes = [];
+    for (const c of S.calles) {
+      const [a, b, cc, d] = c.rect, largoX = cc - a >= d - b;
+      const L = largoX ? cc - a : d - b;
+      for (let t = 10; t < L - 5; t += E.luminaria_cada_m) {
+        postes.push(largoX ? [a + t, d + 1.2, 0, -1] : [cc + 1.2, b + t, -1, 0]);
+      }
+    }
+    const fuste = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.12, 0.16, 1, 6), mat(0x9aa5b1), postes.length);
+    const cabeza = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), mat(0xe9eef4, { emissive: 0x333333 }), postes.length);
+    postes.forEach(([x, y, dx, dy], i) => {
+      m4.compose(W(x, y, 4.5), q0, new THREE.Vector3(1, 9, 1)); fuste.setMatrixAt(i, m4);
+      m4.compose(W(x + dx * 0.9, y + dy * 0.9, 9), q0, new THREE.Vector3(dy ? 0.5 : 1.6, 0.25, dy ? 1.6 : 0.5)); cabeza.setMatrixAt(i, m4);
+    });
+    fuste.castShadow = true;
+    grupo.add(fuste, cabeza);
+    // Tanque junto a Sika (satélite)
+    const tk = E.tanque_sika;
+    const tanque = new THREE.Mesh(new THREE.CylinderGeometry(tk.diametro / 2, tk.diametro / 2, tk.alto, 24), mat(0xf6d77a));
+    tanque.position.copy(W(tk.centro[0], tk.centro[1], tk.alto / 2)); tanque.castShadow = true;
+    grupo.add(tanque);
+    // Equipos de aire sobre el techo bajo (ilustrativo)
+    const et = E.equipos_techo, zT = N.techos.find(t => t.tipo === "nave_baja").z + 0.35;
+    const pe = [];
+    for (const x of et.x) for (const y of et.y) pe.push(...cajaR([x - et.tam[0] / 2, y - et.tam[1] / 2, x + et.tam[0] / 2, y + et.tam[1] / 2], zT, zT + et.tam[2]));
+    capa("techo").add(malla(armar(pe), mat(0xd9e0e8), true, true));
+  }
+
+  // ---------------------------------------------------------------- vida: gente, autos, camiones, autoelevadores (ilustrativo)
+  function construirVida(X) {
+    if (!X.vida) return;
+    const V = X.vida, S = X.sitio, grupo = capa("vida");
+    const factor = MOVIL ? 0.5 : 1;
+    let semilla = 11;
+    const azar = () => (semilla = (semilla * 16807) % 2147483647) / 2147483647;
+    // Cada agente = varias "partes" (cajas) que se mueven juntas sobre un tramo recto ida y vuelta
+    const partes = [], agentes = [];
+    const tramo = (x0, y0, x1, y1) => { const L = Math.hypot(x1 - x0, y1 - y0); return { x0, y0, ux: (x1 - x0) / L, uy: (y1 - y0) / L, L }; };
+    function agente(tr, def, vel, lateral, carril) {
+      const a = { tr, vel, lateral, carril, s: azar() * tr.L, sentido: azar() < 0.5 ? 1 : -1, fase: azar() * 6, partes: [] };
+      for (const p of def) { a.partes.push(partes.length); partes.push(p); }
+      agentes.push(a);
+    }
+    // Definiciones: [adelante, costado, z0, largo, ancho, alto, color]
+    const camisas = [0xffffff, 0xf3f6fa, 0xdfe9f5, 0xffd84d];   // camisa blanca/celeste; algunos con chaleco amarillo
+    const persona = () => {
+      const cam = camisas[Math.floor(azar() * camisas.length)];
+      return [[0, 0, 0, 0.28, 0.42, 0.85, 0x2c3a55, "piernas"], [0, 0, 0.85, 0.3, 0.5, 0.62, cam], [0, 0, 1.49, 0.22, 0.22, 0.24, 0xe2b48c]];
+    };
+    const coloresAuto = [0xffffff, 0xe6eaef, 0xc3cbd4, 0x8b95a1, 0x4a5462, 0x2b3440, 0x9b2c2c];
+    const auto = () => { const c = coloresAuto[Math.floor(azar() * coloresAuto.length)]; return [[0, 0, 0.25, 4.4, 1.8, 0.75, c], [-0.2, 0, 1.0, 2.3, 1.6, 0.55, 0x3b4656]]; };
+    const camion = () => [[-1.5, 0, 0.6, 8.5, 2.5, 3.2, 0xf4f6f9], [4.3, 0, 0.5, 2.2, 2.4, 2.6, 0x1f6fbe], [4.3, 0, 0.1, 2.2, 2.2, 0.5, 0x2b3440]];
+    const autoelevador = () => [[0, 0, 0.15, 2.3, 1.2, 1.0, 0x2ea84f], [-0.4, 0, 1.15, 1.2, 1.1, 1.0, 0x1d2a33], [1.3, 0, 0.1, 0.2, 1.0, 2.3, 0xf2b705], [1.9, 0, 0.1, 1.1, 0.9, 0.08, 0x8e99a6]];
+
+    // Calles internas: gente a los costados y autoelevadores por el centro
+    for (const [nombre, f, v, a, b] of X.calles_internas || []) {
+      const tr = f === "y" ? tramo(a, v, b, v) : tramo(v, a, v, b);
+      for (let i = 0; i < Math.round(V.peatones_por_calle_interna * factor * Math.max(1, tr.L / 120)); i++)
+        agente(tr, persona(), 1.1 + azar() * 0.4, (azar() < 0.5 ? -1 : 1) * (0.8 + azar() * 0.6), 0);
+      if (V.autoelevadores_en.includes(nombre) && tr.L > 60) agente(tr, autoelevador(), 2.5 + azar(), 0, 1.2);
+    }
+    // Calles exteriores: autos en dos carriles (mano derecha), camiones en algunas, gente por la vereda
+    for (const c of S ? S.calles : []) {
+      const [x0, y0, x1, y1] = c.rect, largoX = x1 - x0 >= y1 - y0;
+      const tr = largoX ? tramo(x0, (y0 + y1) / 2, x1, (y0 + y1) / 2) : tramo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1);
+      const ancho = largoX ? y1 - y0 : x1 - x0;
+      const nAutos = Math.max(1, Math.round(tr.L / V.autos_cada_m * factor));
+      for (let i = 0; i < nAutos; i++) agente(tr, auto(), 6 + azar() * 4, 0, ancho / 4);
+      if (V.camiones_en.includes(c.nombre)) agente(tr, camion(), 5, 0, ancho / 4);
+      for (let i = 0; i < Math.round(V.peatones_por_vereda * factor); i++) agente(tr, persona(), 1.2 + azar() * 0.3, ancho / 2 + 1.2, 0);
+    }
+    if (!partes.length) return;
+
+    const inst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), mat(0xffffff), partes.length);
+    inst.castShadow = true;
+    inst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    const col = new THREE.Color();
+    partes.forEach((p, i) => inst.setColorAt(i, col.setHex(p[6])));
+    grupo.add(inst);
+
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), eje = new THREE.Vector3(0, 1, 0), v3 = new THREE.Vector3(), sc = new THREE.Vector3();
+    let t = 0;
+    animar_vida.push((dt) => {
+      if (!grupo.visible) return;
+      t += dt;
+      for (const a of agentes) {
+        a.s += a.vel * dt * a.sentido;
+        if (a.s > a.tr.L) { a.s = a.tr.L; a.sentido = -1; } else if (a.s < 0) { a.s = 0; a.sentido = 1; }
+        const fx = a.tr.ux * a.sentido, fy = a.tr.uy * a.sentido;        // hacia adelante (plano)
+        const nx = fy, ny = -fx;                                          // derecha
+        const bx = a.tr.x0 + a.tr.ux * a.s + (a.carril ? nx * a.carril : a.tr.uy * a.lateral);
+        const by = a.tr.y0 + a.tr.uy * a.s + (a.carril ? ny * a.carril : -a.tr.ux * a.lateral);
+        q.setFromAxisAngle(eje, Math.atan2(fx, -fy));
+        const bob = a.carril ? 0 : Math.abs(Math.sin((t + a.fase) * 7)) * 0.05;
+        for (const k of a.partes) {
+          const [ad, co, z0, L, A, H] = partes[k];
+          v3.copy(W(bx + fx * ad + nx * co, by + fy * ad + ny * co, z0 + H / 2 + bob));
+          m4.compose(v3, q, sc.set(A, H, L));
+          inst.setMatrixAt(k, m4);
+        }
+      }
+      inst.instanceMatrix.needsUpdate = true;
+    });
   }
 
   /** Entorno relevado de Google Maps (metros, coordenadas del plano). Todo estimado. */
@@ -419,10 +557,13 @@
     etiquetas.setSize(window.innerWidth, window.innerHeight);
   });
 
-  window.__maqueta = { scene, camara };   // para inspección/depuración desde la consola
+  window.__maqueta = { scene, camara, controles, W, animar_vida };   // para inspección/depuración desde la consola
 
+  const reloj = new THREE.Clock();
   (function animar() {
     requestAnimationFrame(animar);
+    const dt = Math.min(reloj.getDelta(), 0.1);
+    for (const f of animar_vida) f(dt);
     controles.update();
     // de lejos se ocultan las etiquetas de ejes; de cerca, las del entorno
     document.body.classList.toggle("lejos", camara.zoom < (MOVIL ? 1.3 : 0.5));
