@@ -17,13 +17,14 @@ window.DetalleCalles = function (api) {
 
   // "Baldes" de cajas por color: todo se junta en UNA malla por color (rápido)
   const baldes = new Map();
+  let dz = 0;   // desplazamiento vertical temporal (línea de sellado casi a nivel de piso)
   function caja(color, x0, y0, x1, y1, z0, z1, opc) {
     const k = color + (opc && opc.clave ? "|" + opc.clave : "") + (z1 > 3.6 ? "|alto" : "");
     if (!baldes.has(k)) baldes.set(k, { color, opc: opc || {}, pos: [], alto: z1 > 3.6 });
     const p = baldes.get(k).pos;
     const [a, b] = [Math.min(x0, x1), Math.max(x0, x1)], [c, d] = [Math.min(y0, y1), Math.max(y0, y1)];
     const q = [[a, c], [b, c], [b, d], [a, d]];
-    const lo = q.map(([x, y]) => W(x, y, z0)), hi = q.map(([x, y]) => W(x, y, z1));
+    const lo = q.map(([x, y]) => W(x, y, z0 + dz)), hi = q.map(([x, y]) => W(x, y, z1 + dz));
     const tri = (u, v, w) => p.push(u.x, u.y, u.z, v.x, v.y, v.z, w.x, w.y, w.z);
     const quad = (u, v, w, s) => { tri(u, v, w); tri(u, w, s); };
     quad(hi[0], hi[1], hi[2], hi[3]); quad(lo[0], lo[3], lo[2], lo[1]);
@@ -35,7 +36,7 @@ window.DetalleCalles = function (api) {
   const pinta = (color, x0, y0, x1, y1, z) => caja(color, x0, y0, x1, y1, z, z + 0.012, { clave: "piso", piso: true });
 
   const cilindros = [];   // [color, x, y, z0, h, r, eje('z'|'x'|'y')]
-  const cil = (color, x, y, z0, h, r, eje) => cilindros.push([color, x, y, z0, h, r, eje || "z"]);
+  const cil = (color, x, y, z0, h, r, eje) => cilindros.push([color, x, y, z0 + dz, h, r, eje || "z"]);
 
   // Carteles con texto (textura de canvas)
   const cacheTex = new Map();
@@ -72,12 +73,12 @@ window.DetalleCalles = function (api) {
   }
 
   // Figuras humanas simples (operarios)
-  function persona(x, y, orient, chaleco) {
-    const cam = chaleco ? "#ffd84d" : elegir(["#ffffff", "#f1f4f8", "#dfe9f5"]);
-    bloque("#2c3a55", x, y, 0.3, 0.42, 0, 0.85);
-    bloque(cam, x, y, 0.32, 0.5, 0.85, 1.47);
-    bloque("#e2b48c", x, y, 0.22, 0.22, 1.47, 1.7);
-    bloque("#1f2a3a", x, y, 0.24, 0.24, 1.7, 1.76);
+  function persona(x, y, orient, chaleco, zb) {
+    const cam = chaleco ? "#ffd84d" : elegir(["#ffffff", "#f1f4f8", "#dfe9f5"]), b = zb || 0;
+    bloque("#2c3a55", x, y, 0.3, 0.42, b, b + 0.85);
+    bloque(cam, x, y, 0.32, 0.5, b + 0.85, b + 1.47);
+    bloque("#e2b48c", x, y, 0.22, 0.22, b + 1.47, b + 1.7);
+    bloque("#1f2a3a", x, y, 0.24, 0.24, b + 1.7, b + 1.76);
     void orient;
   }
 
@@ -112,7 +113,7 @@ window.DetalleCalles = function (api) {
   // Entre S y T: pared del eje B al oeste; cubas / máquinas al este; entrepiso de cota 5 arriba.
   const X0 = 2, X1 = 262;
   const CALLES = [
-    { id: "S", y0: 98.0, y1: 103.55, pared: 103.55, ladoPared: +1, senda: [99.4, 100.4], cartel: "CALLE\nS" },
+    { id: "S", y0: 98.0, y1: 103.55, pared: 103.55, ladoPared: +1, senda: [99.9, 100.7], cartel: "CALLE\nS" },
     { id: "ST", y0: 82.0, y1: 86.4, pared: 82.0, ladoPared: -1, senda: null, cartel: null },
     { id: "T", y0: 79.2, y1: 81.6, pared: 81.6, ladoPared: +1, senda: [80.65, 81.45], cartel: "CALLE\nT" },
   ];
@@ -135,12 +136,17 @@ window.DetalleCalles = function (api) {
     // tapas de inspección redondas cada ~37 m
     for (let x = X0 + 18; x < X1; x += 37) cil("#3a3f45", x, (c.y0 + c.y1) / 2 + entre(-0.6, 0.6), 0.03, 0.03, 0.32);
     // cruces peatonales (cebra) cada 48 m
-    for (let x = 30; x < X1 - 4; x += 48)
+    if (c.id !== "S") for (let x = 30; x < X1 - 4; x += 48)
       for (let k = 0; k < 5; k++) pinta("#ffffff", x + k * 0.9, c.y0 + 0.3, x + k * 0.9 + 0.45, c.y1 - 0.3, 0.06);
   }
   // S: canaleta con rejilla a lo largo del borde de las plataformas
-  pinta("#2f343a", X0, 98.05, X1, 98.65, 0.025);
-  for (let x = X0; x < X1; x += 0.5) pinta("#59616b", x, 98.08, x + 0.06, 98.62, 0.04);
+  pinta("#9aa1a8", X0, 98.25, X1, 98.7, 0.12);   // cordón de hormigón al pie de las cubas
+  pinta("#2f343a", X0, 98.7, X1, 99.75, 0.025);   // rejilla ancha (fotos pts 2-6)
+  for (let x = X0; x < X1; x += 0.35) pinta("#59616b", x, 98.72, x + 0.05, 99.73, 0.04);
+  for (let y = 98.8; y < 99.75; y += 0.12) pinta("#4b525a", X0, y, X1, y + 0.02, 0.041);
+  pinta("#ffffff", X0, 100.72, X1, 100.8, 0.045);   // filete blanco del lado pared
+  // cebras desde las puertas de la pared hasta la senda
+  for (const x of [56, 92, 110, 164, 188]) for (let k = 0; k < 4; k++) pinta("#ffffff", x + k * 0.8, 100.9, x + k * 0.8 + 0.4, 103.0, 0.06);
   // ST: manchas verdes (pintura vieja) y huellas de líquido
   for (let i = 0; i < 60; i++) { const x = entre(X0, X1), y = entre(82.6, 86); pinta(elegir(["#3f7d5d", "#4c6b5a", "#5a636c"]), x, y, x + entre(0.8, 3.5), y + entre(0.3, 1.2), 0.03); }
   // T: rectángulos verdes de puesto junto a la línea y cebras con franjas amarillo/negro (pts 25, 28, 30)
@@ -219,7 +225,7 @@ window.DetalleCalles = function (api) {
     if (txt) cartel(txt, x - ancho / 2 - 0.7, y - cara * 0.01, 1.7, 1.0, 0.5, cara > 0 ? "-y" : "+y", "#ffffff", "#1f2a3a");
   }
   // Rejas de ventilación (S pt 6) y carteles varios
-  for (const x of [118, 120.5]) { caja("#23395d", x, 103.5, x + 1.6, 103.45, 0.8, 1.9); for (let z = 0.9; z < 1.85; z += 0.12) caja("#8e99a6", x + 0.1, 103.44, x + 1.5, 103.42, z, z + 0.05); }
+  for (const x of [146, 148.5]) { caja("#23395d", x, 103.5, x + 1.6, 103.45, 0.8, 1.9); for (let z = 0.9; z < 1.85; z += 0.12) caja("#8e99a6", x + 0.1, 103.44, x + 1.5, 103.42, z, z + 0.05); }
   for (const [x, y, cara, txt, fondo, tinta] of [
     [52, 103.55, +1, "PROHIBIDO\nFUMAR", "#ffffff", "#c0392b"], [130, 103.55, +1, "USO\nOBLIGATORIO\nDE EPP", "#1f6feb", "#ffffff"],
     [226, 103.55, +1, "APAGUEMOS\nTODAS LAS LUCES", "#f2c94c", "#111111"],
@@ -285,11 +291,11 @@ window.DetalleCalles = function (api) {
     }
     void haciaY;
   }
-  for (const x of [22, 58, 94, 130, 166, 202, 238]) escalera(x, 97.6, -1, 1.6, "#f2c94c");
-  for (const [x, col] of [[46, "#f2c94c"], [118, "#f2c94c"], [190, "#2e8b57"]]) escalera(x, 82.6, +1, 5.4, col);
+  for (const x of [22, 58, 94, 130, 166, 198]) escalera(x, 97.6, -1, 1.6, "#f2c94c");
+  for (const [x, col] of [[46, "#2e8b57"], [118, "#f2c94c"], [190, "#2e8b57"]]) escalera(x, 82.6, +1, 5.4, col);
 
   // equipos sobre el piso bajo las cubas: bombas con motor azul, tanques, filtros, IBC, tambores
-  for (let x = X0 + 2; x < X1 - 2; x += entre(3.5, 6)) {
+  for (let x = 13; x < 204; x += entre(3.5, 6)) {   // las cubas terminan ≈ eje 18
     for (const [y0, y1] of [[93.5, 97.4], [87.2, 90.5]]) {
       const y = entre(y0, y1), tipo = azar();
       if (tipo < 0.35) {          // bomba centrífuga: base + motor + voluta + caños
@@ -316,7 +322,7 @@ window.DetalleCalles = function (api) {
   // cañería vertical verde y azul bajando de las cubas (cada ~7 m)
   for (let x = X0 + 4; x < X1; x += 7) { cil("#3c8a5a", x, 97.9, 0, 9, 0.09); cil("#2c6fb0", x + 1.3, 87.0, 0, 9, 0.08); }
   // carteles amarillos "SKID n" y verdes de seguridad sobre las barandas
-  for (let i = 0, x = 20; x < X1; x += 30, i++) {
+  for (let i = 0, x = 20; x < 200; x += 30, i++) {
     cartel(`SKID ${i + 1}\n${elegir(["LAVADO", "DESENGRASE", "ENJUAGUE", "FOSFATO", "PASIVADO"])}`, x, 98.0, 1.25, 0.8, 0.6, "+y", "#f2c94c", "#111111");
     cartel("SEGURIDAD\n⛑ 👓 🧤", x + 10, 98.0, 1.2, 0.5, 0.7, "+y", "#27ae60", "#ffffff");
   }
@@ -359,7 +365,13 @@ window.DetalleCalles = function (api) {
   bloque("#e67e22", 10, 98.9, 1.4, 1.0, 0, 0.9, { clave: "mallaN", transparente: 0.6 });
 
   // ============================================================= 6) LÍNEA DE SELLADO (lado oeste de la calle T)
-  // plataforma elevada blanca con borde amarillo/negro y baranda amarilla
+  // fotos pts 22–30: la línea va casi a nivel de piso (piso claro con líneas azules); se baja 0,5 m todo el bloque
+  pinta("#e8e4d6", X0, 73.6, X1, 79.15, 0.015);
+  for (let x = X0; x < X1; x += 6.5) pinta("#2c4f8f", x, 73.7, x + 0.08, 79.0, 0.03);
+  pinta("#2c4f8f", X0, 78.95, X1, 79.03, 0.03); pinta("#2c4f8f", X0, 74.2, X1, 74.28, 0.03);
+  for (let i = 0; i < 40; i++) { const x = entre(X0, X1), y = entre(74, 78.8); pinta("#7fb38f", x, y, x + entre(0.3, 1.2), y + entre(0.2, 0.6), 0.02); }
+  dz = -0.5;
+  // plataforma baja blanca con borde amarillo/negro y baranda amarilla
   caja("#e9edf1", X0, 73.8, X1, 79.1, 0.8, 0.9);
   caja("#5b6570", X0, 78.9, X1, 79.1, 0, 0.8);
   for (let x = X0, k = 0; x < X1; x += 0.4, k++) caja(k % 2 ? "#1f2328" : "#f2c94c", x, 78.95, x + 0.4, 79.12, 0.6, 0.9);
@@ -392,12 +404,84 @@ window.DetalleCalles = function (api) {
     for (let x = a; x <= b; x += 2.4) caja("#e3a800", x, 78.93, x + 0.07, 79.02, 0.9, 2.9);
     caja("#e3a800", a, 78.93, b, 79.02, 2.85, 2.92);
   }
+  dz = 0;
   // operarios en la línea (pts 27–29) y uno caminando por T
-  for (const x of [162, 171, 178, 196, 204, 213, 221, 240]) persona(x, entre(74.6, 78.3), 0, azar() < 0.15);
+  for (const x of [162, 171, 178, 196, 204, 213, 221, 240]) persona(x, entre(74.6, 78.3), 0, azar() < 0.15, 0.4);
   for (const x of [44, 182]) persona(x, 80.9, 0, true);
   // ventiladores de pie y carro de herramientas rojo (pts 23, 25)
   for (const x of [110, 168, 230]) { bloque("#7d858d", x, 79.5, 0.06, 0.06, 0, 1.5); cil("#2b2f33", x, 79.5, 1.3, 0.12, 0.35, "y"); }
   bloque("#c0392b", 66, 80.0, 0.9, 0.5, 0.15, 1.0); for (const z of [0.4, 0.65]) bloque("#8f2a20", 66, 80.0, 0.88, 0.52, z, z + 0.02);
+
+
+  // ============================================================= 7) REFINAMIENTO PUNTO POR PUNTO (fotos en alta, 08/10)
+  // 7a. Paredes plateadas de las cubas (aislación) entre columnas azules muy juntas, lado S y lado ST (pts 3, 4, 12)
+  for (const [yb, cara] of [[98.12, -1], [86.72, +1]]) {
+    caja("#c9ced3", 12, yb - 0.05, 205, yb + 0.05, 1.0, 7.0);
+    for (const z of [2.6, 4.2, 5.8]) caja("#aab1b8", 12, yb + cara * 0.06, 205, yb + cara * 0.08, z, z + 0.05);
+    for (let x = 12; x <= 205; x += 1.5) caja("#22346a", x - 0.09, yb + cara * 0.06, x + 0.09, yb + cara * 0.3, 0.0, 7.4);
+    caja("#f2c94c", 12, yb + cara * 0.05, 205, yb + cara * 0.32, 0.82, 1.0);     // viga amarilla de apoyo
+    caja("#e67e22", 12, yb + cara * 0.05, 205, yb + cara * 0.28, 0.52, 0.72);    // viga naranja inferior
+    for (let x = 13; x < 205; x += entre(4, 9)) caja("#d6a7a0", x, yb + cara * 0.055, x + entre(0.6, 2), yb + cara * 0.06, entre(1.2, 3), entre(3.2, 6));  // chorreaduras rojizas (pt 4)
+  }
+  // 7b. Caños "cuello de ganso" que bajan de las cubas a la rejilla (pts 4, 6)
+  for (let x = 13.2; x < 205; x += 3) {
+    cil("#a5adb5", x, 98.45, 0.45, 3.2, 0.07);
+    cil("#a5adb5", x, 98.75, 0.42, 0.65, 0.07, "y");
+    cil("#3f6fb5", x, 98.45, 1.6, 0.12, 0.1);   // válvula azul
+  }
+  // 7c. Área de acopio al sur de las cubas (pts 9–10): piso verde claro, cajones, carros, cortina plástica, tanque rojo
+  pinta("#cfe1cf", 205, 86.6, 262, 98.2, 0.022);
+  for (const x of [207, 211, 215, 219, 223]) { bloque("#b08a5a", x, 97.0, 1.6, 1.2, 0, 1.3); bloque("#8f6b3f", x, 97.0, 1.62, 1.22, 0, 0.15); }
+  for (const x of [226, 230, 234]) { bloque("#d9dfe5", x, 97.1, 1.4, 1.0, 0, 1.1, { clave: "film", transparente: 0.7 }); bloque("#8f6b3f", x, 97.1, 1.42, 1.02, 0, 0.14); }
+  caja("#dfe8ef", 208, 92.0, 250, 92.05, 0, 4.2, { clave: "cortina", transparente: 0.4 });
+  for (const x of [212, 220, 228]) {   // carros naranjas con herramientas
+    bloque("#e67e22", x, 93.2, 1.4, 0.8, 0.15, 0.2); bloque("#e67e22", x, 93.2, 1.4, 0.8, 1.6, 1.65);
+    for (const [dx, dy] of [[-0.68, -0.38], [0.68, -0.38], [-0.68, 0.38], [0.68, 0.38]]) { bloque("#e67e22", x + dx, 93.2 + dy, 0.05, 0.05, 0.15, 1.65); cil("#2b2f33", x + dx, 93.2 + dy, 0, 0.15, 0.07); }
+    for (let k = 0; k < 6; k++) bloque("#7d858d", x - 0.6 + k * 0.24, 93.2, 0.04, 0.5, 0.6, 1.5);
+  }
+  for (const x of [216, 222]) bloque("#1f5fa8", x, 94.5, 0.6, 0.4, 0, 0.3);
+  bloque("#c0392b", 224, 94.5, 0.6, 0.4, 0, 0.25);
+  cil("#c0392b", 214, 97.6, 0, 3.6, 0.38);   // tanque rojo vertical (pt 10)
+  // transportador de cadena inclinado dentro de malla amarilla (pt 9)
+  for (let i = 0; i < 24; i++) { const s = i / 24; bloque("#8e99a6", 214 + s * 6, 96.0, 0.3, 0.9, s * 4.8, s * 4.8 + 0.2); }
+  caja("#e3a800", 213, 95.3, 220, 95.33, 0, 2.2, { clave: "mallaA", transparente: 0.25 }); caja("#e3a800", 213, 96.67, 220, 96.7, 0, 2.2, { clave: "mallaA", transparente: 0.25 });
+  for (const x of [213, 216.5, 220]) { caja("#e3a800", x, 95.3, x + 0.06, 95.36, 0, 2.2); caja("#e3a800", x, 96.64, x + 0.06, 96.7, 0, 2.2); }
+  // 7d. Bombas verticales con motor azul y caños verdes contra la pared A (pt 6 atrás)
+  for (const x of [62, 64.5, 67]) {
+    bloque("#5d6672", x, 102.9, 0.9, 0.9, 0, 0.2);
+    cil("#3c8a5a", x, 102.9, 0.2, 1.1, 0.16);
+    cil("#1f5fa8", x, 102.9, 1.3, 0.8, 0.28);
+    cil("#3c8a5a", x + 0.5, 103.1, 0, 7.5, 0.1);
+  }
+  // 7e. Fila de tableros eléctricos con ventiladores (pt 2 atrás) y número de máquina
+  for (let x = 35.4, k = 0; x < 45; x += 1.25, k++) {
+    tablero(x, 103.55, +1, 1.2, k === 2 ? 4 : (k === 5 ? 73 : null));
+    if (k % 2 === 0) for (const dx of [-0.25, 0.25]) cil("#59616b", x + dx, 103.0, 1.85, 0.04, 0.17, "y");
+  }
+  // 7f. Tambor de grasa azul con tapa roja y bomba (pt 2) + cajón de madera con trapos (pt 2 atrás)
+  cil("#1f5fa8", 46.5, 99.0, 0, 0.88, 0.29); cil("#c0392b", 46.5, 99.0, 0.88, 0.05, 0.3); cil("#c0392b", 46.5, 99.0, 0.93, 0.5, 0.06);
+  bloque("#c8a774", 40.5, 100.6, 1.2, 1.0, 0, 0.8); bloque("#eef1f4", 40.5, 100.6, 1.0, 0.8, 0.8, 1.05);
+  // 7g. Abertura al lavadero (pt 5 izquierda): vano en la pared y lavarropas industriales amarillos detrás
+  caja("#2b2f33", 121, 103.5, 124, 103.58, 0, 2.6);
+  for (const x of [121.4, 122.6, 123.8]) { bloque("#f2c94c", x, 105.0, 1.0, 1.0, 0, 1.3); cil("#6f7a86", x, 104.5, 0.7, 0.04, 0.32, "y"); }
+  // 7h. Calle entre S y T: columnas del entrepiso de cota 5 en plena calle, piso pintado verde, bidones (pt 12)
+  for (let x = 6; x < 202; x += 6) { caja("#23395d", x - 0.1, 84.8, x + 0.1, 85.0, 0, 5.4); caja("#aeb6be", x - 0.16, 84.76, x + 0.16, 85.04, 1.6, 1.85); }
+  pinta("#3f8f63", 30, 82.25, 64, 86.3, 0.035);
+  for (const x of [47.5, 48.1]) bloque("#eef1f4", x, 82.35, 0.3, 0.2, 0, 0.42);
+  bloque("#b08a5a", 54, 82.6, 1.2, 0.8, 0, 0.14); bloque("#a87d4b", 58, 82.3, 0.15, 1.2, 0, 1.0);
+  // 7i. Calle T: zócalo azul más alto (2,8 m), aerotermos colgados junto a cada columna, conducto vertical (pts 22–25)
+  caja("#5b7fb3", X0, 81.58, X1, 81.64, 2.0, 2.8);
+  caja("#f3f5f7", X0, 81.58, X1, 81.64, 2.8, 3.4);
+  for (const c of COL_B.filter(c => c[2] > 0.6)) {
+    bloque("#aeb4ba", c[0] - 0.9, 81.2, 0.75, 0.6, 4.4, 5.1);
+    for (let z = 4.5; z < 5.05; z += 0.08) bloque("#6f7780", c[0] - 0.9, 80.89, 0.65, 0.02, z, z + 0.03);
+    cil("#cfd5db", c[0] - 0.9, 81.25, 5.1, 2.5, 0.2);
+  }
+  // columna con franjas amarillo/negro y puerta vidriada verde en la cabina (pt 22)
+  for (let z = 0, k = 0; z < 2.4; z += 0.3, k++) caja(k % 2 ? "#1f2328" : "#f2c94c", 35.6, 78.9, 36.2, 79.25, z, z + 0.3);
+  caja("#1e7a4f", 37, 79.1, 38.6, 79.16, 0, 2.3); caja("#dfe8ef", 37.15, 79.17, 38.45, 79.18, 0.4, 2.1, { clave: "vidrio2", transparente: 0.35 });
+  // herramientas neumáticas colgando de balanceadores (pt 22): manguera + herramienta
+  for (let x = 8; x < 140; x += 6) { cil("#2b2f33", x + 1.5, 78.5, 1.0, 2.6, 0.03); bloque("#3b7dd8", x + 1.5, 78.5, 0.2, 0.25, 0.9, 1.25); }
 
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
