@@ -483,6 +483,77 @@ window.DetalleCalles = function (api) {
   // herramientas neumáticas colgando de balanceadores (pt 22): manguera + herramienta
   for (let x = 8; x < 140; x += 6) { cil("#2b2f33", x + 1.5, 78.5, 1.0, 2.6, 0.03); bloque("#3b7dd8", x + 1.5, 78.5, 0.2, 0.25, 0.9, 1.25); }
 
+
+  // ============================================================= 8) CALLE ENTRE S Y T – extremo norte y punto 15 (fotos en alta)
+  // portón amarillo grande al norte (pt 11 atrás), con mirillas
+  caja("#e9b10a", -0.7, 82.4, -0.3, 86.2, 0, 4.6);
+  for (const y of [83.0, 83.6, 84.2]) for (const z of [1.5, 2.2]) caja("#2b2f33", -0.75, y, -0.72, y + 0.4, z, z + 0.3);
+  // espejo convexo en la columna B01
+  cil("#c9d6e3", 12.0, 82.45, 2.2, 0.06, 0.32, "y"); cil("#f2c94c", 12.0, 82.42, 2.2, 0.04, 0.36, "y");
+  // cabina eléctrica SECAT y transformador Nº 2 con bolardos amarillo/negro y marca roja en el piso
+  bloque("#c3c8cd", 5.0, 85.6, 3.2, 1.3, 0, 2.9);
+  bloque("#c3c8cd", 8.6, 85.6, 2.6, 1.3, 0, 2.9);
+  cartel("CABINA\nELÉCTRICA\nSECAT", 4.2, 84.93, 2.4, 0.7, 0.8, "-y", "#2e86de", "#ffffff");
+  cartel("TRANSFORMADOR\nNº 2", 8.6, 84.93, 2.4, 0.9, 0.5, "-y", "#2e86de", "#ffffff");
+  cartel("⚠ PELIGRO\nALTA TENSIÓN", 6.6, 84.93, 1.6, 0.6, 0.5, "-y", "#f2c94c", "#111111");
+  for (const x of [3.6, 6.6, 9.6]) for (let z = 0, k = 0; z < 1.1; z += 0.22, k++) bloque(k % 2 ? "#1f2328" : "#f2c94c", x, 84.6, 0.16, 0.16, z, z + 0.22);
+  for (const [a, b, c, d] of [[2.4, 84.2, 10.6, 84.28], [2.4, 84.2, 2.48, 86.3], [10.52, 84.2, 10.6, 86.3]]) pinta("#c0392b", a, b, c, d, 0.05);
+  // cartel colgante "ZONA DE SCRAP" y carros amarillos para carrocerías (pt 11 frente)
+  cartel("ZONA DE SCRAP", 30, 84.3, 3.4, 1.0, 0.35, "+x", "#ffffff", "#1f2a3a", true);
+  for (const x of [36, 39]) {
+    bloque("#e9b10a", x, 85.7, 2.0, 0.9, 0.3, 0.38);
+    for (const [dx, dy] of [[-0.95, -0.4], [0.95, -0.4], [-0.95, 0.4], [0.95, 0.4]]) { bloque("#e9b10a", x + dx, 85.7 + dy, 0.06, 0.06, 0.3, 1.2); cil("#2b2f33", x + dx, 85.7 + dy, 0, 0.3, 0.09); }
+    for (let k = 0; k < 4; k++) cil("#2e8b57", x - 0.7 + k * 0.45, 85.7, 0.9, 0.9, 0.035, "y");
+  }
+  // punto 15: puerta corrediza verde hacia la línea de sellado (pared B, lado ST)
+  caja("#22834f", 121, 82.0, 123.6, 82.08, 0, 2.6); caja("#dfe8ef", 121.3, 82.09, 122.1, 82.1, 1.3, 1.9, { clave: "vidrio2", transparente: 0.35 });
+  cartel("HIDRANTE", 120.3, 82.1, 2.9, 0.6, 0.18, "+y", "#c0392b", "#ffffff");
+  cartel("ACCESO\nRESTRINGIDO\nSOLO PERSONAL\nAUTORIZADO", 117.8, 83.3, 0.7, 0.45, 0.6, "+y", "#ffffff", "#c0392b");
+  cartel("PRECAUCIÓN\nESCALERAS", 118.6, 83.3, 0.7, 0.5, 0.45, "+y", "#2ecc71", "#ffffff");
+  // segundo transportador inclinado (cadena) entrando bajo las cubas (pt 15 izquierda)
+  for (let i = 0; i < 24; i++) { const s = i / 24; bloque("#8e99a6", 122 + s * 6, 87.6, 0.3, 0.9, s * 4.6, s * 4.6 + 0.2); }
+  for (const x of [121.5, 128.5]) caja("#f2c94c", x, 86.9, x + 0.12, 88.3, 0, 1.2);
+  caja("#f2c94c", 121.5, 86.9, 128.6, 87.0, 1.1, 1.2); caja("#f2c94c", 121.5, 88.2, 128.6, 88.3, 1.1, 1.2);
+  // tolvas grises bajo las cubas (pt 15): cajas escalonadas que se angostan hacia abajo
+  for (const x of [112, 116, 120]) for (let k = 0; k < 5; k++) { const w = 2.2 - k * 0.38; bloque("#a7afb7", x, 90.0, w, w, 4.2 - k * 0.35, 4.55 - k * 0.35); }
+  // conos naranjas y caballetes con piezas (pt 15 frente)
+  for (const x of [129, 130.2]) { cil("#e67e22", x, 82.5, 0, 0.7, 0.15); bloque("#e67e22", x, 82.5, 0.36, 0.36, 0, 0.04); }
+  for (const x of [132, 135, 138]) { bloque("#6b3b2a", x, 83.2, 2.4, 0.08, 0.6, 0.66); for (const dx of [-1.1, 1.1]) bloque("#6b3b2a", x + dx, 83.2, 0.08, 0.6, 0, 0.66); }
+
+
+  // ============================================================= 9) CALLE T – puntos 25 y 30 (fotos en alta)
+  // pt 25: vano grande en la pared B hacia el lado este, con marco verde/amarillo y cebra en el piso
+  caja("#2b2f33", 145.0, 81.56, 149.5, 81.66, 0, 3.0);
+  caja("#1e7a4f", 144.8, 81.4, 145.0, 81.7, 0, 3.1); caja("#e9b10a", 149.5, 81.4, 149.7, 81.7, 0, 3.1);
+  cartel("⚠ ATENCIÓN", 146.0, 81.38, 3.4, 0.5, 0.7, "-y", "#f2c94c", "#111111");
+  for (let k = 0; k < 4; k++) pinta("#ffffff", 145.2 + k * 1.1, 79.5, 145.7 + k * 1.1, 81.3, 0.06);
+  // pt 25: gigantografía colgada sobre la línea (afiche de seguridad/familia)
+  cartel("👨‍👩‍👧 VOLVÉ SANO\nA CASA", 150, 76.5, 6.0, 3.0, 2.0, "+y", "#3a7a43", "#ffffff", true);
+  // pt 25: transportador aéreo (power & free) con perchas naranjas sobre la línea
+  caja("#9aa5b1", X0, 76.35, X1, 76.55, 6.6, 6.75);
+  for (let x = X0 + 1; x < X1; x += 1.5) caja("#e67e22", x, 76.4, x + 0.05, 76.5, 5.9, 6.6);
+  // pt 25: pupitres de operador con luz verde junto a la línea
+  for (const x of [140, 166, 192, 218]) { bloque("#dfe3e7", x, 79.25, 0.6, 0.5, 0, 1.2); bloque("#c5cbd1", x, 79.25, 0.66, 0.56, 1.2, 1.35); cil("#2ecc71", x + 0.2, 79.1, 1.35, 0.12, 0.05); }
+  // pt 25: escalera amarilla a pasarela sobre la línea + pasarela
+  escalera(178, 78.4, -1, 2.6, "#f2c94c");
+  caja("#8e99a6", 180.4, 74.2, 196, 79.0, 2.45, 2.6);
+  for (const y of [74.2, 79.0]) { caja("#f2c94c", 180.4, y - 0.03, 196, y + 0.03, 3.5, 3.56); for (let x = 180.4; x <= 196; x += 1.5) caja("#f2c94c", x, y - 0.03, x + 0.05, y + 0.03, 2.6, 3.56); }
+  // pt 30: rampa/contenedor azul basculante sobre estructura amarilla (fin de línea)
+  bloque("#2c6aa0", 252, 77.5, 4.0, 3.0, 1.2, 2.6);
+  for (const [dx, dy] of [[-1.8, -1.3], [1.8, -1.3], [-1.8, 1.3], [1.8, 1.3]]) bloque("#f2c94c", 252 + dx, 77.5 + dy, 0.12, 0.12, 0, 1.2);
+  bloque("#f2c94c", 252, 79.15, 4.0, 0.25, 1.0, 1.2);
+  // pt 30: rayado peatonal amarillo/negro a 45° junto a la pared + cebra corta (dos tramos)
+  for (const x0 of [236, 254]) for (let k = 0; k < 10; k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", x0 + k * 0.32, 80.9, x0 + k * 0.32 + 0.32, 81.5, 0.065);
+  // pt 30: afiches verde, rojo y azul ("soy azul") en la pared
+  cartel("♻\nRECICLÁ", 228.0, 81.57, 1.6, 0.7, 1.3, "-y", "#3a8f4f", "#ffffff");
+  cartel("✋\nCUIDATE", 229.2, 81.57, 1.6, 0.7, 1.3, "-y", "#c0392b", "#ffffff");
+  cartel("soy\nazul", 230.5, 81.57, 1.6, 0.9, 1.4, "-y", "#1f4fb4", "#ffffff");
+  // pt 30: cartel "VÍA DE ESCAPE" verde al fondo y portón azul del extremo sur
+  cartel("↑ VÍA DE\nESCAPE", 262, 80.4, 3.0, 0.9, 0.5, "-x", "#1e8449", "#ffffff");
+  caja("#23395d", 263.3, 79.3, 263.5, 81.5, 0, 3.0);
+  // pt 30: piso blanco de la línea con franjas amarillo/negro de borde
+  for (let x = 236, k = 0; x < 262; x += 0.35, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", x, 78.85, x + 0.35, 78.98, 0.04);
+
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
     const g = new THREE.BufferGeometry();
