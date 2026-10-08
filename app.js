@@ -147,8 +147,14 @@
   // Columnas
   const plat = N.columnas.filter(c => Math.abs(c[5] - 9) < 0.01 && c[4] === 0);
   const nave = N.columnas.filter(c => !plat.includes(c));
-  capa("columnas").add(malla(geoColumnas(nave), mat(C.columnaNave), true, true));
-  capa("columnas").add(malla(geoColumnas(plat), mat(C.columnaPlat), true, false));
+  // versión completa y versión recortada a la altura de "Cortar muros" (para ver adentro)
+  const recorte = (cols) => cols.filter(c => c[4] < N.corte_muros).map(c => [c[0], c[1], c[2], c[3], c[4], Math.min(c[5], N.corte_muros)]);
+  const colCompletas = new THREE.Group(), colCortadas = new THREE.Group();
+  colCompletas.add(malla(geoColumnas(nave), mat(C.columnaNave), true, true), malla(geoColumnas(plat), mat(C.columnaPlat), true, false));
+  colCortadas.add(malla(geoColumnas(recorte(nave)), mat(C.columnaNave), true, true), malla(geoColumnas(recorte(plat)), mat(C.columnaPlat), true, false));
+  colCortadas.visible = false;
+  capa("columnas").add(colCompletas, colCortadas);
+  const altosQueSeCortan = [];   // otros elementos altos que se ocultan al cortar
 
   // Techo: losas + frontones entre zona baja y alta
   const matTecho = mat(C.techo, { transparent: true, opacity: 0.93, side: THREE.DoubleSide });
@@ -232,6 +238,7 @@
     if (X.sitio) construirSitio(X.sitio, ent, cajaR);
     construirDetalles(X, ent, cajaR);
     if (N.interior) construirInterior(N.interior, cajaR);
+    if (window.DetalleCalles) window.__detalle = window.DetalleCalles({ THREE, W, N, capa, MOVIL });
     construirVida(X);
 
     // Flecha de norte en el piso
@@ -328,7 +335,8 @@
     g.add(ib);
     // Plataformas amarillas de las máquinas de pretratamiento, con tanques y barandas
     const P = I.plataformas_pretratamiento, [a, b, c, d] = P.rect;
-    g.add(malla(armar(cajaR([a, b, c, d], P.alto_piso - 0.15, P.alto_piso)), mat(0x8a939e), true, true));   // rejilla gris (fotos)
+    // pasarelas de rejilla gris a lo largo de ambos bordes (en el medio, las máquinas apoyan en el piso)
+    g.add(malla(armar([...cajaR([a, b, c, b + 1.2], P.alto_piso - 0.15, P.alto_piso), ...cajaR([a, d - 1.2, c, d], P.alto_piso - 0.15, P.alto_piso)]), mat(0x8a939e), true, true));
     const patas = [], barandas = [];
     for (let x = a; x <= c; x += 6) for (const y of [b + 0.2, d - 0.2]) patas.push(...cajaR([x - 0.1, y - 0.1, x + 0.1, y + 0.1], 0, P.alto_piso));
     for (const y of [b, d]) {
@@ -357,7 +365,9 @@
     const E = I.entrepiso_cota5, vigas = [];
     for (let x = E.x[0]; x <= E.x[1]; x += 3) vigas.push(...cajaR([x - 0.12, E.y[0], x + 0.12, E.y[1]], E.z - 0.35, E.z));
     for (const y of E.y) vigas.push(...cajaR([E.x[0], y - 0.12, E.x[1], y + 0.12], E.z - 0.5, E.z));
-    g.add(malla(armar(vigas), mat(0xe67e22), true, false));
+    const mVigas = malla(armar(vigas), mat(0xe67e22), true, false);
+    altosQueSeCortan.push(mVigas);
+    g.add(mVigas);
     // Portón rápido naranja (norte, calle S)
     for (const [x, y, ancho, , alto] of I.portones_extra) g.add(malla(armar(cajaR([x - 0.2, y - ancho / 2, x + 0.2, y + ancho / 2], 0, alto)), mat(0xf39c12, { emissive: 0x3a2000 }), true, true));
     // Celda verde de acceso a cota 5
@@ -604,6 +614,9 @@
   }));
   document.getElementById("cortar").addEventListener("change", (ev) => {
     for (const t of Object.keys(tipos)) { muroCompleto[t].visible = !ev.target.checked; muroCortado[t].visible = ev.target.checked; }
+    if (window.__detalle) window.__detalle.alto.visible = !ev.target.checked;
+    colCompletas.visible = !ev.target.checked; colCortadas.visible = ev.target.checked;
+    for (const o of altosQueSeCortan) o.visible = !ev.target.checked;
   });
   // En celular el panel de capas arranca plegado y se pliega al tocar la maqueta
   const panelCapas = document.getElementById("capas");
