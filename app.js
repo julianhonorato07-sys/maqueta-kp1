@@ -231,6 +231,7 @@
     capa("techo").add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(lt), matBorde));
     if (X.sitio) construirSitio(X.sitio, ent, cajaR);
     construirDetalles(X, ent, cajaR);
+    if (N.interior) construirInterior(N.interior, cajaR);
     construirVida(X);
 
     // Flecha de norte en el piso
@@ -299,6 +300,73 @@
     const pe = [];
     for (const x of et.x) for (const y of et.y) pe.push(...cajaR([x - et.tam[0] / 2, y - et.tam[1] / 2, x + et.tam[0] / 2, y + et.tam[1] / 2], zT, zT + et.tam[2]));
     capa("techo").add(malla(armar(pe), mat(0xd9e0e8), true, true));
+  }
+
+  // ---------------------------------------------------------------- interior cota 0 (relevamiento fotográfico 08/10)
+  function construirInterior(I, cajaR) {
+    const g = capa("interior");
+    const m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion();
+    const piso = (r, z, color) => { const m = losa([[r[0], r[1]], [r[2], r[1]], [r[2], r[3]], [r[0], r[3]]], z, 0, mat(color, { polygonOffset: true, polygonOffsetFactor: -2 })); m.receiveShadow = true; g.add(m); };
+    // Sendas verdes con bordes amarillos
+    for (const s of I.sendas) {
+      const [x0, x1] = s.x, h = s.ancho / 2;
+      piso([x0, s.y - h - 0.12, x1, s.y + h + 0.12], 0.06, 0xf2c94c);
+      piso([x0, s.y - h, x1, s.y + h], 0.07, 0x2e9d6a);
+    }
+    // Zócalo azul + franja blanca (envolvente y locales); un poco más grueso que el muro para que se vea de ambos lados
+    const e = N.espesor_muro + 0.06, Z = I.zocalo;
+    const bandas = (segs, z0, z1) => segs.map(([x1, y1, x2, y2, h]) => [x1, y1, x2, y2, z0, Math.min(z1, h)]).filter(s => s[5] > s[4]);
+    for (const t of ["envolvente", "internos"]) {
+      const azul = malla(geoMuros(bandas(N.muros[t], 0, Z.azul_hasta), e), mat(0x5b7fb3), false, false);
+      const blanco = malla(geoMuros(bandas(N.muros[t], Z.azul_hasta, Z.blanco_hasta), e), mat(0xf3f5f7), false, false);
+      capa(t).add(azul, blanco);
+    }
+    // Bocas de incendio (gabinete rojo) en las columnas de los ejes A y B
+    const bocas = N.columnas.filter(c => c[4] === 0 && I.bocas_incendio_en_lineas.some(y => Math.abs(c[1] - y) < 0.6) && c[0] > 1 && c[0] < 263);
+    const ib = new THREE.InstancedMesh(new THREE.BoxGeometry(0.75, 0.75, 0.25), mat(0xc0392b), bocas.length);
+    bocas.forEach(([x, y, w], i) => { m4.compose(W(x, y - w / 2 - 0.15, 1.5), q0, new THREE.Vector3(1, 1, 1)); ib.setMatrixAt(i, m4); });
+    g.add(ib);
+    // Plataformas amarillas de las máquinas de pretratamiento, con tanques y barandas
+    const P = I.plataformas_pretratamiento, [a, b, c, d] = P.rect;
+    g.add(malla(armar(cajaR([a, b, c, d], P.alto_piso - 0.15, P.alto_piso)), mat(0x8a939e), true, true));   // rejilla gris (fotos)
+    const patas = [], barandas = [];
+    for (let x = a; x <= c; x += 6) for (const y of [b + 0.2, d - 0.2]) patas.push(...cajaR([x - 0.1, y - 0.1, x + 0.1, y + 0.1], 0, P.alto_piso));
+    for (const y of [b, d]) {
+      barandas.push(...cajaR([a, y - 0.04, c, y + 0.04], P.alto_piso + P.baranda - 0.08, P.alto_piso + P.baranda));
+      barandas.push(...cajaR([a, y - 0.04, c, y + 0.04], P.alto_piso + 0.5, P.alto_piso + 0.56));
+      for (let x = a; x <= c; x += 2) barandas.push(...cajaR([x - 0.04, y - 0.04, x + 0.04, y + 0.04], P.alto_piso, P.alto_piso + P.baranda));
+    }
+    g.add(malla(armar(patas), mat(0x23395d), false, false), malla(armar(barandas), mat(0xf2c94c), false, false));
+    const tanques = [];
+    for (let x = a + 4; x < c - 2; x += P.tanques_cada_m) for (const y of [b + 2.5, d - 2.5]) tanques.push([x + (y > (b + d) / 2 ? 4 : 0), y]);
+    const it = new THREE.InstancedMesh(new THREE.CylinderGeometry(P.tanque_d / 2, P.tanque_d / 2, P.tanque_h, 16), mat(0xc9d1da), tanques.length);
+    tanques.forEach(([x, y], i) => { m4.compose(W(x, y, P.alto_piso + P.tanque_h / 2), q0, new THREE.Vector3(1, 1, 1)); it.setMatrixAt(i, m4); });
+    it.castShadow = true; g.add(it);
+    // Cañerías longitudinales sobre las calles
+    const caños = [];
+    for (const s of I.sendas) for (const [dy, z] of [[-1.2, 4.2], [-0.9, 4.5], [1.0, 4.3]]) caños.push([s.x[0], s.y + dy, s.x[1], s.y + dy, z]);
+    for (const [x0, y, x1, , z] of caños) {
+      const tubo = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, x1 - x0, 8), mat(0xaeb7c2));
+      tubo.rotation.x = Math.PI / 2; tubo.position.copy(W((x0 + x1) / 2, y, z)); tubo.rotation.set(0, 0, Math.PI / 2);
+      tubo.position.copy(W((x0 + x1) / 2, y, z)); g.add(tubo);
+    }
+    // Telón plástico bajo las cubas
+    const T = I.telon_plastico;
+    g.add(new THREE.Mesh(armar(cajaR([T.x[0], T.y - 0.03, T.x[1], T.y + 0.03], 0, T.alto)), mat(0xdfe8ef, { transparent: true, opacity: 0.45 })));
+    // Entrepiso de cota 5 (vigas naranjas) sobre la calle entre S y T
+    const E = I.entrepiso_cota5, vigas = [];
+    for (let x = E.x[0]; x <= E.x[1]; x += 3) vigas.push(...cajaR([x - 0.12, E.y[0], x + 0.12, E.y[1]], E.z - 0.35, E.z));
+    for (const y of E.y) vigas.push(...cajaR([E.x[0], y - 0.12, E.x[1], y + 0.12], E.z - 0.5, E.z));
+    g.add(malla(armar(vigas), mat(0xe67e22), true, false));
+    // Portón rápido naranja (norte, calle S)
+    for (const [x, y, ancho, , alto] of I.portones_extra) g.add(malla(armar(cajaR([x - 0.2, y - ancho / 2, x + 0.2, y + ancho / 2], 0, alto)), mat(0xf39c12, { emissive: 0x3a2000 }), true, true));
+    // Celda verde de acceso a cota 5
+    const Cl = I.celda_cota5;
+    g.add(malla(armar(cajaR(Cl.rect, 0, Cl.alto)), mat(0x2f7d4f), true, true));
+    // Carrocerías scrap sobre skid
+    const sc = [];
+    for (const x of I.scrap.x) { sc.push(...cajaR([x - 2.6, I.scrap.y - 0.75, x + 2.6, I.scrap.y + 0.75], 0, 0.25)); sc.push(...cajaR([x - 2.4, I.scrap.y - 0.9, x + 0.6, I.scrap.y + 0.9], 0.6, 2.2)); sc.push(...cajaR([x + 0.6, I.scrap.y - 0.9, x + 2.6, I.scrap.y + 0.9], 0.6, 1.2)); }
+    g.add(malla(armar(sc), mat(0x8b939c), true, true));
   }
 
   // ---------------------------------------------------------------- vida: gente, autos, camiones, autoelevadores (ilustrativo)
