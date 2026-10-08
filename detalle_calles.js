@@ -554,6 +554,79 @@ window.DetalleCalles = function (api) {
   // pt 30: piso blanco de la línea con franjas amarillo/negro de borde
   for (let x = 236, k = 0; x < 262; x += 0.35, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", x, 78.85, x + 0.35, 78.98, 0.04);
 
+
+  // ============================================================= 10) CALLE S – puntos 7 y 8 (fotos en alta)
+  // pt 7: puerta amarilla "CABINA COMANDOS ELÉCTRICOS / CABINA ELÉCTRICA SEP1" con rejas de ventilación a ambos lados
+  caja("#e9b10a", 77.2, 103.5, 78.6, 103.56, 0, 2.3);
+  caja("#dfe8ef", 77.5, 103.48, 78.3, 103.49, 1.5, 1.95, { clave: "vidrio2", transparente: 0.35 });
+  cartel("CABINA\nCOMANDOS ELÉCTRICOS", 77.9, 103.47, 2.85, 1.3, 0.55, "-y", "#ffffff", "#1f2a3a");
+  cartel("CABINA\nELÉCTRICA\nSEP1", 77.9, 103.47, 1.3, 0.5, 0.45, "-y", "#2e86de", "#ffffff");
+  for (const x of [75.2, 80.0]) { caja("#23395d", x, 103.48, x + 1.6, 103.52, 0.55, 1.75); for (let z = 0.65; z < 1.7; z += 0.12) caja("#e9d9a8", x + 0.1, 103.46, x + 1.5, 103.47, z, z + 0.06, { clave: "luz", emisivo: true }); }
+  cartel("HIDRANTE", 82.5, 103.47, 3.2, 0.7, 0.2, "-y", "#c0392b", "#ffffff");
+  // pt 7: bomba con motor azul sobre la plataforma y caño verde que baja en "S" hasta la rejilla
+  cil("#1f5fa8", 74.5, 96.8, 2.0, 0.8, 0.3, "x"); bloque("#5d6672", 74.5, 96.8, 1.4, 0.6, 1.6, 1.8);
+  cil("#3c8a5a", 76.5, 98.3, 0.3, 8.0, 0.12); cil("#3c8a5a", 76.5, 98.6, 0.25, 0.6, 0.12, "y");
+  // pt 7: escalera metálica gris con baranda amarilla subiendo a la plataforma
+  escalera(72.0, 97.6, -1, 1.6, "#f2c94c");
+  // pt 8: equipo "SKID 2 – DESENGRASE 2 INMERSIÓN": filtro rojo, motores, válvulas azules, caños verde-agua
+  cil("#c0392b", 88.0, 96.6, 1.6, 1.6, 0.45); for (let k = 0; k < 8; k++) cil("#8f2a20", 88.0, 96.6, 1.7 + k * 0.18, 0.04, 0.47);
+  for (const x of [90.5, 92.5]) { cil("#1f5fa8", x, 96.8, 2.0, 0.7, 0.28, "x"); bloque("#5d6672", x, 96.8, 1.3, 0.6, 1.6, 1.75); }
+  for (const x of [86, 94]) cil("#2aa198", x, 97.6, 0, 7.2, 0.13);
+  for (const x of [89.3, 91.6]) cil("#2c6fb0", x, 97.2, 2.1, 0.2, 0.18, "y");
+  cartel("SKID 2\nDESENGRASE 2\nINMERSIÓN", 84.0, 98.0, 1.4, 0.8, 0.6, "+y", "#f2c94c", "#111111");
+  // pt 8: puerta doble verde de emergencia con barras antipánico y cartel "EMPUJE – UNIDAD PINTURA"
+  caja("#2ea84f", 101.0, 103.5, 103.6, 103.56, 0, 2.5);
+  caja("#ffffff", 101.2, 103.48, 102.1, 103.49, 1.4, 2.1); caja("#ffffff", 102.5, 103.48, 103.4, 103.49, 1.4, 2.1);
+  caja("#c0392b", 101.2, 103.46, 103.4, 103.48, 1.0, 1.05);
+  caja("#e9f2ff", 101.0, 103.3, 103.6, 103.42, 2.6, 2.72, { clave: "luz", emisivo: true });
+  cartel("SALIDA DE\nEMERGENCIA ↓", 102.3, 103.47, 3.2, 1.1, 0.55, "-y", "#ffffff", "#1e8449");
+  cartel("EMPUJE\nUNIDAD PINTURA", 103.1, 103.47, 1.25, 0.4, 0.3, "-y", "#ffffff", "#c0392b");
+  // pt 8: columna A con pintura saltada (parche gris)
+  caja("#9aa3ad", 107.8, 103.62, 108.25, 103.63, 0.2, 1.1);
+  // pt 8: tablero gris alto contra la pared al sur y cajón negro en la rejilla
+  bloque("#c9cdd1", 112.0, 103.2, 0.8, 0.5, 0, 2.3);
+  bloque("#2b2f33", 115.0, 99.0, 1.6, 0.9, 0, 1.0);
+
+
+  // ============================================================= 11) CALLE ENTRE S Y T – puntos 13 y 14 (fotos en alta)
+  // pt 13: zona delimitada con cinta roja/blanca, zorras hidráulicas rojas, tambores Petronas, bolsas
+  for (let x = 66; x < 82; x += 0.5) caja(((x * 2) | 0) % 2 ? "#ffffff" : "#c0392b", x, 84.2, x + 0.5, 84.22, 0.9, 0.95);
+  for (const x of [68, 72]) {
+    bloque("#c0392b", x, 85.4, 1.2, 0.55, 0.06, 0.14);
+    for (const dy of [-0.18, 0.18]) bloque("#b03a2e", x - 0.3, 85.4 + dy, 1.6, 0.16, 0.0, 0.08);
+    bloque("#c0392b", x + 0.7, 85.4, 0.1, 0.1, 0.14, 1.2); bloque("#2b2f33", x + 0.7, 85.4, 0.1, 0.5, 1.15, 1.22);
+  }
+  for (let k = 0; k < 3; k++) { cil("#1aa088", 76 + k * 0.62, 85.8, 0, 0.9, 0.29); cartel("PETRONAS", 76 + k * 0.62, 85.5, 0.5, 0.45, 0.18, "-y", "#1aa088", "#ffffff"); }
+  bloque("#e8c27a", 78.5, 85.2, 0.8, 0.7, 0, 0.9, { clave: "film", transparente: 0.7 });
+  // pt 13: puerta verde abierta y carteles ISCOT / "Lavadora hombre a bordo" en la pared B
+  caja("#1e7a4f", 56.0, 82.05, 56.06, 83.2, 0, 2.3);
+  cartel("LAVADORA HOMBRE\nA BORDO", 75.2, 82.08, 1.9, 0.7, 0.25, "+y", "#ffffff", "#1f2a3a");
+  cartel("ISCOT\nRECOMENDACIONES\nDE USO Y\nMANTENIMIENTO", 75.2, 82.08, 1.3, 0.6, 0.85, "+y", "#ffffff", "#1f2a3a");
+  cartel("USO\nOBLIGATORIO\nGUANTES", 77.5, 82.08, 1.6, 0.35, 0.45, "+y", "#1f4fb4", "#ffffff");
+  // pt 13: volquete metálico con orejas de izaje
+  bloque("#4a5462", 79.5, 82.9, 1.6, 1.0, 0.1, 0.9); for (const dx of [-0.6, 0.6]) cil("#4a5462", 79.5 + dx, 82.4, 0.95, 0.05, 0.12, "y");
+  // pt 13: grupos de bombas con filtros bajo las cubas (izquierda), en gris acero
+  for (const x of [70, 74, 78]) {
+    cil("#a7afb7", x, 88.2, 0.3, 1.6, 0.35); cil("#a7afb7", x + 1.0, 88.2, 0.3, 1.6, 0.35);
+    cil("#a7afb7", x + 1.8, 88.4, 0.35, 0.8, 0.25, "x"); bloque("#7d858d", x + 1.0, 88.3, 3.4, 1.2, 0, 0.3);
+    for (const dx of [0, 1.0]) cil("#7d858d", x + dx, 87.8, 1.5, 0.05, 0.22, "y");   // volantes de válvulas
+  }
+  // pt 14: tablero gris con tomas industriales azul/roja, termotanque y cañería, cajones con piezas
+  bloque("#d5d9dd", 98.6, 82.25, 0.7, 0.4, 0, 2.2);
+  bloque("#eef1f4", 99.6, 82.12, 0.45, 0.15, 1.3, 1.8);
+  cil("#1f5fa8", 99.5, 82.03, 1.4, 0.05, 0.06, "y"); cil("#c0392b", 99.7, 82.03, 1.4, 0.05, 0.06, "y");
+  cil("#9aa1a8", 101.6, 82.45, 0, 1.4, 0.32); cil("#7d858d", 101.6, 82.45, 1.4, 0.5, 0.05);
+  caja("#7d858d", 100.5, 82.15, 101.6, 82.2, 1.85, 1.9);
+  for (const x of [92, 94]) { bloque("#c8a774", x, 85.8, 1.4, 1.0, 0, 0.8); for (let k = 0; k < 4; k++) bloque("#2b2f33", x - 0.4 + k * 0.28, 85.8, 0.2, 0.6, 0.8, 1.05); }
+  // pt 14: carro de herramientas rojo (Bahco), tanque blanco grande con soporte, bomba de trasvase
+  bloque("#c0392b", 106.0, 82.6, 0.75, 0.5, 0.1, 1.1); for (let z = 0.3; z < 1.05; z += 0.17) bloque("#8f2a20", 106.0, 82.34, 0.7, 0.02, z, z + 0.02);
+  cil("#2b2f33", 105.7, 82.6, 0, 0.1, 0.06); cil("#2b2f33", 106.3, 82.6, 0, 0.1, 0.06);
+  cil("#f4f6f8", 107.6, 82.9, 0.35, 1.6, 0.5); bloque("#4a5462", 107.6, 82.9, 1.1, 1.1, 0, 0.35);
+  cartel("TANQUE C...", 107.6, 82.39, 1.3, 0.6, 0.15, "-y", "#ffffff", "#1f2a3a");
+  // pt 14: carteles de seguridad (verde EPP, acceso restringido) en la baranda de las máquinas
+  cartel("SEGURIDAD\nEPP OBLIGATORIO", 103, 86.62, 1.3, 0.55, 0.8, "-y", "#27ae60", "#ffffff");
+  cartel("ACCESO\nRESTRINGIDO", 105, 86.62, 0.6, 0.45, 0.55, "-y", "#ffffff", "#c0392b");
+
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
     const g = new THREE.BufferGeometry();
