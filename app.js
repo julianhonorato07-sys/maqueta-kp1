@@ -358,9 +358,6 @@
       tubo.rotation.x = Math.PI / 2; tubo.position.copy(W((x0 + x1) / 2, y, z)); tubo.rotation.set(0, 0, Math.PI / 2);
       tubo.position.copy(W((x0 + x1) / 2, y, z)); g.add(tubo);
     }
-    // Telón plástico bajo las cubas
-    const T = I.telon_plastico;
-    g.add(new THREE.Mesh(armar(cajaR([T.x[0], T.y - 0.03, T.x[1], T.y + 0.03], 0, T.alto)), mat(0xdfe8ef, { transparent: true, opacity: 0.45 })));
     // Entrepiso de cota 5 (vigas naranjas) sobre la calle entre S y T
     const E = I.entrepiso_cota5, vigas = [];
     for (let x = E.x[0]; x <= E.x[1]; x += 3) vigas.push(...cajaR([x - 0.12, E.y[0], x + 0.12, E.y[1]], E.z - 0.35, E.z));

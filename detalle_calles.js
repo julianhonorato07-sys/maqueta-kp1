@@ -627,6 +627,43 @@ window.DetalleCalles = function (api) {
   cartel("SEGURIDAD\nEPP OBLIGATORIO", 103, 86.62, 1.3, 0.55, 0.8, "-y", "#27ae60", "#ffffff");
   cartel("ACCESO\nRESTRINGIDO", 105, 86.62, 0.6, 0.45, 0.55, "-y", "#ffffff", "#c0392b");
 
+
+  // ============================================================= 12) CALLE ENTRE S Y T – puntos 16 a 18 (fotos en alta)
+  // cortinas plásticas: paneles con cintas amarillas colgados de un caño, con pliegues (pts 16–20)
+  for (let x = 156; x < 252; x += 2.2) {
+    caja("#e4ecf2", x, 86.0 + Math.sin(x) * 0.12, x + 2.1, 86.05 + Math.sin(x) * 0.12, 0, 4.4, { clave: "cortina", transparente: 0.4 });
+    caja("#f2c94c", x + 1.0, 85.97, x + 1.06, 85.99, 0.8, 3.8);
+  }
+  cil("#9aa1a8", 204, 86.0, 4.5, 96, 0.04, "x");
+  // tablero de control con baliza verde dentro de la cortina (pt 16)
+  bloque("#d5d9dd", 160, 85.6, 0.6, 0.45, 0, 1.6); cil("#2ecc71", 160, 85.6, 1.6, 0.25, 0.06);
+  // panel corrugado galvanizado separador (pt 16 atrás)
+  caja("#bfc6cc", 162, 85.0, 170, 85.06, 0, 3.4); for (let x = 162; x < 170; x += 0.25) caja("#a6aeb5", x, 84.98, x + 0.08, 85.0, 0, 3.4);
+  // pizarra blanca con patas y ruedas (pt 16 frente)
+  bloque("#ffffff", 166.5, 83.3, 0.05, 1.5, 0.8, 2.0); bloque("#7d858d", 166.5, 83.3, 0.08, 1.6, 0, 0.8);
+  cartel("FINANCIAMIENTO\n— — —  — —\n— —   — — —", 166.47, 83.3, 1.4, 1.4, 1.1, "-x", "#ffffff", "#1f4fb4");
+  // rodillera / transportador de rodillos rojo-naranja bajo la cortina, con pupitre (pt 16 izquierda)
+  for (let x = 156; x < 176; x += 0.6) cil("#9aa5b1", x, 87.6, 0.55, 1.4, 0.06, "y");
+  caja("#e67e22", 156, 86.85, 176, 86.95, 0, 0.55); caja("#e67e22", 156, 88.25, 176, 88.35, 0, 0.55);
+  bloque("#dcd8cc", 158.5, 86.6, 0.7, 0.5, 0, 1.3); cil("#2ecc71", 158.5, 86.6, 1.3, 0.3, 0.07);
+  for (let k = 0; k < 8; k++) cil(k % 3 ? "#2b2f33" : "#c0392b", 158.25 + (k % 4) * 0.16, 86.34, 1.0 - Math.floor(k / 4) * 0.2, 0.03, 0.04, "y");
+  // cadena de seguridad colgando
+  for (let z = 0.4; z < 1.4; z += 0.08) cil("#d0d4d8", 177, 86.7, z, 0.06, 0.03);
+  // estantería de desechos metálicos con puertas de chapa (pt 16 derecha)
+  cartel("DESECHOS\nMETÁLICOS", 170.5, 82.06, 1.5, 0.5, 0.4, "+y", "#ffffff", "#1f2a3a");
+  bloque("#5d6672", 170.5, 82.9, 2.2, 1.2, 0, 0.9);
+  for (const dx of [-0.7, 0, 0.7]) bloque("#c3c7cb", 170.5 + dx, 82.9, 0.3, 0.05, 0.9, 1.9);
+  // escalera verde a la cota 5 (pt 18) con baranda verde
+  escalera(194, 82.7, +1, 5.4, "#2e8b57");
+  // racks de largueros negros (pt 18 frente, lado pared B)
+  for (let x = 196; x < 208; x += 1.0) { bloque("#2b2f33", x, 82.9, 0.08, 1.0, 0, 1.8); for (const z of [0.4, 0.9, 1.4]) bloque("#2b2f33", x, 82.9, 0.9, 1.0, z, z + 0.06); }
+  // carrocería tapada con funda blanca sobre skid (pt 18)
+  skid(212, 83.4, 0, true); bloque("#f1f3f5", 212, 83.4, 4.4, 1.8, 0.4, 1.9);
+  // portón verde y matafuego (pt 18 izquierda / derecha)
+  caja("#1e7a4f", 186, 82.03, 189.5, 82.09, 0, 3.0); caja("#ffffff", 186.4, 82.1, 187.4, 82.11, 1.5, 2.1);
+  cartel("MATAFUEGO ↓", 203.6, 82.08, 2.6, 0.3, 0.6, "+y", "#ffffff", "#c0392b");
+  cil("#d0312d", 203.6, 82.2, 0.8, 0.55, 0.09);
+
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
     const g = new THREE.BufferGeometry();
