@@ -84,22 +84,46 @@ window.DetalleCalles = function (api) {
 
   // Carrocerías (cataforesis: gris dorado, como en las fotos)
   const ECOAT = ["#b8ad8f", "#a9a28c", "#c2b897"];
+  // Carrocería en blanco/cataforesis vista por perfil (x = largo). Perfil por tramos: [desde, hasta, z0, z1]
+  function perfil(cx, cy, z, largoX, tramos, ancho, color) {
+    for (const [a, b, z0, z1, ang] of tramos) {
+      const w = (ang || 1) * ancho;
+      if (largoX) bloque(color, cx + (a + b) / 2, cy, b - a, w, z + z0, z + z1);
+      else bloque(color, cx, cy + (a + b) / 2, w, b - a, z + z0, z + z1);
+    }
+  }
+  function ruedasHueco(cx, cy, z, largoX, ejes, ancho) {
+    for (const e of ejes) for (const s of [-1, 1]) {
+      const [x, y] = largoX ? [cx + e, cy + s * (ancho / 2 - 0.02)] : [cx + s * (ancho / 2 - 0.02), cy + e];
+      cil("#1d2228", x, y, z + 0.32, 0.12, 0.33, largoX ? "y" : "x");
+    }
+  }
   function sedan(cx, cy, z, largoX) {
-    const c = elegir(ECOAT), [lx, ly] = largoX ? [4.4, 1.75] : [1.75, 4.4];
-    bloque(c, cx, cy, lx, ly, z + 0.25, z + 0.95);
-    bloque(c, cx + (largoX ? -0.2 : 0), cy + (largoX ? 0 : -0.2), largoX ? 2.2 : 1.6, largoX ? 1.6 : 2.2, z + 0.95, z + 1.45);
-    bloque("#3b4656", cx + (largoX ? -0.2 : 0), cy, largoX ? 2.0 : 1.62, largoX ? 1.62 : 2.0, z + 1.0, z + 1.38, { clave: "vidrio" });
+    const c = elegir(ECOAT), A = 1.74;
+    // Cronos: capó bajo, cabina, baúl; 4,36 m
+    perfil(cx, cy, z, largoX, [
+      [-2.18, -1.30, 0.30, 0.82, 0.96], [-1.30, -0.75, 0.30, 0.92], [-0.75, 1.05, 0.30, 0.95],
+      [1.05, 1.62, 0.30, 0.98], [1.62, 2.18, 0.34, 0.98, 0.96],
+      [-0.85, -0.45, 0.95, 1.22, 0.92], [-0.45, 0.85, 0.95, 1.46, 0.9], [0.85, 1.25, 0.98, 1.3, 0.9],
+    ], A, c);
+    perfil(cx, cy, z, largoX, [[-0.6, 0.78, 1.0, 1.4, 0.91]], A, "#3b4656");   // vanos de ventanilla (hueco oscuro)
+    ruedasHueco(cx, cy, z, largoX, [-1.33, 1.28], A);
   }
   function pickup(cx, cy, z, largoX, soloCaja) {
-    const c = elegir(ECOAT);
-    if (!soloCaja) {   // cabina (2 skids en Titano/Dakota: cabina y caja separadas)
-      bloque(c, cx, cy, largoX ? 2.8 : 1.9, largoX ? 1.9 : 2.8, z + 0.35, z + 1.25);
-      bloque(c, cx, cy, largoX ? 1.9 : 1.8, largoX ? 1.8 : 1.9, z + 1.25, z + 1.95);
-    } else {           // caja de carga (abierta)
-      const [lx, ly] = largoX ? [2.2, 1.9] : [1.9, 2.2];
-      bloque(c, cx, cy, lx, ly, z + 0.35, z + 0.5);
-      for (const [dx, dy, ax, ay] of [[0, ly / 2 - 0.04, lx, 0.08], [0, -ly / 2 + 0.04, lx, 0.08], [lx / 2 - 0.04, 0, 0.08, ly], [-lx / 2 + 0.04, 0, 0.08, ly]])
-        bloque(c, cx + dx, cy + dy, ax, ay, z + 0.5, z + 1.05);
+    const c = elegir(ECOAT), A = 1.86;
+    if (!soloCaja) {   // cabina doble de Titano/Dakota (skid propio)
+      perfil(cx, cy, z, largoX, [
+        [-1.75, -1.0, 0.45, 1.05, 0.96], [-1.0, 1.35, 0.45, 1.12],
+        [-0.95, -0.5, 1.12, 1.45, 0.92], [-0.5, 1.35, 1.12, 1.88, 0.9],
+      ], A, c);
+      perfil(cx, cy, z, largoX, [[-0.35, 1.2, 1.2, 1.78, 0.91]], A, "#3b4656");
+      ruedasHueco(cx, cy, z, largoX, [-1.25], A);
+    } else {           // caja de carga abierta (skid propio)
+      const L = 1.6;
+      perfil(cx, cy, z, largoX, [[-L, L, 0.45, 0.6]], A, c);
+      for (const s of [-1, 1]) perfil(cx, cy + (largoX ? s * (A / 2 - 0.05) : 0), z, largoX, [[-L, L, 0.6, 1.12]], 0.1, c);
+      perfil(cx, cy, z, largoX, [[-L, -L + 0.08, 0.6, 1.12], [L - 0.08, L, 0.6, 1.12]], A, c);
+      ruedasHueco(cx, cy, z, largoX, [0.45], A);
     }
   }
   function skid(cx, cy, z, largoX) {
@@ -399,7 +423,7 @@ window.DetalleCalles = function (api) {
     caja("#f2c94c", (a + b) / 2 - 0.15, 79.05, (a + b) / 2 + 0.15, 79.1, 0.9, 3.0);
     for (let z = 1.0, k = 0; z < 3.0; z += 0.25, k++) caja(k % 2 ? "#1f2328" : "#f2c94c", (a + b) / 2 - 0.16, 79.1, (a + b) / 2 + 0.16, 79.12, z, z + 0.25);
   }
-  for (const [a, b] of [[2, 26], [44, 70]]) {
+  for (const [a, b] of [[44, 56]]) {
     caja("#e3a800", a, 78.95, b, 79.0, 0.9, 2.9, { clave: "mallaA", transparente: 0.25 });
     for (let x = a; x <= b; x += 2.4) caja("#e3a800", x, 78.93, x + 0.07, 79.02, 0.9, 2.9);
     caja("#e3a800", a, 78.93, b, 79.02, 2.85, 2.92);
@@ -663,6 +687,41 @@ window.DetalleCalles = function (api) {
   caja("#1e7a4f", 186, 82.03, 189.5, 82.09, 0, 3.0); caja("#ffffff", 186.4, 82.1, 187.4, 82.11, 1.5, 2.1);
   cartel("MATAFUEGO ↓", 203.6, 82.08, 2.6, 0.3, 0.6, "+y", "#ffffff", "#c0392b");
   cil("#d0312d", 203.6, 82.2, 0.8, 0.55, 0.09);
+
+
+  // ============================================================= 13) CALLE T – puntos 21 y 24 (fotos en alta)
+  // pt 21 atrás: extremo norte con ventanales altos, puerta amarilla, espejo convexo y cartel PARE/DETENGA
+  caja("#dfe8ef", -0.6, 79.0, -0.55, 81.5, 3.2, 6.5, { clave: "vidrio2", transparente: 0.35 });
+  for (const y of [79.0, 79.8, 80.6, 81.4]) caja("#5b6570", -0.62, y, -0.54, y + 0.06, 3.2, 6.5);
+  for (const z of [3.2, 4.8, 6.4]) caja("#5b6570", -0.62, 79.0, -0.54, 81.5, z, z + 0.06);
+  caja("#e9b10a", 1.0, 81.55, 2.2, 81.62, 0, 2.3); caja("#2b2f33", 1.25, 81.54, 1.95, 81.55, 1.3, 1.9);
+  cil("#c9d6e3", 0.5, 79.6, 2.6, 0.05, 0.3, "x");
+  for (let k = 0; k < 10; k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", 0.2 + k * 0.3, 79.3, 0.5 + k * 0.3, 79.8, 0.065);
+  cartel("PARE\nDETENGA\nSU PASO EN UN\nLUGAR SEGURO", 3.0, 79.15, 1.0, 0.6, 0.9, "+x", "#ffffff", "#c0392b", true);
+  // pt 21 derecha: jaula de malla naranja con tambores amarillos de residuos y pallets
+  for (const [a, b] of [[3, 14], [16, 26]]) {
+    caja("#e3a800", a, 78.95, b, 79.0, 0.0, 2.4, { clave: "mallaN2", transparente: 0.3 });
+    for (let x = a; x <= b; x += 1.6) caja("#d98c0a", x, 78.93, x + 0.07, 79.02, 0, 2.4);
+    caja("#d98c0a", a, 78.93, b, 79.02, 2.35, 2.42);
+  }
+  for (const x of [5, 6.4, 8, 18, 19.6]) { cil("#f2c94c", x, 78.0, 0, 0.95, 0.32); cil("#2b2f33", x, 78.0, 0.95, 0.03, 0.33); }
+  for (const x of [11, 22]) { bloque("#b08a5a", x, 78.0, 1.2, 1.0, 0, 0.14); }
+  // pt 21 frente: contenedor azul de residuos "COLA..." junto a la reja
+  bloque("#2a72c4", 28, 78.6, 1.8, 1.0, 0, 1.2); cartel("COLAUTO", 28, 79.11, 1.2, 0.8, 0.2, "+y", "#2a72c4", "#ffffff");
+  // pt 21: conducto plateado de extracción que baja en zigzag desde el techo (cada columna)
+  for (const c of COL_B.filter(c => c[2] > 0.6 && c[0] < 60)) {
+    cil("#cfd5db", c[0] + 1.5, 81.0, 3.4, 3.0, 0.24); cil("#cfd5db", c[0] + 1.5, 80.75, 3.4, 0.5, 0.24, "y");
+  }
+  // pt 24: pasarela elevada larga con baranda amarilla y escalera sobre la línea (Cronos)
+  caja("#e9edf1", 60, 77.4, 100, 79.1, 2.2, 2.32);
+  for (let x = 60; x <= 100; x += 3) { caja("#23395d", x, 78.98, x + 0.1, 79.08, 0, 2.2); caja("#f2c94c", x, 79.04, x + 0.05, 79.09, 2.32, 3.35); }
+  caja("#f2c94c", 60, 79.04, 100, 79.09, 3.3, 3.36); caja("#f2c94c", 60, 79.04, 100, 79.09, 2.8, 2.84);
+  escalera(56.5, 78.4, -1, 2.2, "#f2c94c");
+  // pt 24 derecha: reja amarilla alta de la celda con carrocerías Cronos oscuras dentro
+  caja("#e3a800", 100, 78.95, 140, 79.0, 0.9, 3.6, { clave: "mallaA", transparente: 0.25 });
+  for (let x = 100; x <= 140; x += 2.4) caja("#e3a800", x, 78.93, x + 0.08, 79.03, 0.9, 3.6);
+  // pt 24 atrás: tablero con cartel de riesgo eléctrico junto a la reja
+  bloque("#d5d9dd", 98, 79.3, 0.6, 0.35, 0, 1.5); cartel("⚡ RIESGO\nELÉCTRICO", 98, 79.12, 1.1, 0.4, 0.3, "-y", "#f2c94c", "#111111");
 
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
