@@ -1203,6 +1203,7 @@ window.DetalleCalles = function (api) {
   for (let k = 0; k < 4; k++) cil("#2b4f8f", 232.3, 44.2 + k * 0.62, 0, 0.9, 0.29);
   cartel("MINI CENTRAL\nDE PINTURA", 229.3, 43.25, 2.6, 2.0, 0.6, "-y", "#ffffff", "#c0392b");
   // ELEVADOR A LÍNEA FONDO (plano: mesa giratoria Ø4,6 en x 243,2 · y 57,7 + elevador x 245–249,6): sube a cota 9
+  rodillosRojos(59.9, 67.0, 243.2, 0.45, 1.4, false);   // TRP-07 (plano x 243,2)
   cil("#c8462f", 243.2, 57.7, 0, 0.35, 2.3); for (let y = 56.2; y < 59.3; y += 0.4) cil("#e0573c", 243.2, y, 0.42, 1.0, 0.06, "x");
   rodillosRojos(243.2 - 0.0, 243.2 + 0.0, 57.7, 0.45);
   for (const [x, y] of [[244.9, 56.6], [249.9, 56.6], [244.9, 58.8], [249.9, 58.8]]) caja("#aeb6be", x - 0.15, y - 0.15, x + 0.15, y + 0.15, 0, 9.4);
@@ -1538,16 +1539,23 @@ window.DetalleCalles = function (api) {
     flujo.add(g); return g;
   }
   // recorrido = polilínea en metros del plano; z = altura del transportador
+  // recorrido = polilínea en metros del plano [x, y, z?]; z por punto (si falta, la del recorrido). Admite tramos verticales (elevadores)
   function recorrido(pts, z) {
-    const seg = []; let L = 0;
-    for (let i = 0; i < pts.length - 1; i++) { const [a, b] = [pts[i], pts[i + 1]]; const l = Math.hypot(b[0] - a[0], b[1] - a[1]); seg.push({ a, b, l, L0: L }); L += l; }
-    return { seg, L, z, punto(s) { s = ((s % L) + L) % L; const g = seg.find(q => s <= q.L0 + q.l) || seg[seg.length - 1]; const t = (s - g.L0) / g.l; return [g.a[0] + (g.b[0] - g.a[0]) * t, g.a[1] + (g.b[1] - g.a[1]) * t, Math.atan2(g.b[1] - g.a[1], g.b[0] - g.a[0])]; } };
+    const P = pts.map(p => [p[0], p[1], p.length > 2 ? p[2] : z]);
+    const seg = []; let L = 0, angPrev = 0;
+    for (let i = 0; i < P.length - 1; i++) {
+      const [a, b] = [P[i], P[i + 1]]; const lp = Math.hypot(b[0] - a[0], b[1] - a[1]); const l = Math.hypot(lp, b[2] - a[2]);
+      const ang = lp > 1e-6 ? Math.atan2(b[1] - a[1], b[0] - a[0]) : angPrev; angPrev = ang;
+      seg.push({ a, b, l, L0: L, ang }); L += l;
+    }
+    return { seg, L, z, punto(s) { s = ((s % L) + L) % L; const g = seg.find(q => s <= q.L0 + q.l) || seg[seg.length - 1]; const t = (s - g.L0) / g.l; return [g.a[0] + (g.b[0] - g.a[0]) * t, g.a[1] + (g.b[1] - g.a[1]) * t, g.ang, g.a[2] + (g.b[2] - g.a[2]) * t]; } };
   }
   const LINEAS = [
-    // TRP-03: cabina de sellado (y 76, hacia −x) desde la mesa pantógrafo de ingreso
-    { r: recorrido([[254, 76.45], [4, 76.45]], 0.72), n: 36, v: 0.8, abierta: true, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
-    // TRP-05 (cabina PVC) → TRP-06 hasta x 248 (plano, y 67,7, sentido +x)
-    { r: recorrido([[20, 67.7], [248, 67.7]], 0.48), n: 26, v: 0.9, abierta: true, tipos: ["sedan", "sedan", "cabina", "caja"], colores: ECOAT },
+    // SELLADO (Julian 10/10): TRP-03 por la cabina de sellado hacia −x → giro en U por la transferencia TRP-04 (x 80,5) →
+    // vuelve por TRP-06 hacia +x → TRP-07 baja a la mesa giratoria (x 243,2) → ELEVADOR A LÍNEA FONDO → sube a cota 9
+    { r: recorrido([[254, 76.45, 0.72], [80.5, 76.45, 0.72], [80.5, 67.7, 0.48], [243.2, 67.7, 0.48], [243.2, 57.7, 0.48], [247.4, 57.7, 0.8], [247.4, 57.7, 9.4]], 0.48), n: 64, v: 0.9, abierta: true, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
+    // TRP-05: lazo de la cabina PVC y el master de sellado (plano: y 67,7 hacia +x, master, vuelve por y 76 y gira en x 18)
+    { r: recorrido([[19.7, 67.7], [78, 67.7], [101.3, 67.7], [102.8, 66.2], [102.8, 57], [104.3, 55.5], [109.3, 55.5], [110.8, 57], [110.8, 74.5], [109.3, 76.45], [19.7, 76.45], [18.2, 74.5], [18.2, 69.2], [19.7, 67.7]], 0.48), n: 10, v: 0.5, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
     // CALESITA: lazo TRP-13 → 14 → 16 → 15 (y 30,9 hacia −x; y 22,9 hacia +x)
     { r: recorrido([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], 0.48), n: 22, v: 0.7, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
     // TRP-22 (macro → PINTO) y transferencia al buffer final, carril central y 8,5
@@ -1575,8 +1583,8 @@ window.DetalleCalles = function (api) {
   const zona = (x, y) => x > 142.5 && x < 147.5 && Math.abs(y - 67.7) < 1;   // el cruce peatonal: los skids pasan igual (es un paso a nivel)
   void zona;
   function ubicar(m) {
-    const [x, y, ang] = m.ln.r.punto(m.s);
-    m.g.position.copy(W(x, y, m.ln.r.z));
+    const [x, y, ang, z] = m.ln.r.punto(m.s);
+    m.g.position.copy(W(x, y, z));
     m.g.rotation.y = ang;
   }
   moviles.forEach(ubicar);
