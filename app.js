@@ -622,15 +622,15 @@
   }));
   // ---------------------------------------------------------------- pisos: ver una cota sola y separar las cotas
   // "todas" = edificio completo · "0" = solo cota 0 · "5" = +3,2 y +5,4 · "9" = cota +9. Al separar, las cotas se despegan.
-  const estado = { piso: "todas", sep: 0, cortar: false };
+  const estado = { piso: "todas", sep: 0, cortar: false, recorrido: false };   // recorrido: en el recorrido guiado se cortan muros en cota 0
   const CAPAS_COTA0 = ["calles", "internos", "interior", "detalle", "procesos", "vida"];
   const marcada = (n) => { const c = document.querySelector(`#capas input[data-capa="${n}"]`); return c ? c.checked : true; };
   const ALTO_PISO = { todas: 0, 0: 0, 5: 5.4, 9: 9 };
   function aplicarVista() {
     const p = estado.piso, sep = estado.sep;
     let hc = null;   // altura de corte de muros y columnas (null = completos)
-    if (p === "9") hc = 12.5; else if (p === "5" || estado.cortar || sep > 0) hc = N.corte_muros;
-    if (torresEscalera) torresEscalera.visible = p === "todas" || p === "0";
+    if (p === "9") hc = 12.5; else if (p === "5" || estado.cortar || sep > 0 || (estado.recorrido && p === "0")) hc = N.corte_muros;
+    if (torresEscalera) torresEscalera.visible = !estado.recorrido && (p === "todas" || p === "0");
     for (const t of Object.keys(tipos)) { muroCompleto[t].visible = hc === null; for (const h of ALTURAS_CORTE) muroCortado[t][h].visible = hc === h; }
     colCompletas.visible = hc === null;
     for (const h of Object.keys(colCortadas)) colCortadas[h].visible = hc === Number(h);

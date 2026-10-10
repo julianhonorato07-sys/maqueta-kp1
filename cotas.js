@@ -172,21 +172,34 @@ window.Cotas = function (api) {
   // banda de piletas (entre calles S y T de cota 0) con el hueco del acopio de skids vacíos (se ve la cota 5,4 abajo)
   const BANDA9 = [[0.41, 81.53], [263.65, 81.53], [263.65, 103.6], [0.41, 103.6]];
   const HUECO_SKIDS = [[52.31, 81.98], [104.86, 81.98], [104.86, 87.48], [52.31, 87.48]];
-  const losa9 = losaPoligono(G[9], LOSA9, 9.0, 0.35, COL.losa);
-  losaPoligono(G[9], BANDA9, 9.0, 0.35, "#c3cbd2", [HUECO_SKIDS]);
+  // huecos en las losas por donde pasan los elevadores (5,6 × 3,6 m, recortados al borde de cada losa)
+  const hueco = (x, y, r) => { const [a, b, c, d] = r; const x0 = Math.max(a + 0.1, x - 2.8), x1 = Math.min(c - 0.1, x + 2.8), y0 = Math.max(b + 0.1, y - 1.8), y1 = Math.min(d - 0.1, y + 1.8); return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]; };
+  const marcoHueco = (Lt, h, z) => { baranda(Lt, [h[0], h[1]], z, 1.1); baranda(Lt, [h[2], h[3]], z, 1.1); };   // los lados de entrada quedan libres
+  const H9 = [hueco(247.4, 57.7, [0.41, 0.41, 263.65, 81.53]), hueco(128.3, 15.5, [0.41, 0.41, 263.65, 81.53])];
+  const HB9 = [hueco(257.5, 90.7, [0.41, 81.53, 263.65, 103.6]), hueco(13.8, 84.75, [0.41, 81.53, 263.65, 103.6])];
+  const losa9 = losaPoligono(G[9], LOSA9, 9.0, 0.35, COL.losa, H9);
+  losaPoligono(G[9], BANDA9, 9.0, 0.35, "#c3cbd2", [HUECO_SKIDS, ...HB9]);
   // baranda del hueco del acopio de skids
   baranda(L9, [[52.31, 81.98], [104.86, 81.98], [104.86, 87.48], [52.31, 87.48], [52.31, 81.98]], 9.0);
 
   // Cota +5,40: banda de transportadores de skids bajo las piletas (plano N5400) y acumulo de 2 pisos
   const BANDA5 = [[13.0, 82.0], [113.1, 82.0], [113.1, 79.0], [264.0, 71.5], [264.0, 103.6], [104.0, 103.6], [104.0, 87.6], [13.0, 87.6]];
-  losaPoligono(G[5.4], [[13.0, 82.0], [118.8, 82.0], [118.8, 87.6], [13.0, 87.6]], 5.4, 0.25, COL.rejilla);
-  losaPoligono(G[5.4], [[104.0, 78.0], [264.0, 78.0], [264.0, 103.6], [104.0, 103.6]], 5.4, 0.25, COL.rejilla);
-  losaPoligono(G[5.4], [[238.5, 71.5], [264.0, 71.5], [264.0, 78.0], [238.5, 78.0]], 5.4, 0.25, COL.rejilla);
+  const R5a = [13.0, 82.0, 118.8, 87.6], R5b = [104.0, 78.0, 264.0, 103.6], R5c = [238.5, 71.5, 264.0, 78.0];
+  const rp = ([a, b, c, d]) => [[a, b], [c, b], [c, d], [a, d]];
+  const H5a = [hueco(13.8, 84.75, R5a)], H5b = [hueco(122.1, 84.75, R5b), hueco(262.05, 82.3, R5b)], H5c = [hueco(257.9, 76.45, R5c)];
+  losaPoligono(G[5.4], rp(R5a), 5.4, 0.25, COL.rejilla, H5a);
+  losaPoligono(G[5.4], rp(R5b), 5.4, 0.25, COL.rejilla, H5b);
+  losaPoligono(G[5.4], rp(R5c), 5.4, 0.25, COL.rejilla, H5c);
   void BANDA5;
   // Level +3,20: pasarela del acumulo inferior de skids ricos, retorno de skids pobres por la pared y nivel 3200 del Cronos
+  const R3b = [260.6, 4.0, 263.5, 103.0], R3c = [186.6, 4.4, 258.6, 13.2];
+  const H3b = [hueco(262.05, 4.6, R3b)], H3c = [hueco(188.6, 8.9, R3c)];
   losaPoligono(G[3.2], [[13.0, 83.2], [118.8, 83.2], [118.8, 86.3], [13.0, 86.3]], 3.2, 0.2, COL.rejilla);
-  losaPoligono(G[3.2], [[260.6, 4.0], [263.5, 4.0], [263.5, 103.0], [260.6, 103.0]], 3.2, 0.2, COL.rejilla);
-  losaPoligono(G[3.2], [[186.6, 4.4], [258.6, 4.4], [258.6, 13.2], [186.6, 13.2]], 3.2, 0.2, COL.rejilla);
+  losaPoligono(G[3.2], rp(R3b), 3.2, 0.2, COL.rejilla, H3b);
+  losaPoligono(G[3.2], rp(R3c), 3.2, 0.2, COL.rejilla, H3c);
+  for (const h of H9.concat(HB9)) marcoHueco(L9, h, 9.0);
+  for (const h of H5a.concat(H5b, H5c)) marcoHueco(L5, h, 5.4);
+  for (const h of H3c) marcoHueco(L3, h, 3.2);
 
   /** baranda amarilla (pasamanos + intermedio + zócalo + parantes) sobre una polilínea a la altura z */
   function baranda(Lt, pts, z, h) {
@@ -277,8 +290,14 @@ window.Cotas = function (api) {
       giratorias.push({ g, x, y, n });
     }
   }
-  transportadores(L9, D.N9000, 9);
+  // en la banda de piletas no van rodillos a nivel del piso: la carrocería cuelga del transportador pendular (riel aéreo)
+  const enPiletas = (x1, y1, x2, y2) => Math.min(y1, y2) > 85.5 && Math.max(y1, y2) < 99.5 && Math.min(x1, x2) > 12 && Math.max(x1, x2) < 254;
+  transportadores(L9, D.N9000, 9, (x1, y1, x2, y2) => !enPiletas(x1, y1, x2, y2));
   mesasGiratorias(G[9], L9, D.N9000, 9);
+  for (const [x0, x1, y] of [[3.0, 204.2, 96.99], [3.0, 133.6, 90.73]]) {
+    L9.barra("#3b434c", x0, y, x1, y, 0.28, 9 + 4.0 + 0.1, 9 + 4.0 + 0.4);
+    for (let x = x0 + 2; x < x1; x += 6) L9.barra("#3b434c", x, y, x, y + 0.01, 0.1, 9 + 4.4, 9 + 4.6);
+  }
   // N5400: banda de skids a +5,40; acumulo inferior (y 84,75) y retorno por la pared este a +3,20 (tableros: CPU5 GR4-9 y
   // CPU4 GR8-13 en cota 3,2); los 3 carriles sobre el buffer = nivel 3200 del Cronos. Lo demás de ese plano es de cota 0.
   const en32 = (x1, y1, x2, y2) => (Math.abs(y1 - 84.75) < 0.2 && Math.abs(y2 - 84.75) < 0.2) || (Math.abs(x1 - 262.05) < 0.2 && Math.abs(x2 - 262.05) < 0.2) || (Math.max(y1, y2) < 14 && Math.min(x1, x2) > 186);
@@ -432,7 +451,7 @@ window.Cotas = function (api) {
       L9.barra("#dfe4e8", t0, y, t1, y, 0.1, z + 2.6, z + H);
       for (let x = t0; x <= t1; x += 3) L9.bloque("#aab3bc", x, y, 0.12, 0.12, z, z + H);
     }
-    L9.caja("#d3d9df", t0, ya, t1, yb, z + H, z + H + 0.15);
+    L9.caja("#d3d9df", t0, ya, t1, yb, z + H, z + H + 0.15, { tr: 0.28 });
     for (let x = t0 + 6; x < t1; x += 15) { L9.caja("#b9c2ca", x, ya + 1.5, x + 2, yb - 1.5, z + H + 0.15, z + H + 1.2); L9.cil("#b9c2ca", x + 1, (ya + yb) / 2, z + H + 1.2, 17.0 - z - H - 1.2, 0.5); }
     // estructura azul y carro del transportador pendular (CPU2A "péndulo bonder") por arriba
     for (let x = t0; x <= t1; x += 6) L9.caja(COL.acero, x - 0.15, ya - 0.2, x + 0.15, yb + 0.2, z + H - 0.6, z + H - 0.3);
@@ -444,13 +463,13 @@ window.Cotas = function (api) {
     L9.caja("#3e4c5e", c0 + 0.3, ca + 0.3, c1 - 0.3, cb - 0.3, z + 1.4, z + 1.42, { tr: 0.92 });
     for (let x = c0 + 1; x < c1 - 0.5; x += 1.2) for (const y of [ca + 0.45, cb - 0.45]) L9.bloque("#c9d1da", x, y, 0.25, 0.08, z + 0.6, z + 1.6);   // ánodos
     for (const y of [ca, cb]) { L9.barra("#dfe4e8", c0, y, c1, y, 0.1, z + 1.4, z + 4.6); }
-    L9.caja("#d3d9df", c0, ca, c1, cb, z + 4.6, z + 4.75);
+    L9.caja("#d3d9df", c0, ca, c1, cb, z + 4.6, z + 4.75, { tr: 0.28 });
     cartel(G[9], "CATAFORESIS · CUBA ED", (c0 + c1) / 2, ca - 0.12, z + 3.4, 6, 0.7, "-y", "#ffffff", ET.cata);
     nombres9.push({ nom: "CATAFORESIS (cuba ED)", r: [c0, ca, c1, cb], etapa: "cata" });
     // LAVADOS después de la cataforesis (LAVAGGI, x 51,6–111,7): túnel de enjuagues
     for (let k = 0; k < 5; k++) { const a = 51.6 + k * 12 + 0.4, b = a + 11.2; L9.caja("#aeb7c0", a, 88.9, b, 92.5, z, z + 1.0); L9.caja("#b8cbd6", a + 0.2, 89.1, b - 0.2, 92.3, z + 1.0, z + 1.02, { tr: 0.85 }); }
     for (const y of [88.7, 92.7]) { L9.barra("#dfe4e8", 51.6, y, 111.7, y, 0.1, z, z + 1.2); L9.barra(COL.vidrio, 51.6, y, 111.7, y, 0.05, z + 1.2, z + 2.4, { tr: 0.32 }); L9.barra("#dfe4e8", 51.6, y, 111.7, y, 0.1, z + 2.4, z + 4.2); }
-    L9.caja("#d3d9df", 51.6, 88.7, 111.7, 92.7, z + 4.2, z + 4.35);
+    L9.caja("#d3d9df", 51.6, 88.7, 111.7, 92.7, z + 4.2, z + 4.35, { tr: 0.28 });
     cartel(G[9], "LAVADOS POST-CATAFORESIS", 81.6, 88.58, z + 3.2, 6.5, 0.6, "-y", "#ffffff", ET.cata);
     nombres9.push({ nom: "LAVADOS (post-cataforesis)", r: [51.6, 88.7, 111.7, 92.7], etapa: "cata" });
     // TÚNEL DE CONEXIÓN (x 116,6–133,6) hacia el horno
@@ -614,6 +633,13 @@ window.Cotas = function (api) {
     for (let k = -2; k <= 2; k++) Lt.rot("#a8820f", cx + Math.cos(rad(ang)) * k * 1.1 - Math.sin(rad(ang)) * 0.45, cy + Math.sin(rad(ang)) * k * 1.1 + Math.cos(rad(ang)) * 0.45, 0.12, 1.0, ang, z + 0.16, z + 0.32);
   }
   for (let x = 20; x < 110; x += 6.2) { skidQuieto(L3, x, 84.3, 3.2 + 0.47, 0); if (azar() < 0.8) skidQuieto(L5, x, 84.3, 5.4 + 0.47, 0); }
+  // "clear zone": skids pobres vacíos esperando sobre las líneas de la banda de +5,4 (y 93,0 y 101,5) – cantidad ilustrativa
+  function skidPobre(Lt, cx, cy, z) {
+    for (const s of [-0.45, 0.45]) Lt.caja("#5d6672", cx - 2.5, cy + s - 0.06, cx + 2.5, cy + s + 0.06, z, z + 0.16);
+    for (let k = -2; k <= 2; k++) Lt.caja("#4d5560", cx + k * 1.1 - 0.05, cy - 0.5, cx + k * 1.1 + 0.05, cy + 0.5, z + 0.16, z + 0.3);
+  }
+  for (const y of [93.01, 101.52]) for (let x = 132; x < 250; x += 5.6) if (azar() < 0.75) skidPobre(L5, x, y, 5.4 + 0.47);
+  cartel(G[5.4], "CLEAR ZONE · SKIDS POBRES\n(a confirmar)", 190, 103.4, 5.4 + 2.2, 5, 0.9, "-y", "#5d6672", "#ffffff", true);
 
   // ================================================================================================
   // 5) ELEVADORES QUE UNEN COTAS (torres que se estiran con "Separar pisos")
@@ -782,6 +808,40 @@ window.Cotas = function (api) {
   }
   for (const [x, y] of D.N9000.escaleras) cartel(G[9], "SALIDA DE\nEMERGENCIA", x, y - 0.3, Z9 + 2.6, 1.2, 0.5, "-y", "#2e9d4f", "#ffffff");
   for (const [x, y] of [[36, 87.9], [60, 88.5]]) cartel(G[9], "⚠ PELIGRO\nTENSIÓN EN LA CUBA", x, y - 0.1, Z9 + 2.0, 1.4, 0.7, "-y", "#f2c94c", "#111111");
+  // carteles de zona colgados del techo (UTE de cada línea según el árbol de máquinas de Mantenimiento)
+  for (const [txt, x, y, col] of [["UTE 0 · PRETRATAMIENTO", 112, 93.9, ET.pretrat], ["UTE 0 · CATAFORESIS", 60, 87.6, ET.cata], ["UTE 0 · HORNO DE CATAFORESIS", 185, 87.6, ET.horno],
+    ["UTE 2 · REVISIÓN DE CATAFORESIS", 190, 64.2, ET.revision], ["UTE 2 · BAJO CARROCERÍA UBS & UBC", 165, 53.3, ET.fondo], ["UTE 2 · HORNO DE FONDO", 80, 53.2, ET.horno],
+    ["UTE 3 · LÍNEA DE ESMALTE", 200, 50.4, ET.esmalte], ["UTE 3 · HORNOS DE ESMALTE", 60, 50.8, ET.horno], ["UTE 4 · REVISIÓN FINAL", 63, 26.3, ET.final]]) {
+    cartel(G[9], txt, x, y, 15.6, 7.5, 1.0, "-y", col, "#ffffff", true);
+    for (const s of [-3.2, 3.2]) L9.caja("#7d858d", x + s - 0.015, y - 0.015, x + s + 0.015, y + 0.015, 16.1, 17.4);
+  }
+  // semáforos de estado (verde/amarillo/rojo) en la entrada de cada cabina y horno
+  for (const { r } of nombres9) {
+    const [x0, y0, x1] = r; const x = x1 + 0.35, y = y0 - 0.35;
+    L9.bloque("#3b434c", x, y, 0.08, 0.08, Z9, Z9 + 2.6);
+    L9.cil("#2ecc71", x, y, Z9 + 2.6, 0.16, 0.09); L9.cil("#6b5a14", x, y, Z9 + 2.76, 0.16, 0.09); L9.cil("#5a1a14", x, y, Z9 + 2.92, 0.16, 0.09);
+    L9.bloque("#2ecc71", x, y, 0.2, 0.2, Z9 + 2.62, Z9 + 2.74, { luz: 1 });
+  }
+  // chapa trapezoidal galvanizada en la cara interior de las fachadas, de +9 hasta el techo (textura de nervios)
+  {
+    const cv = document.createElement("canvas"); cv.width = 64; cv.height = 8;
+    const g = cv.getContext("2d");
+    for (let i = 0; i < 64; i++) { const k = (i % 16); g.fillStyle = k < 6 ? "#c9d0d6" : k < 8 ? "#a9b2ba" : k < 14 ? "#dde2e6" : "#b4bcc3"; g.fillRect(i, 0, 1, 8); }
+    const tex = new THREE.CanvasTexture(cv); tex.wrapS = THREE.RepeatWrapping;
+    const cx = (W(1, 0, 0).x - W(0, 0, 0).x);   void cx;
+    for (const s of api.N.muros.envolvente) {
+      const [x1, y1, x2, y2] = s, h = s.length > 5 ? s[5] : s[4], z0 = s.length > 5 ? s[4] : 0;
+      const L = Math.hypot(x2 - x1, y2 - y1); if (L < 4 || h < 12 || z0 > 9) continue;
+      const a = Math.atan2(y2 - y1, x2 - x1), top = Math.min(h, 12.5), alt = top - 9.0;   // hasta la altura del corte de muros
+      const t = tex.clone(); t.needsUpdate = true; t.repeat.set(L / 1.0, 1);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(L, alt), new THREE.MeshLambertMaterial({ map: t, side: THREE.DoubleSide }));
+      // del lado de adentro de la nave (0,6 m hacia el centro)
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, nx = -Math.sin(a), ny = Math.cos(a);
+      const dentro = ((132 - mx) * nx + (52 - my) * ny) > 0 ? 1 : -1;
+      m.position.copy(W(mx + nx * 0.6 * dentro, my + ny * 0.6 * dentro, 9.0 + alt / 2)); m.rotation.y = a;
+      G[9].add(m);
+    }
+  }
   // cota 5,4: operarios de mantenimiento y escalera desde cota 0 (frente a la celda verde de acceso)
   operario(L5, 254.2, 79.0, 5.4); operario(L5, 60.0, 82.8, 5.4);
   escalera(L5, 116.0, 87.8, 0, 5.4);

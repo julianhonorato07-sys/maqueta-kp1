@@ -29,12 +29,36 @@ window.Recorrido = function (api) {
   const G_CABINA = unir([[-1.75, -1.0, 0.45, 1.05], [-1.0, 1.35, 0.45, 1.12], [-0.5, 1.35, 1.12, 1.88], [-0.95, -0.5, 1.12, 1.45]].map(([a, b, z0, z1]) => geoCaja(b - a, 1.8, z1 - z0, (a + b) / 2, 0, 0.3 + (z0 + z1) / 2)));
   const G_CAJA = unir([geoCaja(3.2, 1.86, 0.15, 0, 0, 0.82), geoCaja(3.2, 0.1, 0.52, 0, 0.88, 1.16), geoCaja(3.2, 0.1, 0.52, 0, -0.88, 1.16), geoCaja(0.08, 1.86, 0.52, 1.56, 0, 1.16), geoCaja(0.08, 1.86, 0.52, -1.56, 0, 1.16)]);
   const G_VIDRIO = unir([geoCaja(1.3, 1.7, 0.4, 0.2, 0, 1.5)]);
+  const G_COLG = unir([geoCaja(0.08, 0.08, 1, -1.5, 0, 0.5), geoCaja(0.08, 0.08, 1, 1.5, 0, 0.5), geoCaja(3.4, 0.3, 0.1, 0, 0, 1.0), geoCaja(0.6, 0.4, 0.25, 0, 0, 1.12)]);
+  const RIEL_PENDULAR = 4.0;   // m sobre el piso de cota 9 (dentro del túnel de piletas)
   const GEO = { sedan: G_SEDAN, cabina: G_CABINA, caja: G_CAJA };
 
   // colores por estado de la carrocería (como en el artefacto) y pintura final
   const EST = { chapa: "#c3cad3", fosfato: "#93a4b6", cata: "#a9a28c", sellado: "#9d977f" };
   const PINTURAS = ["#c21f37", "#eef1f4", "#9aa3ad", "#1f2328", "#2a4d8f", "#b8bec6", "#7a1f2b", "#d9d4c7"];
   const SKID_RICO = "#c79a1a", SKID_POBRE = "#5d6672";
+
+  // ---------------------------------------------------------------- inmersión en las piletas (transportador pendular)
+  // Sobre la banda de piletas la carrocería va colgada a +1,8 m y se sumerge en cada pileta (perfil ilustrativo).
+  const TANQUES = [];
+  { const et = (204.2 - 21.5) / 9; for (let k = 0; k < 9; k++) { const a = 21.5 + k * et + 0.4; TANQUES.push([a, a + et - 0.8, 96.99, 1.8]); } }
+  TANQUES.push([21.8, 51.2, 90.73, 2.0]);
+  for (let k = 0; k < 5; k++) { const a = 51.6 + k * 12 + 0.4; TANQUES.push([a, a + 11.2, 90.73, 1.6]); }
+  const suave = (s) => s * s * (3 - 2 * s);
+  function inmersion(x, y, n) {
+    if (n !== 9) return 0;
+    // rampas de subida/bajada en la entrada (x 204–210) y salida (x 111,7–118) de la banda, y el transferidor oeste (x 3)
+    if (Math.abs(y - 96.99) < 0.3 && x >= 204.2 && x < 210) return 1.3 * (210 - x) / 5.8;
+    if (Math.abs(y - 90.73) < 0.3 && x >= 111.7 && x < 118) return 1.3 * (118 - x) / 6.3;
+    if (Math.abs(x - 3.0) < 0.3 && y > 90.5 && y < 97.2) return 1.3;
+    const enPretrat = Math.abs(y - 96.99) < 0.3 && x > 0 && x < 204.2, enCata = Math.abs(y - 90.73) < 0.3 && x > 0 && x < 111.7;
+    if (!enPretrat && !enCata) return 0;
+    for (const [a, b, ye, prof] of TANQUES) if (Math.abs(y - ye) < 0.3 && x > a && x < b) {
+      const t = (x - a) / (b - a), s = t < 0.22 ? t / 0.22 : t > 0.78 ? (1 - t) / 0.22 : 1;
+      return 1.3 - prof * suave(s);
+    }
+    return 1.3;
+  }
 
   // ---------------------------------------------------------------- rutas: puntos [x, y, h sobre el piso, cota, estado?, marca?]
   // Una ruta mide en metros reales (planta + vertical): la velocidad no cambia al separar los pisos.
@@ -56,6 +80,8 @@ window.Recorrido = function (api) {
       out.x = g.a.x + (g.b.x - g.a.x) * t; out.y = g.a.y + (g.b.y - g.a.y) * t;
       out.z = alto(g.a.n, g.a.h) + (alto(g.b.n, g.b.h) - alto(g.a.n, g.a.h)) * t;
       out.ang = g.ang; out.e = g.a.e; out.vert = g.vert; out.n = t < 0.5 ? g.a.n : g.b.n; out.seg = lo; out.m = g.a.m;
+      out.dip = g.vert ? 0 : inmersion(out.x, out.y, out.n);
+      out.z += out.dip;
       return out;
     }
     return { P, seg, L, punto };
@@ -122,9 +148,11 @@ window.Recorrido = function (api) {
     cabina: new THREE.InstancedMesh(G_CABINA, mBody, Math.max(1, movers.filter(m => m.tipo === "cabina").length)),
     caja: new THREE.InstancedMesh(G_CAJA, mBody, Math.max(1, movers.filter(m => m.tipo === "caja").length)),
     vidrio: new THREE.InstancedMesh(G_VIDRIO, mVid, Math.max(1, movers.filter(m => m.tipo === "sedan").length)),
+    // colgador del transportador pendular (dos barras + carro), solo sobre la banda de piletas
+    colg: new THREE.InstancedMesh(G_COLG, new THREE.MeshLambertMaterial({ color: "#3b434c" }), movers.length),
   };
-  const cont = { skid: 0, sedan: 0, cabina: 0, caja: 0, vidrio: 0 };
-  for (const m of movers) { m.idx.skid = cont.skid++; if (m.tipo) { m.idx.body = cont[m.tipo]++; if (m.tipo === "sedan") m.idx.vidrio = cont.vidrio++; } }
+  const cont = { skid: 0, sedan: 0, cabina: 0, caja: 0, vidrio: 0, colg: 0 };
+  for (const m of movers) { m.idx.skid = cont.skid++; m.idx.colg = cont.colg++; if (m.tipo) { m.idx.body = cont[m.tipo]++; if (m.tipo === "sedan") m.idx.vidrio = cont.vidrio++; } }
   const col = new THREE.Color();
   for (const k in IM) { IM[k].instanceMatrix.setUsage(THREE.DynamicDrawUsage); IM[k].castShadow = !MOVIL; flujo.add(IM[k]); }
   // inicializar colores (si no, three no crea el buffer de color)
@@ -136,7 +164,7 @@ window.Recorrido = function (api) {
   function colorDe(e, pintura) { return e === "pint" ? pintura : EST[e] || EST.chapa; }
   // solo se muestran las carrocerías de las cotas visibles (botones "Pisos")
   const nivelVisible = (n) => { const p = maqueta.estado.piso; return p === "todas" || (p === "0" && n === 0) || (p === "5" && (n === 3.2 || n === 5.4)) || (p === "9" && n === 9); };
-  const cero = new THREE.Vector3(0, 0, 0);
+  const cero = new THREE.Vector3(0, 0, 0), escCol = new THREE.Vector3();
   function actualizarFlujo(dt) {
     for (const m of movers) {
       m.s += m.f.v * dt * 1.0;
@@ -144,7 +172,10 @@ window.Recorrido = function (api) {
       m.f.r.punto(m.s, pt);
       v3.copy(W(pt.x, pt.y, 0)); v3.y = pt.z;
       q.setFromAxisAngle(up, pt.ang);
-      m4.compose(v3, q, nivelVisible(pt.n) ? uno : cero);
+      const ver = nivelVisible(pt.n);
+      if (pt.dip && ver) { const y0 = pt.z + 1.35, L = alto(9, RIEL_PENDULAR) - y0; v3.y = y0; m4.compose(v3, q, escCol.set(1, Math.max(0.05, L), 1)); IM.colg.setMatrixAt(m.idx.colg, m4); v3.y = pt.z; }
+      else { m4.compose(v3, q, cero); IM.colg.setMatrixAt(m.idx.colg, m4); }
+      m4.compose(v3, q, ver ? uno : cero);
       IM.skid.setMatrixAt(m.idx.skid, m4);
       const rico = m.f.r.P[0].m === "rico" ? !(pt.seg >= rutaSwapSeg(m.f)) : false;
       IM.skid.setColorAt(m.idx.skid, col.set(m.f.vacio ? (m.fi === 3 ? SKID_RICO : SKID_POBRE) : rico ? SKID_RICO : SKID_POBRE));
@@ -287,15 +318,22 @@ window.Recorrido = function (api) {
   const mCuerpo = new THREE.MeshLambertMaterial({ color: EST.chapa, emissive: 0x1f6feb, emissiveIntensity: 0.18 });
   const cuerpo = new THREE.Mesh(G_SEDAN, mCuerpo); carro.add(cuerpo);
   const vid = new THREE.Mesh(G_VIDRIO, new THREE.MeshLambertMaterial({ color: "#3b4656" })); carro.add(vid);
+  const colgT = new THREE.Mesh(G_COLG, new THREE.MeshLambertMaterial({ color: "#3b434c" })); colgT.position.y = 1.35; carro.add(colgT);
   const halo = new THREE.Mesh(new THREE.RingGeometry(3.2, 3.7, 40), new THREE.MeshBasicMaterial({ color: 0x1f6feb, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }));
   halo.rotation.x = -Math.PI / 2; halo.position.y = 0.05; carro.add(halo);
   const marca = document.createElement("div"); marca.className = "cota-et"; marca.style.cssText = "background:#1f6feb;color:#fff;font:700 12px Segoe UI,Arial,sans-serif;padding:3px 9px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.35);white-space:nowrap;pointer-events:none";
   const marcaO = new THREE.CSS2DObject(marca); marcaO.position.set(0, 4.6, 0); carro.add(marcaO);
   // mula del recorrido (para los pasos con mula)
   const mulaT = new THREE.Group();
-  { const m1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 1.0), new THREE.MeshLambertMaterial({ color: "#2ea84f" })); m1.position.set(4.6, 0.6, 0); mulaT.add(m1); const m2 = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.12, 2.0), new THREE.MeshLambertMaterial({ color: "#f2c94c" })); m2.position.set(0, 0.5, 0); mulaT.add(m2); }
+  { const m1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 1.0), new THREE.MeshLambertMaterial({ color: "#2ea84f" })); m1.position.set(4.0, 0.6, 0); mulaT.add(m1); const m2 = new THREE.Mesh(new THREE.BoxGeometry(8.4, 0.12, 2.0), new THREE.MeshLambertMaterial({ color: "#f2c94c" })); m2.position.set(-1.3, 0.5, 0); mulaT.add(m2); }
   carro.add(mulaT);
   tour.add(carro); tour.visible = false;
+  // pareja de la cabina (KP1): la caja del mismo color se ancla con ella en la mitad del buffer y la sigue hasta la mula
+  const pareja = new THREE.Group();
+  const pSkid = new THREE.Mesh(G_SKID, new THREE.MeshLambertMaterial({ color: SKID_POBRE })); pareja.add(pSkid);
+  const pCaja = new THREE.Mesh(G_CAJA, new THREE.MeshLambertMaterial({ color: "#eef1f4", emissive: 0x1f6feb, emissiveIntensity: 0.12 })); pareja.add(pCaja);
+  tour.add(pareja); pareja.visible = false;
+  const ptPar = {};
 
   function pasoDe(s) { let i = 0; while (i < PASOS.length - 1 && PASOS[i + 1].s0 <= s + 1e-6) i++; return i; }
   const COTA_TXT = { 0: "COTA 0", 3.2: "LEVEL +3,2", 5.4: "COTA +5,4", 9: "COTA +9" };
@@ -314,6 +352,7 @@ window.Recorrido = function (api) {
     RT.punto(tourEstado.s, tourPt);
     carro.position.copy(W(tourPt.x, tourPt.y, 0)); carro.position.y = tourPt.z;
     carro.rotation.y = tourPt.ang;
+    colgT.visible = !!tourPt.dip; if (tourPt.dip) colgT.scale.y = Math.max(0.05, alto(9, RIEL_PENDULAR) - (tourPt.z + 1.35));
     const i = pasoDe(tourEstado.s), p = PASOS[i];
     const swapI = PASOS.findIndex(x => x.swap);
     const pobre = i > swapI || (i === swapI && tourEstado.s > (p.s0 + p.s1) / 2);
@@ -321,6 +360,19 @@ window.Recorrido = function (api) {
     mCuerpo.color.set(tourPt.e === "pint" ? (tourEstado.modelo === "kp1" ? "#eef1f4" : "#c21f37") : EST[tourPt.e] || EST.chapa);
     mulaT.visible = !!p.mula;
     cuerpo.position.y = p.mula ? 0.25 : 0; cSkid.visible = !p.mula || i < PASOS.length - 1;
+    // pareja KP1: aparece cuando la cabina llega a la mitad del buffer; después va 5,5 m detrás (en la mula, sobre el carro)
+    const iBuf = PASOS.findIndex(x => x.tit.startsWith("Buffer KP1"));
+    const verPar = tourEstado.modelo === "kp1" && iBuf >= 0 && (i > iBuf || (i === iBuf && tourEstado.s > PASOS[iBuf].s1 - 0.6));
+    pareja.visible = verPar;
+    if (verPar) {
+      if (p.mula) { pareja.position.copy(carro.position); pareja.rotation.y = carro.rotation.y; pareja.translateX(-3.4); pareja.position.y = carro.position.y + 0.25; pSkid.visible = false; }
+      else {
+        const sAnc = PASOS[iBuf].s1, sp = i === iBuf ? sAnc : Math.max(sAnc, tourEstado.s - 5.5);
+        RT.punto(sp, ptPar);
+        pareja.position.copy(W(ptPar.x, ptPar.y, 0)); pareja.position.y = ptPar.z; pareja.rotation.y = ptPar.ang; pSkid.visible = true;
+        if (i === iBuf) { pareja.position.copy(W(ptPar.x, ptPar.y - 2.5, 0)); pareja.position.y = ptPar.z; }   // anclada en el carril de al lado
+      }
+    }
     const prog = tourEstado.s / RT.L; $("rc-prog").style.width = (prog * 100).toFixed(1) + "%";
     if (i !== tourEstado.paso) { tourEstado.paso = i; mostrarPaso(i); }
   }
@@ -345,12 +397,13 @@ window.Recorrido = function (api) {
   }
   function abrir() {
     tourEstado.activo = true; tour.visible = true; $("recorrido").hidden = false; document.body.classList.add("con-recorrido");
+    maqueta.estado.recorrido = true; maqueta.aplicarVista();
     if (!PASOS.length) armarTour();
     // vista alta y en diagonal: así los muros de la nave no tapan la carrocería
     camara.position.copy(controles.target).add(new THREE.Vector3(0.55, 1.25, 0.9).normalize().multiplyScalar(400));
     irAPaso(0);
   }
-  function cerrar() { tourEstado.activo = false; tourEstado.play = false; tour.visible = false; $("recorrido").hidden = true; $("rc-play").textContent = "▶ Reproducir"; document.body.classList.remove("con-recorrido"); }
+  function cerrar() { tourEstado.activo = false; tourEstado.play = false; tour.visible = false; $("recorrido").hidden = true; $("rc-play").textContent = "▶ Reproducir"; document.body.classList.remove("con-recorrido"); maqueta.estado.recorrido = false; maqueta.aplicarVista(); }
   $("abrir-recorrido").addEventListener("click", () => (tourEstado.activo ? cerrar() : abrir()));
   $("rc-cerrar").addEventListener("click", cerrar);
   $("rc-ant").addEventListener("click", () => { tourEstado.play = false; $("rc-play").textContent = "▶ Reproducir"; irAPaso(tourEstado.paso - 1); });
@@ -384,7 +437,7 @@ window.Recorrido = function (api) {
   });
 
   return {
-    alCambiarVista() { if (tourEstado.activo) ubicarCarro(); },
+    alCambiarVista() { if (tourEstado.activo && RT) ubicarCarro(); },
     abrir, cerrar, estado: tourEstado, F,
   };
 };
