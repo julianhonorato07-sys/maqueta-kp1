@@ -403,10 +403,6 @@ window.DetalleCalles = function (api) {
   caja("#f2c94c", X0, 79.0, X1, 79.05, 1.9, 1.95); caja("#f2c94c", X0, 79.0, X1, 79.05, 1.4, 1.44);
   // transportador de rodillos al centro de la plataforma + carrocerías sobre skids cada 6,5 m
   caja("#7f8a95", X0, 75.9, X1, 75.98, 0.9, 1.2); caja("#7f8a95", X0, 76.9, X1, 76.98, 0.9, 1.2);
-  for (let x = X0 + 4, i = 0; x < X1 - 3; x += 6.5, i++) {
-    skid(x, 76.45, 1.2, true);
-    if (i % 3 === 2) pickup(x, 76.45, 1.5, true, false); else sedan(x, 76.45, 1.5, true);
-  }
   // pórticos/postes azules de la línea y estructura aérea (perchas, mangueras)
   for (let x = X0; x < X1; x += 6) {
     for (const y of [74.0, 78.8]) caja("#23395d", x - 0.1, y - 0.1, x + 0.1, y + 0.1, 0.9, 5.2);
@@ -1143,7 +1139,6 @@ window.DetalleCalles = function (api) {
   for (const [a, b, y, enX] of [[125.2, 132.6, 11.2, true], [125.2, 132.6, 19.6, true], [11.2, 19.6, 125.2, false], [11.2, 19.6, 132.6, false]]) cercoMalla(a, b, y, enX, "#e3a800", 2.6);
   transferencia(126.4, 130.2, 6.8, 19.4, [12.3, 14.5, 17.4]);
   rodillosRojos(130.2, 137.3, 14.5, 0.45);
-  bloque("#c8462f", 128.3, 15.5, 4.6, 1.6, 0.5, 1.4); pickup(128.3, 15.5, 1.5, true, true, "#1f3f9e");
   cartel("PRECAUCIÓN\nINGRESO A ZONA TÉCNICA\nVERIFICAR AUSENCIA DE\nENERGÍAS PELIGROSAS", 132.65, 16.0, 1.4, 1.0, 0.9, "+x", "#f2c94c", "#111111");
   // PRUEBA DE LUZ (plano x 126,2–132 · y 26,4–30,7): tubos de luz interiores y cartel
   for (let x = 126.8; x < 131.6; x += 0.8) caja("#f7fbff", x, 26.8, x + 0.06, 30.3, 3.0, 3.06, { clave: "luz", emisivo: true });
@@ -1549,14 +1544,16 @@ window.DetalleCalles = function (api) {
     return { seg, L, z, punto(s) { s = ((s % L) + L) % L; const g = seg.find(q => s <= q.L0 + q.l) || seg[seg.length - 1]; const t = (s - g.L0) / g.l; return [g.a[0] + (g.b[0] - g.a[0]) * t, g.a[1] + (g.b[1] - g.a[1]) * t, Math.atan2(g.b[1] - g.a[1], g.b[0] - g.a[0])]; } };
   }
   const LINEAS = [
+    // TRP-03: cabina de sellado (y 76, hacia −x) desde la mesa pantógrafo de ingreso
+    { r: recorrido([[254, 76.45], [4, 76.45]], 0.72), n: 36, v: 0.8, abierta: true, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
     // TRP-05 (cabina PVC) → TRP-06 hasta x 248 (plano, y 67,7, sentido +x)
     { r: recorrido([[20, 67.7], [248, 67.7]], 0.48), n: 26, v: 0.9, abierta: true, tipos: ["sedan", "sedan", "cabina", "caja"], colores: ECOAT },
     // CALESITA: lazo TRP-13 → 14 → 16 → 15 (y 30,9 hacia −x; y 22,9 hacia +x)
     { r: recorrido([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], 0.48), n: 22, v: 0.7, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
     // TRP-22 (macro → PINTO) y transferencia al buffer final, carril central y 8,5
-    { r: recorrido([[121, 8.9], [186.5, 8.9], [188.6, 8.5], [250.7, 8.5]], 0.48), n: 12, v: 0.6, abierta: true, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
-    { r: recorrido([[188.6, 11.4], [250.7, 11.4]], 0.48), n: 9, v: 0.35, abierta: true, tipos: ["sedan"], colores: PINTADO },
-    { r: recorrido([[188.6, 6.0], [250.7, 6.0]], 0.48), n: 9, v: 0.45, abierta: true, tipos: ["cabina", "caja"], colores: PINTADO },
+    { r: recorrido([[121, 8.9], [186.5, 8.9], [188.6, 8.5], [250.7, 8.5], [264.5, 8.9]], 0.48), n: 12, v: 0.6, abierta: true, salida: true, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
+    { r: recorrido([[188.6, 11.4], [250.7, 11.4]], 0.48), n: 9, v: 0.35, abierta: true, salida: true, tipos: ["sedan"], colores: PINTADO },
+    { r: recorrido([[188.6, 6.0], [250.7, 6.0]], 0.48), n: 9, v: 0.45, abierta: true, salida: true, tipos: ["cabina", "caja"], colores: PINTADO },
     // TRP-17 (entrada a macro, y 17,4)
     { r: recorrido([[100.3, 17.4], [125.5, 17.4]], 0.48), n: 4, v: 0.5, abierta: true, tipos: ["sedan"], colores: PINTADO },
     // TRP-11 / 10 / 12 dentro de las máquinas sin nombre (túneles)
@@ -1569,7 +1566,10 @@ window.DetalleCalles = function (api) {
     for (let i = 0; i < ln.n; i++) {
       if (azar() < 0.15 && ln.abierta) continue;   // huecos en la línea
       const tipo = ln.tipos[i % ln.tipos.length];
-      moviles.push({ ln, s: i * paso + entre(-0.3, 0.3), g: carroceriaMovil(tipo, elegir(ln.colores)) });
+      // Titano/Dakota: cabina y caja van en skids separados pero seguidos y del mismo color (flujo cabina–caja)
+      const color = tipo === "caja" && ln.ultimoColor ? ln.ultimoColor : elegir(ln.colores);
+      ln.ultimoColor = tipo === "cabina" ? color : null;
+      moviles.push({ ln, s: i * paso + entre(-0.3, 0.3), g: carroceriaMovil(tipo, color) });
     }
   }
   const zona = (x, y) => x > 142.5 && x < 147.5 && Math.abs(y - 67.7) < 1;   // el cruce peatonal: los skids pasan igual (es un paso a nivel)
@@ -1580,7 +1580,139 @@ window.DetalleCalles = function (api) {
     m.g.rotation.y = ang;
   }
   moviles.forEach(ubicar);
-  if (animar) animar.push((dt) => { if (!grupo.visible) return; for (const m of moviles) { m.s += m.ln.v * dt; ubicar(m); } });
+  if (animar) animar.push((dt) => { if (!grupo.visible) return; for (const m of moviles) { const v0 = Math.floor(m.s / m.ln.r.L); m.s += m.ln.v * dt; if (m.ln.salida && Math.floor(m.s / m.ln.r.L) > v0) { contador++; dibujarAndon(); } ubicar(m); } });
+
+
+  // =============================================================================================
+  // 24) PROCESO DE LA COTA 0 (fuentes: Overview Unidad Pintura 2026 diap. 4; Trazabilidad Caja-Cabina diap. 16 y 24;
+  //     "Zona difusión dibujo"; cronología de puesto CRUZCOTTO DX/SX; calculadora "disposición de skids").
+  //     Secuencia: cabina de sellado (desde cota 5,4/9 y vuelve a cota 9) · bajada desde Finish Line (cota 9) →
+  //     Assembly friso – others / ÓLEO (estación C) → Reparation box (estación R) → Buffer KP1 / Difusión (estación D) → Montaje KP1.
+  //     Ubicación de cada etapa sobre el plano: interpretación de Claude (supuesto) salvo Difusión (plano del PDF).
+  // =============================================================================================
+  // 24a. Carteles de etapa colgados (estilo señalética de planta)
+  function cartelEtapa(txt, x, y, z, ancho, mira, fondo) {
+    cartel(txt, x, y, z, ancho, ancho * 0.28, mira, fondo || "#1d2f6b", "#ffffff", true);
+    const dx = mira === "+x" || mira === "-x" ? 0 : ancho * 0.4, dy = dx ? 0 : ancho * 0.4;
+    for (const s of [-1, 1]) caja("#7d858d", x + s * dx - 0.01, y + s * dy - 0.01, x + s * dx + 0.01, y + s * dy + 0.01, z + ancho * 0.14, 9.0);
+  }
+  cartelEtapa("CABINA DE SELLADO · SIGILLATURA", 180, 76.4, 5.6, 7.0, "+y", "#1d2f6b");
+  cartelEtapa("BAJADA DESDE FINISH LINE (COTA 9)", 128.8, 15.4, 6.2, 5.0, "-y", "#6b2fa0");
+  cartelEtapa("ÓLEO · ASSEMBLY FRISO – OTHERS", 158, 8.9, 5.0, 6.5, "-y", "#1d2f6b");
+  cartelEtapa("REPARATION BOX · BOX DE RETOQUES", 162, 16.0, 4.6, 6.0, "-y", "#c0392b");
+  cartelEtapa("DIFUSIÓN · BUFFER KP1  →  MONTAJE KP1", 219, 8.6, 5.6, 8.0, "-y", "#2e7d32");
+  cartelEtapa("CALESITA · ACUMULO (CAJA, CABINA, CRONOS)", 50, 26.9, 4.8, 7.0, "+y", "#e67e22");
+  cartelEtapa("BOX MANTENIMIENTO", 65.6, 10.0, 3.8, 3.4, "-y", "#455a64");
+
+  // 24b. Estaciones de conteo MIP (cubos amarillos con letra, como en el boceto de Trazabilidad) + lector y PC
+  function estacionMIP(letra, x, y, txt) {
+    bloque("#5d6672", x, y, 0.5, 0.5, 0, 0.1); bloque("#7d858d", x, y, 0.12, 0.12, 0.1, 1.1);
+    bloque("#2b2f33", x, y, 0.55, 0.06, 1.1, 1.5); bloque("#dfe8ef", x, y - 0.035, 0.48, 0.01, 1.14, 1.46, { clave: "luz", emisivo: true });
+    bloque("#f2c94c", x + 0.35, y, 0.12, 0.08, 1.0, 1.2);   // lector de código de barras
+    bloque("#e0a800", x, y, 0.7, 0.7, 2.3, 3.0);
+    for (const m of ["+y", "-y", "+x", "-x"]) {
+      const o = 0.36;
+      const [cx, cy] = { "+y": [x, y + o], "-y": [x, y - o], "+x": [x + o, y], "-x": [x - o, y] }[m];
+      cartel(letra, cx, cy, 2.65, 0.6, 0.6, m, "#e0a800", "#ffffff");
+    }
+    cartel(txt, x, y - 0.38, 1.85, 1.1, 0.3, "-y", "#ffffff", "#1f2a3a");
+  }
+  estacionMIP("C", 122.2, 6.6, "ESTACIÓN C\nASSEMBLY FRISO");
+  estacionMIP("R", 177.2, 18.4, "ESTACIÓN R\nREPARATION");
+  estacionMIP("D", 251.4, 4.6, "ESTACIÓN D\nBUFFER KP1");
+
+  // 24c. Andón de producción sobre la difusión: datos del Overview (necesidad, objetivos por turno, capacidad);
+  //      el contador es SIMULADO (cuenta las carrocerías animadas que salen hacia Montaje)
+  const cvA = document.createElement("canvas"); cvA.width = 1024; cvA.height = 384;
+  const texA = new THREE.CanvasTexture(cvA); texA.anisotropy = 4;
+  let contador = 0;
+  function dibujarAndon() {
+    const g = cvA.getContext("2d");
+    g.fillStyle = "#0d1117"; g.fillRect(0, 0, 1024, 384);
+    g.strokeStyle = "#2e7d32"; g.lineWidth = 10; g.strokeRect(5, 5, 1014, 374);
+    g.fillStyle = "#9be29b"; g.font = "bold 44px Consolas, monospace"; g.fillText("PINTURA · COTA 0 · DIFUSIÓN → KP1", 34, 70);
+    g.fillStyle = "#ffffff"; g.font = "bold 38px Consolas, monospace";
+    g.fillText("NECESIDAD PO: 300 skids/día", 34, 135);
+    g.fillText("TURNO 1  OBJ 197   ·   TURNO 2  OBJ 103", 34, 190);
+    g.fillText("CAPACIDAD 26,7 SPH (SPH x OPE)", 34, 245);
+    g.fillStyle = "#ffd54f"; g.font = "bold 64px Consolas, monospace"; g.fillText("SALIDAS: " + String(contador).padStart(3, "0"), 34, 330);
+    g.fillStyle = "#8b949e"; g.font = "24px Consolas, monospace"; g.fillText("contador simulado", 700, 330);
+    texA.needsUpdate = true;
+  }
+  dibujarAndon();
+  const andon = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 2.4), new THREE.MeshBasicMaterial({ map: texA, side: THREE.DoubleSide }));
+  andon.position.copy(W(238, 12.85, 6.2)); andon.rotation.y = 0;
+  grupo.add(andon);
+  bloque("#1f2328", 238, 13.0, 6.6, 0.14, 4.95, 7.45);
+  for (const s of [-1, 1]) caja("#7d858d", 238 + s * 2.8, 12.99, 238 + s * 2.8 + 0.02, 13.01, 7.45, 9.0);
+
+  // 24d. Mesa pantógrafo de ingreso a la cabina de sellado (proyecto CPU9 "mesa pantógrafo", sensores inductivos y centradores)
+  const pant = new THREE.Group(); grupo.add(pant);
+  pinta("#f2c94c", 255.2, 74.6, 260.6, 78.3, 0.05);
+  for (let x = 255.2, k = 0; x < 260.6; x += 0.4, k++) { pinta(k % 2 ? "#1f2328" : "#f2c94c", x, 74.6, x + 0.4, 74.85, 0.06); pinta(k % 2 ? "#1f2328" : "#f2c94c", x, 78.05, x + 0.4, 78.3, 0.06); }
+  for (const [x, y] of [[255.5, 74.9], [260.3, 74.9], [255.5, 78.0], [260.3, 78.0]]) { bloque("#5d6672", x, y, 0.14, 0.14, 0, 1.3); bloque("#2ecc71", x, y, 0.1, 0.1, 1.3, 1.36, { clave: "luz", emisivo: true }); }
+  const matPant = new THREE.MeshLambertMaterial({ color: "#c8462f" }), matTijera = new THREE.MeshLambertMaterial({ color: "#3a3f45" });
+  const mesa = new THREE.Mesh(new THREE.BoxGeometry(5.0, 0.16, 2.2), matPant); pant.add(mesa);
+  const tijeras = [];
+  for (const s of [-1, 1]) for (const d of [-1, 1]) { const t = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 0.08), matTijera); t.userData = { s, d }; pant.add(t); tijeras.push(t); }
+  const cargaPant = carroceriaMovil("sedan", ECOAT[0]); flujo.remove(cargaPant); pant.add(cargaPant);
+  const cPant = W(257.9, 76.45, 0);
+  function moverPantografo(t) {
+    const h = 0.35 + 0.85 * (0.5 + 0.5 * Math.sin(t * 0.5));
+    mesa.position.set(cPant.x, h, cPant.z);
+    cargaPant.position.set(cPant.x, h + 0.08, cPant.z);
+    const ang = Math.asin(Math.min(0.95, h / 4.2));
+    for (const tj of tijeras) { tj.position.set(cPant.x, h / 2, cPant.z + tj.userData.s * 0.95); tj.rotation.z = tj.userData.d * ang; }
+  }
+  moverPantografo(0);
+
+  // 24e. Elevador de bajada desde cota 9 (Finish Line → cota 0): torre de 4 parantes y plataforma que baja con una carrocería
+  for (const [x, y] of [[126.0, 12.6], [130.6, 12.6], [126.0, 18.4], [130.6, 18.4]]) caja("#aeb6be", x - 0.15, y - 0.15, x + 0.15, y + 0.15, 0, 9.4);
+  for (const z of [3.0, 6.0, 9.2]) { caja("#22346a", 125.85, 12.45, 130.75, 12.6, z, z + 0.2); caja("#22346a", 125.85, 18.4, 130.75, 18.55, z, z + 0.2); }
+  caja("#e3a800", 125.9, 12.5, 130.7, 12.55, 2.6, 9.2, { clave: "malla#e3a800", transparente: 0.3 });
+  const elev = new THREE.Group(); grupo.add(elev);
+  const plat = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.2, 4.2), matPant); elev.add(plat);
+  const cargaElev = carroceriaMovil("cabina", PINTADO[2]); flujo.remove(cargaElev); elev.add(cargaElev);
+  const cElev = W(128.3, 15.5, 0);
+  let tElev = 0;
+  function moverElevador(dt) {
+    tElev = (tElev + dt) % 40;           // ciclo de 40 s: baja cargado, espera, sube vacío
+    let z, cargado = true;
+    if (tElev < 14) z = 9.2 - (tElev / 14) * 7.8;
+    else if (tElev < 20) z = 1.4;
+    else if (tElev < 34) { z = 1.4 + ((tElev - 20) / 14) * 7.8; cargado = false; }
+    else z = 9.2;
+    if (tElev >= 18 && tElev < 20) cargado = false;
+    plat.position.set(cElev.x, z, cElev.z);
+    cargaElev.position.set(cElev.x, z + 0.1, cElev.z); cargaElev.visible = cargado;
+  }
+  moverElevador(0);
+
+  // 24f. Puestos de la cabina de sellado (cronología CRUZCOTTO DX/SX): casetta de distanciales, mesa con kellers,
+  //      medallones y masa termoendurente, soporte de pistola de sellador con manguera, pincel; operarios en ambos lados
+  for (let x = 130, k = 0; x < 232; x += 13, k++) {
+    for (const [y, lado] of [[74.35, "SX"], [78.55, "DX"]]) {
+      const zb = 0.4;   // plataforma de la línea (bajada 0,5 m en la sección 6)
+      bloque("#2e7d4f", x + 2.2, y, 0.9, 0.45, zb, zb + 1.7);                      // casetta de distanciales
+      for (let j = 0; j < 4; j++) bloque("#d0d4d8", x + 1.9 + j * 0.2, y + (lado === "SX" ? 0.24 : -0.24), 0.05, 0.05, zb + 1.2, zb + 1.5);
+      bloque("#e9e4cf", x - 1.6, y, 1.2, 0.6, zb + 0.85, zb + 0.9);                   // mesa de trabajo
+      for (const dx of [-0.5, 0.5]) bloque("#7d858d", x - 1.6 + dx, y, 0.05, 0.5, zb, zb + 0.85);
+      for (let j = 0; j < 3; j++) bloque(elegir(["#1f5fa8", "#c0392b", "#f2c94c"]), x - 2.0 + j * 0.4, y, 0.32, 0.4, zb + 0.9, zb + 1.05);   // cajas de kellers / medallones
+      bloque("#5d6672", x + 0.3, y, 0.25, 0.25, zb, zb + 1.3);                       // soporte de pistola
+      cil("#2b2f33", x + 0.3, y, zb + 1.3, 4.0 - zb - 1.3, 0.025);                    // manguera de sellador que baja del aéreo
+      bloque("#c9d1da", x + 0.3, y + (lado === "SX" ? 0.15 : -0.15), 0.08, 0.3, zb + 1.1, zb + 1.3);
+      if (k % 2 === 0) cartel("CRUZCOTTO " + lado, x - 1.6, y + (lado === "SX" ? -0.31 : 0.31), zb + 1.6, 1.4, 0.3, lado === "SX" ? "-y" : "+y", "#ffffff", "#1d2f6b");
+    }
+  }
+
+  // 24g. Zonas de skids de la calculadora "disposición de skids" (capacidad geométrica): las zonas C, D y E coinciden
+  //      con las franjas del plano entre calles (C: X norte–W 20,2 m; D: W–V 7,0 m; E: V–U 16,5 m; largo ≈ 90 m)
+  for (const [txt, x, y, w] of [["ZONA C · 160 SKIDS (cap. geométrica)", 48, 13.2, 7], ["ZONA D · 48 SKIDS", 48, 36.4, 5], ["ZONA E · 138 SKIDS", 60, 46.0, 5]]) {
+    pinta("#f2f2f2", x - w / 2, y - 0.25, x + w / 2, y + 0.25, 0.066);
+    cartel(txt, x, y, 4.3, w, 0.5, "+y", "#1d2f6b", "#ffffff", true);
+    for (const s of [-1, 1]) caja("#7d858d", x + s * w * 0.4, y - 0.01, x + s * w * 0.4 + 0.02, y + 0.01, 4.55, 6.2);
+  }
+  if (animar) { let tp = 0; animar.push((dt) => { if (!grupo.visible) return; tp += dt; moverPantografo(tp); moverElevador(dt); }); }
 
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
