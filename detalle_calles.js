@@ -4,7 +4,7 @@
  * Se llama desde app.js con window.DetalleCalles(api). Coordenadas en metros del plano (x al sur, y al este). */
 window.DetalleCalles = function (api) {
   "use strict";
-  const { THREE, W, N, capa, MOVIL } = api;
+  const { THREE, W, N, capa, MOVIL, animar } = api;
   const grupo = capa("detalle");
   const alto = new THREE.Group();   // lo que supera 3,6 m: se oculta con "Cortar muros"
   grupo.add(alto);
@@ -939,7 +939,6 @@ window.DetalleCalles = function (api) {
   cartel("CABINA PVC", 52, 65.1, 3.6, 2.4, 0.5, "-y", "#1d2f6b", "#ffffff");
   // 14c. Línea TRP-05 (plano y 67,7) dentro de la cabina y hasta el MASTER; TRP-04 (x 80,5) con transferencia
   rodillosRojos(20, 101, 67.7, 0.45);
-  for (let x = 23, i = 0; x < 100; x += 6.2, i++) { skid(x, 67.7, 0.45, true); if (i % 3 === 1) pickup(x, 67.7, 0.75, true, i % 2 === 0); else sedan(x, 67.7, 0.75, true); }
   baranda(77, 101, 66.6); baranda(77, 101, 68.8);
   transferencia(79.6, 81.4, 65.8, 78.4, [68.4, 71.6, 74.6]);
   // 14d. Lado oeste (pts 31–33): cabinas y cajas de pickup en blanco sobre soportes, en fila junto a la calle
@@ -991,11 +990,6 @@ window.DetalleCalles = function (api) {
   for (let x = 78, k = 0; x < 248; x += 0.4, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", x, 65.25, x + 0.4, 65.55, 0.035);
   rodillosRojos(78, 248, 67.7, 0.5, 1.4);
   baranda(113, 248, 66.4); baranda(113, 248, 69.0);
-  for (let x = 116, i = 0; x < 246; x += 6.3, i++) {
-    if (Math.abs(x - 145) < 2.5) continue;   // cruce peatonal
-    skid(x, 67.7, 0.5, true);
-    if (i % 4 === 3) pickup(x, 67.7, 0.8, true, false); else if (i % 4 === 1) pickup(x, 67.7, 0.8, true, true); else sedan(x, 67.7, 0.8, true);
-  }
   for (const x of [128, 150, 172, 196, 220, 240]) { bloque("#dfe3e7", x, 65.9, 0.6, 0.5, 0, 1.2); bloque("#c5cbd1", x, 65.9, 0.66, 0.56, 1.2, 1.35); cil("#2ecc71", x + 0.2, 65.8, 1.35, 0.12, 0.05); }
   // 14i. Entrepiso de cota 5,4 sobre la línea y la mitad T–U: apoya en las columnas reales del plano (filas y 64,2 y 72,8)
   const colsEntre = colsEje(64.2).filter(c => c[0] >= 108 && c[0] <= 252).map(c => c[0]);
@@ -1089,11 +1083,6 @@ window.DetalleCalles = function (api) {
   for (const y of [30.9, 22.9]) rodillosRojos(9.0, 91.0, y, 0.45, 1.4);
   transferencia(4.6, 8.4, 21.9, 32.1, [31.0, 27.8, 25.6, 23.0]);
   transferencia(91.3, 94.8, 21.9, 32.1, [31.0, 28.4, 25.7, 23.0]);
-  for (const [y, desde] of [[30.9, 12], [22.9, 14]]) for (let x = desde, i = 0; x < 89; x += 6.4, i++) {
-    skid(x, y, 0.45, true);
-    const col = elegir(PINTADO);
-    if (i % 3 === 0) sedan(x, y, 0.75, true, col); else pickup(x, y, 0.75, true, i % 3 === 2, col);
-  }
   filaAcopio(14, 86, 26.9, 2.8, PINTADO, 0.3);   // zona de acumulo dentro de la calesita (pt 61.3)
   for (const [x, y] of [[50, 32.4], [93, 19.5], [20, 19.4]]) { bloque("#d9d5c8", x, y, 0.8, 0.5, 0, 1.3); bloque("#c4c0b2", x, y, 0.86, 0.56, 1.3, 1.45); for (let k = 0; k < 6; k++) cil(elegir(["#2ecc71", "#c0392b", "#f1c40f", "#2b2f33"]), x - 0.3 + k * 0.12, y - 0.29, 1.15, 0.04, 0.035, "y"); }
   cartel("HIDRANTE", 52.0, 33.4, 3.2, 0.7, 0.2, "+x", "#c0392b", "#ffffff");
@@ -1151,7 +1140,6 @@ window.DetalleCalles = function (api) {
   for (const x of [100.5, 102.5, 104.5]) { bloque("#f2c94c", x, 4.0, 1.2, 0.08, 0.9, 1.0); for (const dx of [-0.5, 0.5]) diag("#f2c94c", x + dx, 3.7, 0, x + dx, 4.3, 0.9, 0.06); }
   // TRP-17 (y 17,4, x 100–130): rodillos rojos con Cronos; TRP-19/20/18: elevador en jaula amarilla (pt 83.4)
   rodillosRojos(100.3, 125.5, 17.4, 0.45);
-  for (const x of [103.5, 110, 116.5, 122.5]) { skid(x, 17.4, 0.45, true); sedan(x, 17.4, 0.75, true, elegir(PINTADO)); }
   for (const [a, b, y, enX] of [[125.2, 132.6, 11.2, true], [125.2, 132.6, 19.6, true], [11.2, 19.6, 125.2, false], [11.2, 19.6, 132.6, false]]) cercoMalla(a, b, y, enX, "#e3a800", 2.6);
   transferencia(126.4, 130.2, 6.8, 19.4, [12.3, 14.5, 17.4]);
   rodillosRojos(130.2, 137.3, 14.5, 0.45);
@@ -1201,7 +1189,6 @@ window.DetalleCalles = function (api) {
     galvanizado(a, m, 44.1, true, 7.0, -1); galvanizado(a, m, 48.9, true, 7.0, +1);
     for (const x of [a, m]) galvanizado(44.1, 48.9, x, false, 7.0, x === a ? -1 : 1);
     rodillosRojos(a - 1.5, m + 3.6, 45.9, 0.45);
-    for (let x = a + 3, i = 0; x < m - 2; x += 6.2, i++) { skid(x, 45.9, 0.45, true); sedan(x, 45.9, 0.75, true); }
     motores(m + 0.2, [44.9, 46.9]); bloque("#9aa1a8", m - 2.2, 48.4, 4.4, 1.0, 0, 1.6);   // filtro rayado del plano
     void b;
   }
@@ -1303,7 +1290,6 @@ window.DetalleCalles = function (api) {
     persona(a + 3, 6.6, 0, false);
   }
   rodillosRojos(121, 185.5, 8.9, 0.45, 1.3);
-  for (let x = 138, i = 0; x < 183; x += 9, i++) { skid(x, 8.9, 0.45, true); sedan(x, 8.9, 0.75, true, elegir(PINTADO)); }
   // carros de malla naranja para piezas contra las cabinas (pt 72.1)
   for (const x of [122, 124.1, 126.2, 128.3, 130.4]) {
     const y = 4.4;
@@ -1325,7 +1311,6 @@ window.DetalleCalles = function (api) {
   transferencia(186.4, 190.6, 4.9, 12.8, [11.4, 8.5]);
   transferencia(228.6, 233.6, 4.9, 12.8, [6.0, 8.5, 11.4]);
   transferencia(246.6, 251.0, 4.9, 12.8, [11.4]);
-  for (const [x, y] of [[198, 6.0], [214, 8.5], [222, 11.4], [240, 6.0], [205, 11.4]]) { skid(x, y, 0.45, true); sedan(x, y, 0.75, true, elegir(PINTADO)); }
   escalera(186.5, 3.0, -1, 3.8, "#f2c94c");
   // TRP-23: salida del buffer hacia Montaje (y 8,9, atraviesa la fachada) con mesa elevadora y escalera del plano
   rodillosRojos(252, 264.5, 8.9, 0.45, 1.3);
@@ -1418,6 +1403,185 @@ window.DetalleCalles = function (api) {
   for (const [x, y] of [[1.3, 10.0], [2.5, 10.0]]) { bloque("#c8a774", x, y, 1.0, 0.8, 0, 0.8); bloque("#d9c19a", x, y, 0.9, 0.7, 0.8, 1.1); }
   cil("#e6a12a", 3.4, 10.0, 0, 0.9, 0.3);
 
+
+  // =============================================================================================
+  // 23) MÁS DETALLE (10/10): servicios aéreos de las calles nuevas, seguridad en columnas, acopio de Cronos,
+  //     tableros CIEM, flechas y manchas en el piso, y FLUJO ANIMADO de carrocerías sobre los transportadores.
+  //     Todo ilustrativo (supuesto): cantidades, velocidades y separación de skids no son datos de producción.
+  // =============================================================================================
+  // 23a. Servicios aéreos: dos bandejas portacables, caños (aire gris, agua verde, incendio rojo) y rociadores
+  function serviciosX(x0, x1, yB, zTop, lado) {
+    const s = lado || 1;
+    for (const [dy, z] of [[0, zTop - 0.6], [s * 0.6, zTop - 1.0]]) {
+      caja("#b6bec6", x0, yB + dy - 0.22, x1, yB + dy + 0.22, z, z + 0.04);
+      caja("#a3abb3", x0, yB + dy - 0.24, x1, yB + dy - 0.2, z, z + 0.12); caja("#a3abb3", x0, yB + dy + 0.2, x1, yB + dy + 0.24, z, z + 0.12);
+      for (let x = x0; x < x1; x += 3) caja("#8c949c", x, yB + dy - 0.25, x + 0.05, yB + dy + 0.25, z - 0.05, zTop);
+      for (let i = 0; i < 3; i++) caja(elegir(["#2b2f33", "#3d4247", "#1f6feb", "#c0392b"]), x0, yB + dy - 0.12 + i * 0.09, x1, yB + dy - 0.07 + i * 0.09, z + 0.04, z + 0.09);
+    }
+    for (const [col, r, dy, z] of [["#aeb7c2", 0.12, s * 1.2, zTop - 0.25], ["#3c8a5a", 0.09, s * 1.5, zTop - 0.15], ["#c0392b", 0.08, s * 1.8, zTop - 0.4]]) {
+      cilindros.push([col, (x0 + x1) / 2, yB + dy, z, x1 - x0, r, "x"]);
+      for (let x = x0; x < x1; x += 6) caja("#7d858d", x, yB + dy - r - 0.03, x + 0.06, yB + dy + r + 0.03, z - r - 0.05, zTop);
+      if (col === "#c0392b") for (let x = x0 + 1.5; x < x1; x += 3) { caja("#c0392b", x, yB + dy - 0.02, x + 0.04, yB + dy + 0.02, z - 0.35, z); cil("#d9b03a", x + 0.02, yB + dy, z - 0.42, 0.07, 0.05); }
+    }
+  }
+  function serviciosY(y0, y1, xB, zTop, lado) {
+    const s = lado || 1;
+    caja("#b6bec6", xB - 0.22, y0, xB + 0.22, y1, zTop - 0.6, zTop - 0.56);
+    caja("#a3abb3", xB - 0.24, y0, xB - 0.2, y1, zTop - 0.6, zTop - 0.48); caja("#a3abb3", xB + 0.2, y0, xB + 0.24, y1, zTop - 0.6, zTop - 0.48);
+    for (let y = y0; y < y1; y += 3) caja("#8c949c", xB - 0.25, y, xB + 0.25, y + 0.05, zTop - 0.65, zTop);
+    for (const [col, r, dx, z] of [["#aeb7c2", 0.12, s * 0.9, zTop - 0.25], ["#c0392b", 0.08, s * 1.3, zTop - 0.4]]) {
+      cilindros.push([col, xB + dx, (y0 + y1) / 2, z, y1 - y0, r, "y"]);
+      for (let y = y0; y < y1; y += 6) caja("#7d858d", xB + dx - r - 0.03, y, xB + dx + r + 0.03, y + 0.06, z - r - 0.05, zTop);
+    }
+  }
+  serviciosX(2, 258, 63.6, 6.2, -1);     // U
+  serviciosX(124, 258, 71.8, 4.9, -1);   // mitad T–U (bajo el entrepiso)
+  serviciosX(2, 96, 44.9, 6.2, -1);      // V norte
+  serviciosX(98, 250, 41.8, 5.4, -1);    // V sur
+  serviciosX(2, 96, 35.4, 6.2, -1);      // W norte
+  serviciosX(2, 96, 10.9, 6.0, +1);      // X norte
+  serviciosX(98, 262, 1.0, 5.8, +1);     // X sur
+  serviciosY(1.2, 62, 97.0, 6.2, +1);    // B
+  serviciosY(1.0, 103, 263.3, 6.0, -1);  // C
+  serviciosY(10, 102, 1.0, 6.2, +1);     // A
+
+  // 23b. Seguridad en columnas de las líneas C, C1, C2, D, D1 junto a las calles: boca de incendio, matafuego, pulsador, cartel
+  function seguridadColumna(c, cara, k) {
+    const [x, y, w] = c, yc = y + cara * (w / 2 + 0.01);
+    if (k % 2 === 0) {
+      bloque("#c0392b", x, yc + cara * 0.13, 0.75, 0.25, 0.9, 1.65); bloque("#e8e8e8", x, yc + cara * 0.26, 0.55, 0.02, 1.05, 1.5);
+      cartel("HIDRANTE", x, yc + cara * 0.01, 2.0, 0.7, 0.18, cara > 0 ? "+y" : "-y", "#c0392b", "#ffffff");
+      caja("#c0392b", x - w / 2 - 0.12, yc, x - w / 2 - 0.04, yc + cara * 0.08, 1.65, 6.0);
+    } else {
+      cil("#d0312d", x, yc + cara * 0.12, 0.6, 0.55, 0.09);
+      cartel("MATAFUEGO", x, yc + cara * 0.005, 1.6, 0.25, 0.55, cara > 0 ? "+y" : "-y", "#e74c3c", "#ffffff");
+    }
+    bloque("#e74c3c", x + 0.2, yc + cara * 0.04, 0.12, 0.08, 1.45, 1.57);
+    if (k % 3 === 1) { bloque("#aeb4ba", x, yc + cara * 0.4, 0.75, 0.6, 3.6, 4.3); for (let z = 3.7; z < 4.25; z += 0.08) bloque("#6f7780", x, yc + cara * 0.71, 0.65, 0.02, z, z + 0.03); }   // aerotermo
+  }
+  for (const [yL, cara, xa, xb] of [[61.7, +1, 1, 97], [45.8, -1, 1, 97], [36.2, -1, 1, 97], [13.0, -1, 1, 97], [26.0, +1, 99, 251], [52.0, +1, 99, 251]])
+    colsEje(yL).filter(c => c[0] >= xa && c[0] <= xb && c[2] >= 0.45).forEach((c, k) => seguridadColumna(c, cara, k));
+
+  // 23c. Acopio de Cronos y cajas sobre soportes entre TRP-17 y el recinto galvanizado (pts 63.3, 81.2)
+  for (let x = 101.5, i = 0; x < 137; x += 2.5, i++) {
+    if (x > 124.5 && x < 133) continue;   // jaula del elevador
+    soporte(x, 23.6, false);
+    if (i % 4 === 3) pickup(x, 23.6, 0.55, false, true, elegir(BIW)); else sedan(x, 23.6, 0.55, false, elegir(BIW.concat(["#16181c", "#8d949b"])));
+  }
+  for (let k = 0; k < 5; k++) pinta("#ffffff", 98.6 + k * 0.8, 20.4, 99.0 + k * 0.8, 21.6, 0.06);
+
+  // 23d. Tableros eléctricos CIEM con pantalla táctil dentro de malla azul junto al buffer y las PINTO (pts 71.4, 73.4)
+  function tableroCIEM(x, y, cara, n) {
+    for (let i = 0; i < n; i++) {
+      const xi = x + i * 0.85;
+      bloque("#e7eaec", xi, y, 0.8, 0.5, 0.1, 2.1); bloque("#b9bec3", xi, y, 0.82, 0.52, 0, 0.1);
+      caja("#2b2f33", xi - 0.36, y - cara * 0.25, xi + 0.36, y - cara * 0.26, 1.98, 2.0);
+      caja("#dfe8ef", xi - 0.25, y - cara * 0.252, xi - 0.02, y - cara * 0.262, 0.6, 1.7, { clave: "vidrio2", transparente: 0.35 });
+      if (i === 1) caja("#2a7fd4", xi - 0.2, y - cara * 0.252, xi + 0.2, y - cara * 0.262, 1.3, 1.6, { clave: "luz", emisivo: true });
+      bloque("#f2c94c", xi + 0.25, y - cara * 0.255, 0.12, 0.01, 1.05, 1.17);
+    }
+    cartel("CIEM", x + 0.4, y - cara * 0.27, 2.0, 0.4, 0.15, cara > 0 ? "-y" : "+y", "#ffffff", "#c0392b");
+    cil("#2ecc71", x, y, 2.1, 0.12, 0.05); cil("#e74c3c", x, y, 2.22, 0.12, 0.05);
+  }
+  tableroCIEM(196, 4.3, -1, 3); tableroCIEM(219, 4.3, -1, 2); tableroCIEM(236, 4.3, -1, 3); tableroCIEM(165, 4.5, -1, 2);
+  // estanterías blancas con transportador inclinado de piezas (PINTO05, pt 71.1)
+  for (let x = 177; x < 184; x += 1.8) {
+    for (const dx of [-0.85, 0.85]) for (const dy of [-0.4, 0.4]) bloque("#f1f3f5", x + dx, 4.6 + dy, 0.06, 0.06, 0, 2.2);
+    for (const z of [0.5, 1.3, 2.15]) bloque("#f1f3f5", x, 4.6, 1.8, 0.86, z, z + 0.05);
+    diag("#d5dadf", x - 0.8, 4.6, 0.7, x + 0.8, 4.6, 1.2, 0.5);
+  }
+  // caballetes de seguridad amarillos y mesa con sillas del puesto de macro (pt 70.4)
+  bloque("#e9e4cf", 106.0, 5.0, 1.2, 0.8, 0.72, 0.76); for (const dx of [-0.8, 0.8]) bloque("#2b2f33", 106.0 + dx, 5.0, 0.45, 0.45, 0.42, 0.46);
+  cartel("DIRECTO", 106.0, 4.58, 1.3, 0.6, 0.2, "-y", "#ffffff", "#1f2a3a");
+
+  // 23e. Flechas de sentido pintadas junto a los transportadores y numeración de lugares de acopio
+  function flecha(x, y, dir) {
+    const d = dir > 0 ? 1 : -1;
+    pinta("#f2f2f2", x - 0.7, y - 0.07, x + 0.4, y + 0.07, 0.065);
+    for (let k = 0; k < 5; k++) { const t = k * 0.1; pinta("#f2f2f2", x + d * (0.4 + t), y - 0.3 + t * 0.6, x + d * (0.5 + t), y + 0.3 - t * 0.6, 0.066); }
+  }
+  for (let x = 90; x < 245; x += 24) flecha(x, 66.0, +1);
+  for (let x = 20; x < 90; x += 24) { flecha(x, 32.1, -1); flecha(x + 6, 21.7, +1); }
+  for (let x = 125; x < 185; x += 12) flecha(x, 7.4, +1);
+  for (let x = 196; x < 250; x += 16) flecha(x, 4.9, +1);
+  for (let x = 132, n = 1; x < 211; x += 2.4, n++) if (!(x > 189 && x < 194.5)) cartel(String(n), x, 32.15, 0.15, 0.35, 0.25, "+y", "#ffffff", "#111111");
+  // manchas de líquido y desgaste en las calles nuevas
+  for (const [x0, x1, y0, y1, n] of [[2, 258, 62.1, 64.2, 70], [124, 258, 70.2, 72.4, 40], [2, 96, 43, 45.4, 25], [2, 96, 33.1, 35.9, 25], [2, 96, 10.5, 12.6, 25], [98, 262, 0.5, 3.5, 50], [259.8, 262.4, 1, 72, 30], [95.7, 98.3, 1.3, 62, 20], [132, 251, 27.6, 31, 40]])
+    for (let i = 0; i < n; i++) { const x = entre(x0, x1), y = entre(y0, y1); pinta(elegir(["#8f979f", "#9aa2aa", "#a3abb2", "#7f8890"]), x, y, x + entre(0.4, 2.2), y + entre(0.2, 0.8), 0.028); }
+
+  // 23f. Calle C: rectángulos amarillos de estacionamiento, cajones apilados y sala galvanizada con escalera (pt 86.2)
+  for (const [a, b] of [[253.0, 255.8], [256.2, 259.0]]) for (const [p, q, r, s] of [[a, 67.2, b, 67.3], [a, 71.2, b, 71.3], [a, 67.2, a + 0.1, 71.3], [b - 0.1, 67.2, b, 71.3]]) pinta("#f2c94c", p, q, r, s, 0.06);
+  for (const [x, y, h] of [[254.4, 69.2, 2], [257.6, 69.2, 1]]) for (let k = 0; k < h; k++) { bloque("#c8a774", x, y, 2.2, 1.4, k * 0.95, k * 0.95 + 0.12); bloque("#d4b483", x, y, 2.1, 1.3, k * 0.95 + 0.12, k * 0.95 + 0.9, { clave: "film", transparente: 0.85 }); for (let j = 0; j < 3; j++) bloque("#a07a48", x - 1.0 + j * 1.0, y, 0.1, 1.35, k * 0.95 + 0.12, k * 0.95 + 0.9); }
+  autoelevadorFijo(258.0, 74.0);
+
+  // 23g. Más gente trabajando (estático): retoques, macro, PINTO, calle C, buffer
+  for (const [x, y, ch] of [[151, 22.0, false], [162.5, 21.2, false], [173, 23.4, false], [112, 7.0, false], [141, 10.8, false], [170, 6.6, false], [261.0, 34.2, true], [221, 4.3, false], [130, 16.0, true]]) persona(x, y, 0, ch);
+
+  // 23h. FLUJO ANIMADO: carrocerías sobre skid que avanzan por los transportadores del plano
+  const flujo = new THREE.Group(); grupo.add(flujo);
+  const geoCaja = (lx, ly, lz, cx, cy, cz) => { const g = new THREE.BoxGeometry(lx, lz, ly); g.translate(cx, cz, -cy); return g; };
+  function unir(gs) {
+    gs = gs.map(g => g.index ? g.toNonIndexed() : g); let n = 0; for (const g of gs) n += g.attributes.position.count;
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3); let o = 0; const idx = [];
+    for (const g of gs) { const gi = g; pos.set(gi.attributes.position.array, o * 3); nor.set(gi.attributes.normal.array, o * 3); for (let i = 0; i < gi.attributes.position.count; i++) idx.push(o + i); o += gi.attributes.position.count; }
+    const r = new THREE.BufferGeometry(); r.setAttribute("position", new THREE.BufferAttribute(pos.slice(0, o * 3), 3)); r.setAttribute("normal", new THREE.BufferAttribute(nor.slice(0, o * 3), 3)); return r;
+  }
+  // geometrías en coordenadas locales (x = largo, y = ancho, z = alto), base del skid en z = 0
+  const G_SKID = unir([geoCaja(5.0, 0.12, 0.16, 0, -0.45, 0.08), geoCaja(5.0, 0.12, 0.16, 0, 0.45, 0.08), ...[-2, -1, 0, 1, 2].map(k => geoCaja(0.1, 1.0, 0.14, k * 1.1, 0, 0.23))]);
+  const G_SEDAN = unir([[-2.18, -1.3, 0.3, 0.82], [-1.3, -0.75, 0.3, 0.92], [-0.75, 1.05, 0.3, 0.95], [1.05, 2.18, 0.3, 0.98], [-0.45, 0.85, 0.95, 1.46], [-0.85, -0.45, 0.95, 1.22], [0.85, 1.25, 0.98, 1.3]].map(([a, b, z0, z1]) => geoCaja(b - a, 1.68, z1 - z0, (a + b) / 2, 0, 0.3 + (z0 + z1) / 2)));
+  const G_CABINA = unir([[-1.75, -1.0, 0.45, 1.05], [-1.0, 1.35, 0.45, 1.12], [-0.5, 1.35, 1.12, 1.88], [-0.95, -0.5, 1.12, 1.45]].map(([a, b, z0, z1]) => geoCaja(b - a, 1.8, z1 - z0, (a + b) / 2, 0, 0.3 + (z0 + z1) / 2)));
+  const G_CAJA = unir([geoCaja(3.2, 1.86, 0.15, 0, 0, 0.82), geoCaja(3.2, 0.1, 0.52, 0, 0.88, 1.16), geoCaja(3.2, 0.1, 0.52, 0, -0.88, 1.16), geoCaja(0.08, 1.86, 0.52, 1.56, 0, 1.16), geoCaja(0.08, 1.86, 0.52, -1.56, 0, 1.16)]);
+  const G_VIDRIO = unir([geoCaja(1.3, 1.7, 0.4, 0.2, 0, 1.5)]);
+  const matCache = new Map();
+  const matDe = (c) => { if (!matCache.has(c)) matCache.set(c, new THREE.MeshLambertMaterial({ color: c })); return matCache.get(c); };
+  function carroceriaMovil(tipo, color) {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(G_SKID, matDe("#5d6672")));
+    const body = new THREE.Mesh(tipo === "sedan" ? G_SEDAN : tipo === "cabina" ? G_CABINA : G_CAJA, matDe(color));
+    body.castShadow = !MOVIL; g.add(body);
+    if (tipo === "sedan") g.add(new THREE.Mesh(G_VIDRIO, matDe("#3b4656")));
+    flujo.add(g); return g;
+  }
+  // recorrido = polilínea en metros del plano; z = altura del transportador
+  function recorrido(pts, z) {
+    const seg = []; let L = 0;
+    for (let i = 0; i < pts.length - 1; i++) { const [a, b] = [pts[i], pts[i + 1]]; const l = Math.hypot(b[0] - a[0], b[1] - a[1]); seg.push({ a, b, l, L0: L }); L += l; }
+    return { seg, L, z, punto(s) { s = ((s % L) + L) % L; const g = seg.find(q => s <= q.L0 + q.l) || seg[seg.length - 1]; const t = (s - g.L0) / g.l; return [g.a[0] + (g.b[0] - g.a[0]) * t, g.a[1] + (g.b[1] - g.a[1]) * t, Math.atan2(g.b[1] - g.a[1], g.b[0] - g.a[0])]; } };
+  }
+  const LINEAS = [
+    // TRP-05 (cabina PVC) → TRP-06 hasta x 248 (plano, y 67,7, sentido +x)
+    { r: recorrido([[20, 67.7], [248, 67.7]], 0.48), n: 26, v: 0.9, abierta: true, tipos: ["sedan", "sedan", "cabina", "caja"], colores: ECOAT },
+    // CALESITA: lazo TRP-13 → 14 → 16 → 15 (y 30,9 hacia −x; y 22,9 hacia +x)
+    { r: recorrido([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], 0.48), n: 22, v: 0.7, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
+    // TRP-22 (macro → PINTO) y transferencia al buffer final, carril central y 8,5
+    { r: recorrido([[121, 8.9], [186.5, 8.9], [188.6, 8.5], [250.7, 8.5]], 0.48), n: 12, v: 0.6, abierta: true, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
+    { r: recorrido([[188.6, 11.4], [250.7, 11.4]], 0.48), n: 9, v: 0.35, abierta: true, tipos: ["sedan"], colores: PINTADO },
+    { r: recorrido([[188.6, 6.0], [250.7, 6.0]], 0.48), n: 9, v: 0.45, abierta: true, tipos: ["cabina", "caja"], colores: PINTADO },
+    // TRP-17 (entrada a macro, y 17,4)
+    { r: recorrido([[100.3, 17.4], [125.5, 17.4]], 0.48), n: 4, v: 0.5, abierta: true, tipos: ["sedan"], colores: PINTADO },
+    // TRP-11 / 10 / 12 dentro de las máquinas sin nombre (túneles)
+    { r: recorrido([[117, 45.9], [139.3, 45.9]], 0.48), n: 4, v: 0.5, abierta: true, tipos: ["sedan"], colores: ECOAT },
+    { r: recorrido([[186.6, 45.9], [213.9, 45.9]], 0.48), n: 4, v: 0.5, abierta: true, tipos: ["sedan"], colores: ECOAT },
+  ];
+  const moviles = [];
+  for (const ln of LINEAS) {
+    const paso = ln.r.L / ln.n;
+    for (let i = 0; i < ln.n; i++) {
+      if (azar() < 0.15 && ln.abierta) continue;   // huecos en la línea
+      const tipo = ln.tipos[i % ln.tipos.length];
+      moviles.push({ ln, s: i * paso + entre(-0.3, 0.3), g: carroceriaMovil(tipo, elegir(ln.colores)) });
+    }
+  }
+  const zona = (x, y) => x > 142.5 && x < 147.5 && Math.abs(y - 67.7) < 1;   // el cruce peatonal: los skids pasan igual (es un paso a nivel)
+  void zona;
+  function ubicar(m) {
+    const [x, y, ang] = m.ln.r.punto(m.s);
+    m.g.position.copy(W(x, y, m.ln.r.z));
+    m.g.rotation.y = ang;
+  }
+  moviles.forEach(ubicar);
+  if (animar) animar.push((dt) => { if (!grupo.visible) return; for (const m of moviles) { m.s += m.ln.v * dt; ubicar(m); } });
+
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
     const g = new THREE.BufferGeometry();
@@ -1449,5 +1613,5 @@ window.DetalleCalles = function (api) {
     im.castShadow = !MOVIL;
     (k.endsWith("|alto") ? alto : grupo).add(im);
   }
-  return { alto, cajas: [...baldes.values()].reduce((n, b) => n + b.pos.length / 108, 0), cilindros: cilindros.length, carteles: cacheTex.size };
+  return { alto, flujo, moviles, cajas: [...baldes.values()].reduce((n, b) => n + b.pos.length / 108, 0), cilindros: cilindros.length, carteles: cacheTex.size };
 };

@@ -238,7 +238,7 @@
     if (X.sitio) construirSitio(X.sitio, ent, cajaR);
     construirDetalles(X, ent, cajaR);
     if (N.interior) construirInterior(N.interior, cajaR);
-    if (window.DetalleCalles) window.__detalle = window.DetalleCalles({ THREE, W, N, capa, MOVIL });
+    if (window.DetalleCalles) window.__detalle = window.DetalleCalles({ THREE, W, N, capa, MOVIL, animar: animar_vida });
     construirVida(X);
 
     // Flecha de norte en el piso
