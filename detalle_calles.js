@@ -1770,9 +1770,9 @@ window.DetalleCalles = function (api) {
   etiqueta(128.3, 15.5, 11.0, "CPU11 GR08 · ELEVADOR", "baja desde Revisión final (Finish line, cota 9)", DOM.oleo, 2);
   etiqueta(155, 8.9, 6.0, "ÓLEO · ESTACIÓN C", "carrocerías OK por friction rollers · montaje de frisos y otros · el Cronos casi siempre va directo · TRP-22", DOM.oleo);
   etiqueta(113, 10, 5.5, "ÁREA MACRO C.P.A.", "inspección con túnel de luces · TRP-17", DOM.reparacion, 2);
-  etiqueta(162, 21, 5.5, "REPARACIÓN · ESTACIÓN R", "Box de retoques = \"cabinas de trabajo\" (plano 2020) · CPU12 fuera de línea", DOM.reparacion);
-  etiqueta(220, 8.5, 7.0, "DIFUSIÓN · BUFFER · ESTACIÓN D", "TRANSPORTE BUFFER: carriles 1–2 KP1 (cabina + caja) · carril 3 Cronos · carril 4 acumulo junto al depósito", DOM.difusion);
-  etiqueta(262, 6.2, 4.6, "KP1 → MONTAJE KP1", "cabinas y cajas por abajo · salen por el portón amarillo", DOM.difusion);
+  etiqueta(162, 21, 5.5, "REPARACIÓN · ESTACIÓN R", "Box de retoques, atrás de Óleo = \"cabinas de trabajo\" (plano 2020) · CPU12 fuera de línea", DOM.reparacion);
+  etiqueta(220, 8.5, 7.0, "DIFUSIÓN · BUFFER · ESTACIÓN D", "cabinas y cajas KP1 sueltas (no viajan de a pares) · se acumulan hasta armar el par caja + cabina · el Cronos no pasa por acá: sube después de Óleo", DOM.difusion);
+  etiqueta(262, 6.2, 4.6, "KP1 → MONTAJE KP1", "una mula con carro lleva el par cabina + caja · sale por el portón amarillo", DOM.difusion);
   etiqueta(258, 11.6, 11.0, "CRONOS → TÚNEL A MONTAJE", "elevador de la TRP-23 sube a la galería elevada", "#5d6d7e");
   etiqueta(214, 31, 6.0, "DEPÓSITO DE AUTOS", "plano 2020 · acopio de carrocerías y cajas (deliberadas, macro, montaje)", DOM.deposito);
   etiqueta(50, 23, 5.0, "ACUMULO · CALESITA", "zona C · 160 skids (cap. geométrica)", DOM.acumulo);
