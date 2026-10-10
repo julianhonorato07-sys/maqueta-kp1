@@ -2011,6 +2011,29 @@ window.DetalleCalles = function (api) {
   cartel("PAÑOL", 75.5, 9.1, 2.0, 1.4, 0.4, "+y", "#455a64", "#ffffff");
   persona(75.5, 7.8, 0, false);
 
+
+  // =============================================================================================
+  // 27) VENTANALES DE FACHADA (fotos 60.3, 60.4, 71.1–71.3, 75.2, 79.2): banda de vidrio con marcos azul oscuro arriba de la
+  //     franja blanca, en las fachadas oeste (calle X) y norte (calle A), cara interior y exterior. Alturas estimadas por foto.
+  // =============================================================================================
+  function ventanal(enX, fijo, a, b, caras) {
+    for (const f of caras) {
+      if (enX) {
+        caja("#cfe3f3", a, fijo + f, b, fijo + f + 0.015, 3.6, 6.3, { clave: "ventana", transparente: 0.55 });
+        for (const z of [3.55, 4.9, 6.3]) caja("#23395d", a, fijo + f - 0.01, b, fijo + f + 0.03, z, z + 0.08);
+        for (let x = a; x <= b + 0.01; x += 1.5) caja("#23395d", x - 0.04, fijo + f - 0.01, x + 0.04, fijo + f + 0.03, 3.55, 6.38);
+      } else {
+        caja("#cfe3f3", fijo + f, a, fijo + f + 0.015, b, 3.6, 6.3, { clave: "ventana", transparente: 0.55 });
+        for (const z of [3.55, 4.9, 6.3]) caja("#23395d", fijo + f - 0.01, a, fijo + f + 0.03, b, z, z + 0.08);
+        for (let y = a; y <= b + 0.01; y += 1.5) caja("#23395d", fijo + f - 0.01, y - 0.04, fijo + f + 0.03, y + 0.04, 3.55, 6.38);
+      }
+    }
+  }
+  // fachada oeste (y ≈ −0,93): tramos entre torres de escalera y portones
+  for (const [a, b] of [[1, 44], [49.5, 108], [113, 118.5], [129.5, 183], [189, 241.5], [253.5, 263.5]]) ventanal(true, -0.93, a, b, [0.13, -0.15]);
+  // fachada norte (x ≈ −0,93)
+  for (const [a, b] of [[1, 78.8], [82.5, 103]]) ventanal(false, -0.93, a, b, [0.13, -0.15]);
+
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
     const g = new THREE.BufferGeometry();
