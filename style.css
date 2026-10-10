@@ -216,7 +216,7 @@ dialog button { margin-top: 8px; border: 0; background: var(--azul); color: #fff
   #recorrido .rc-opciones { margin-top: 6px; }
   #recorrido .rc-ctrl { margin-top: 8px; }
   body.con-recorrido #pisos .botones, body.con-recorrido #pisos .sep { display: none; }
-  #ayuda { bottom: calc(200px + env(safe-area-inset-bottom)); }
+  #ayuda { bottom: calc(244px + env(safe-area-inset-bottom)); }
   #recorrido .paso-num b { font-size: 22px; }
   #nav { right: 8px; bottom: auto; top: calc(124px + env(safe-area-inset-top)); padding: 4px; gap: 4px; flex-direction: column; }
   #nav button { width: 40px; height: 40px; }

@@ -1831,7 +1831,7 @@ window.DetalleCalles = function (api) {
   flujoCinta(RUTA_ACUM, DOM.reparacion, 4.35, 0.35);
   etiqueta(140, 22.5, 4.8, "MULA → BOX DE RETOQUES", "carrocerías con defectos al bajar de revisión final", DOM.reparacion, 2);
   etiqueta(206, 30.5, 4.8, "ACUMULO PARA BOX", "si el box de retoques está lleno, la mula las deja acá", DOM.reparacion, 2);
-  etiqueta(257.9, 79.5, 9.8, "COTA 5 · CAMBIO DE SKID", "deep skid (pretrat./cata) → paint skid · el deep skid vuelve vacío por cota 5", DOM.sellado, 2);
+  etiqueta(133.0, 90.5, 9.8, "COTA 5,4 · CAMBIO DE SKID (arriba)", "en el medio de la banda: deep skid → paint skid · el deep skid vuelve vacío por +3,2", DOM.sellado, 2);
   {
     // mula (tractor eléctrico verde) + carro con una carrocería, va y vuelve por la ruta box → acumulo
     const mula = new THREE.Group();

@@ -176,7 +176,7 @@ window.Cotas = function (api) {
   const hueco = (x, y, r) => { const [a, b, c, d] = r; const x0 = Math.max(a + 0.1, x - 2.8), x1 = Math.min(c - 0.1, x + 2.8), y0 = Math.max(b + 0.1, y - 1.8), y1 = Math.min(d - 0.1, y + 1.8); return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]; };
   const marcoHueco = (Lt, h, z) => { baranda(Lt, [h[0], h[1]], z, 1.1); baranda(Lt, [h[2], h[3]], z, 1.1); };   // los lados de entrada quedan libres
   const H9 = [hueco(247.4, 57.7, [0.41, 0.41, 263.65, 81.53]), hueco(128.3, 15.5, [0.41, 0.41, 263.65, 81.53])];
-  const HB9 = [hueco(257.5, 90.7, [0.41, 81.53, 263.65, 103.6]), hueco(13.8, 84.75, [0.41, 81.53, 263.65, 103.6])];
+  const HB9 = [hueco(251.5, 90.73, [0.41, 81.53, 263.65, 103.6]), hueco(13.8, 84.75, [0.41, 81.53, 263.65, 103.6])];
   const losa9 = losaPoligono(G[9], LOSA9, 9.0, 0.35, COL.losa, H9);
   losaPoligono(G[9], BANDA9, 9.0, 0.35, "#c3cbd2", [HUECO_SKIDS, ...HB9]);
   // baranda del hueco del acopio de skids
@@ -186,7 +186,7 @@ window.Cotas = function (api) {
   const BANDA5 = [[13.0, 82.0], [113.1, 82.0], [113.1, 79.0], [264.0, 71.5], [264.0, 103.6], [104.0, 103.6], [104.0, 87.6], [13.0, 87.6]];
   const R5a = [13.0, 82.0, 118.8, 87.6], R5b = [104.0, 78.0, 264.0, 103.6], R5c = [238.5, 71.5, 264.0, 78.0];
   const rp = ([a, b, c, d]) => [[a, b], [c, b], [c, d], [a, d]];
-  const H5a = [hueco(13.8, 84.75, R5a)], H5b = [hueco(122.1, 84.75, R5b), hueco(262.05, 82.3, R5b)], H5c = [hueco(257.9, 76.45, R5c)];
+  const H5a = [hueco(13.8, 84.75, R5a)], H5b = [hueco(133.0, 90.51, R5b), hueco(262.05, 93.01, R5b)], H5c = [hueco(257.9, 76.45, R5c)];
   losaPoligono(G[5.4], rp(R5a), 5.4, 0.25, COL.rejilla, H5a);
   losaPoligono(G[5.4], rp(R5b), 5.4, 0.25, COL.rejilla, H5b);
   losaPoligono(G[5.4], rp(R5c), 5.4, 0.25, COL.rejilla, H5c);
@@ -607,22 +607,32 @@ window.Cotas = function (api) {
   // ================================================================================================
   // 4) COTA +5,40 Y LEVEL +3,20 (plano N5400)
   // ================================================================================================
-  // CAMBIO DE SKID (proyecto "cambio de skids rico/pobre en cota 5"): mesa de desbloqueo + pórtico con elevador de cambio
-  // Orden (sentido −y): llega el elevador de salida del horno (y 90,7) → mesa de desbloqueo → pórtico de cambio (y 82,3) →
-  // sigue al elevador CPU6 GR1 (y 76,45). Posición exacta del pórtico en el plano: a confirmar.
-  const CSK = { x: 257.2, y: 82.3 };
+  // CAMBIO DE SKID (CPU5 "Transporte cambio de skid"), en el MEDIO de la banda de +5,4 – corrección de Julian (10/10),
+  // confirmada con el esquema "COTA 5000" del proyecto "Mejora en cambio de skid" (Santopolo, 2026: el elevador de cambio
+  // CPU5 05.1 queda al final de los fly rollers que vienen del horno) y con el plano N5400 (símbolo de elevador en x ≈ 133
+  // sobre la línea y 90,5; transferidores en x 122 y x 149,6). Orden: elevador de salida del horno (x 251,5) → fly rollers
+  // hacia −x → MESA DE DESBLOQUEO (dos mesas antes; las rosetas giran 90°) → ELEVADOR DE CAMBIO (levanta la carrocería, el skid
+  // rico baja a +3,2 y queda apoyada en un skid pobre) → transferidores → CPU4 hacia +x hasta el elevador CPU6 GR1.
+  const CSK = { x: 133.0, y: 90.51 };
   {
-    const z = 5.4, ya = CSK.y - 3.1, yb = CSK.y + 3.1;
-    for (const [x, y] of [[254.0, ya], [260.6, ya], [254.0, yb], [260.6, yb]]) L5.bloque(COL.amarillo, x, y, 0.35, 0.35, z, z + 4.6);
-    for (const y of [ya, yb]) L5.caja(COL.amarillo, 253.8, y - 0.2, 260.8, y + 0.2, z + 4.3, z + 4.7);
-    for (const x of [254.0, 260.6]) L5.caja(COL.amarillo, x - 0.2, ya - 0.2, x + 0.2, yb + 0.2, z + 4.3, z + 4.7);
-    L5.caja("#2e5c9a", 255.6, CSK.y - 1.1, 259.0, CSK.y + 1.1, z + 3.7, z + 4.3);   // carro de izaje
-    for (let k = -2; k <= 2; k++) L5.caja(COL.negro, 253.8 + 3.5 + k * 1.2, ya - 0.21, 253.8 + 3.5 + k * 1.2 + 0.6, ya - 0.19, z + 4.3, z + 4.7);
-    for (const s of [-1, 1]) L5.caja("#7d858d", CSK.x + s * 1.6 - 0.05, CSK.y - 0.05, CSK.x + s * 1.6 + 0.05, CSK.y + 0.05, z + 1.2, z + 3.7);   // cables / guías del izaje
-    cartel(G[5.4], "CAMBIO DE SKID\nRICO → POBRE", CSK.x, ya - 0.3, z + 5.4, 3.6, 0.9, "-y", "#1f6feb", "#ffffff", true);
-    // mesa de desbloqueo (las rosetas giran 90° y liberan la carrocería) antes del pórtico
-    L5.caja("#c0392b", 255.0, 86.0, 259.5, 87.6, z, z + 0.42);
-    cartel(G[5.4], "MESA DE DESBLOQUEO", 257.2, 85.9, z + 1.4, 2.6, 0.4, "-y", "#ffffff", "#c0392b", true);
+    const z = 5.4, x0 = CSK.x - 3.0, x1 = CSK.x + 3.0, ya = CSK.y - 1.9, yb = CSK.y + 1.9;
+    // estructura del elevador de cambio (columnas y vigas amarillas, como en la foto del proyecto)
+    for (const [x, y] of [[x0, ya], [x1, ya], [x0, yb], [x1, yb]]) L5.bloque(COL.amarillo, x, y, 0.32, 0.32, z, z + 3.4);
+    for (const y of [ya, yb]) L5.caja(COL.amarillo, x0 - 0.2, y - 0.16, x1 + 0.2, y + 0.16, z + 3.1, z + 3.4);
+    for (const x of [x0, x1]) L5.caja(COL.amarillo, x - 0.16, ya - 0.2, x + 0.16, yb + 0.2, z + 3.1, z + 3.4);
+    // marco de izaje con los apoyos que sostienen la carrocería mientras se cambia el skid de abajo
+    L5.caja("#c8462f", CSK.x - 2.4, CSK.y - 1.05, CSK.x + 2.4, CSK.y - 0.85, z + 1.15, z + 1.3);
+    L5.caja("#c8462f", CSK.x - 2.4, CSK.y + 0.85, CSK.x + 2.4, CSK.y + 1.05, z + 1.15, z + 1.3);
+    for (const dx of [-1.8, -0.6, 0.6, 1.8]) for (const s of [-0.95, 0.95]) L5.bloque("#7d858d", CSK.x + dx, CSK.y + s, 0.12, 0.12, z + 0.3, z + 1.45);
+    for (const s of [-1, 1]) L5.bloque("#2e5c9a", CSK.x + s * 2.7, yb + 0.3, 0.6, 0.45, z, z + 0.8);   // motorreductores
+    cartel(G[5.4], "ELEVADOR CAMBIO DE SKID\nCPU5 · RICO → POBRE", CSK.x, ya - 0.3, z + 3.9, 3.8, 0.9, "-y", "#1f6feb", "#ffffff", true);
+    // mesa de desbloqueo, dos mesas antes del cambio (las rosetas giran 90° y liberan los pinos)
+    L5.caja(COL.amarillo, CSK.x + 5.0, CSK.y - 0.75, CSK.x + 10.0, CSK.y + 0.75, z, z + 0.42);
+    for (let k = 0; k < 4; k++) L5.caja(COL.negro, CSK.x + 5.3 + k * 1.2, CSK.y - 0.77, CSK.x + 5.8 + k * 1.2, CSK.y + 0.77, z + 0.05, z + 0.38);
+    for (const dx of [6.0, 9.0]) for (const s of [-0.62, 0.62]) L5.cil("#c0392b", CSK.x + dx, CSK.y + s, z + 0.42, 0.12, 0.14);   // rosetas
+    cartel(G[5.4], "MESA DE DESBLOQUEO", CSK.x + 7.5, CSK.y - 1.0, z + 1.5, 2.6, 0.4, "-y", "#ffffff", "#c0392b", true);
+    // baranda del pasillo de mantenimiento junto al cambio
+    baranda(L5, [[CSK.x - 6, CSK.y - 2.6], [CSK.x + 11, CSK.y - 2.6]], z, 1.1);
     // ACUMULO DE SKIDS EN 2 PISOS (ACCUMULO SKID N 2 PIANI, x 16–113): skids ricos vacíos a +3,2 y +5,4
     cartel(G[5.4], "ACUMULO SKID 2 PISOS", 48.6, 81.9, z + 2.6, 5, 0.6, "-y", "#ffffff", ET.skid, true);
     cartel(G[5.4], "ÁREA STOCCAGGIO SKID VACÍOS", 78.0, 81.9, z + 2.0, 5, 0.5, "-y", "#ffffff", ET.skid, true);
@@ -638,7 +648,7 @@ window.Cotas = function (api) {
     for (const s of [-0.45, 0.45]) Lt.caja("#5d6672", cx - 2.5, cy + s - 0.06, cx + 2.5, cy + s + 0.06, z, z + 0.16);
     for (let k = -2; k <= 2; k++) Lt.caja("#4d5560", cx + k * 1.1 - 0.05, cy - 0.5, cx + k * 1.1 + 0.05, cy + 0.5, z + 0.16, z + 0.3);
   }
-  for (const y of [93.01, 101.52]) for (let x = 132; x < 250; x += 5.6) if (azar() < 0.75) skidPobre(L5, x, y, 5.4 + 0.47);
+  for (const y of [101.52]) for (let x = 132; x < 250; x += 5.6) if (azar() < 0.75) skidPobre(L5, x, y, 5.4 + 0.47);   // (por y 93,0 pasan los skids pobres que van al cambio)
   cartel(G[5.4], "CLEAR ZONE · SKIDS POBRES\n(a confirmar)", 190, 103.4, 5.4 + 2.2, 5, 0.9, "-y", "#5d6672", "#ffffff", true);
 
   // ================================================================================================
@@ -646,15 +656,15 @@ window.Cotas = function (api) {
   // ================================================================================================
   const ELEV = [
     { id: "biw", nom: "ELEVADOR SCOCCA BIW", sub: "baja del puente de Chapa (cota 14) a la carga sobre skid", x: 62.8, y: 141.5, n0: 9, h0: 1.7, n1: 9, h1: 5.0, color: ET.chapa },
-    { id: "asc2", nom: "ELEVADOR SALIDA HORNO CATA", sub: "baja de cota 9 a cota 5,4 (cambio de skid)", x: 257.5, y: 90.7, n0: 5.4, h0: 0.45, n1: 9, h1: 0.45, color: ET.cata },
+    { id: "asc2", nom: "ELEVADOR SALIDA HORNO CATA", sub: "baja de cota 9 a cota 5,4; de ahí los fly rollers CPU5 la llevan al cambio de skid", x: 251.5, y: 90.73, n0: 5.4, h0: 0.45, n1: 9, h1: 0.45, color: ET.cata },
     { id: "gr1", nom: "CPU6 GR1 · ELEVADOR", sub: "baja de cota 5,4 a la cabina de sellado (cota 0)", x: 257.9, y: 76.45, n0: 0, h0: 0.72, n1: 5.4, h1: 0.45, color: ET.sellado },
     { id: "gr11", nom: "ELEVADOR A LÍNEA DE FONDO · CPU6 GR11", sub: "sube de sellado (cota 0) a la línea de fondo (cota 9)", x: 247.4, y: 57.7, n0: 0, h0: 0.8, n1: 9, h1: 0.45, color: ET.fondo },
     { id: "cpu11", nom: "CPU11 GR08 · ELEVADOR", sub: "baja de revisión final (cota 9) a cota 0", x: 128.3, y: 15.5, n0: 0, h0: 0.48, n1: 9, h1: 0.45, color: ET.final },
     { id: "lv32", nom: "SUBE A +3,2 m (CRONOS)", sub: "a la salida de Óleo sube al nivel 3200, sobre el buffer", x: 188.6, y: 8.9, n0: 0, h0: 0.48, n1: 3.2, h1: 0.45, color: ET.elev },
     { id: "mont", nom: "ELEVADOR MONTAJE · CPU12 GR8", sub: "sube el Cronos del nivel 3200 al túnel de cota 9", x: 256.2, y: 8.9, n0: 3.2, h0: 0.45, n1: 9, h1: 0.3, color: ET.elev },
     { id: "rpobre", nom: "RETORNO SKID POBRE (CPU4)", sub: "sube los skids pobres vacíos a +3,2 (zona elevador Montaje) · a confirmar", x: 262.05, y: 4.6, n0: 0, h0: 0.48, n1: 3.2, h1: 0.45, color: ET.skid },
-    { id: "gr7", nom: "CPU4 GR7 · ELEVADOR", sub: "skid pobre de +3,2 a +5,4, junto al cambio de skid · a confirmar", x: 262.05, y: 82.3, n0: 3.2, h0: 0.45, n1: 5.4, h1: 0.45, color: ET.skid },
-    { id: "gr5", nom: "CPU5 · BAJA A +3,2", sub: "skid rico vacío al acumulo inferior · a confirmar", x: 122.1, y: 84.75, n0: 3.2, h0: 0.45, n1: 5.4, h1: 0.45, color: ET.skid },
+    { id: "gr7", nom: "CPU4 GR7 · ELEVADOR", sub: "skid pobre de +3,2 a +5,4 · ubicación a confirmar", x: 262.05, y: 93.01, n0: 3.2, h0: 0.45, n1: 5.4, h1: 0.45, color: ET.skid },
+    { id: "gr5", nom: "CPU5 05.1 · ELEVADOR DE CAMBIO DE SKID", sub: "levanta la carrocería y baja el skid rico vacío a +3,2", x: 133.0, y: 90.51, n0: 3.2, h0: 0.45, n1: 5.4, h1: 0.45, color: ET.skid },
     { id: "doble", nom: "ELEVADOR DOBLE SKID RICO · CPU5 GR8/GR9", sub: "sube el skid rico vacío a cota 9 para volver a Chapa · a confirmar", x: 13.8, y: 84.75, n0: 3.2, h0: 0.45, n1: 9, h1: 0.45, color: ET.skid },
   ];
   const plataformas = {};   // id → { grupo, carga } para animar
@@ -725,7 +735,7 @@ window.Cotas = function (api) {
   E9(60, 46, "HORNOS DE ESMALTE SX / DX", "30 lugares", ET.horno);
   E9(63, 20, "REVISIÓN FINAL", "collaudo delibera · 28 lugares", ET.final);
   E9(222, 72.7, "FUERA DE LÍNEA REVISIÓN FONDO", "box revisión", ET.revision, 2);
-  etiqueta(G[5.4], 257.2, 82.3, 13.5, "COTA 5,4 · CAMBIO DE SKID", "la carrocería deja el skid rico (lo traban rosetas) y pasa al skid pobre", ET.skid);
+  etiqueta(G[5.4], CSK.x, CSK.y, 13.5, "COTA 5,4 · CAMBIO DE SKID", "en el medio de la banda: mesa de desbloqueo + elevador de cambio CPU5 · la carrocería deja el skid rico y pasa al skid pobre", ET.skid);
   etiqueta(G[5.4], 60, 84.7, 11.0, "ACUMULO DE SKIDS RICOS (2 PISOS)", "a +3,2 y +5,4 · vuelven a Chapa por el elevador doble", ET.skid, 2);
   etiqueta(G[3.2], 222, 8.9, 8.5, "LEVEL +3,2 · CRONOS SOBRE EL BUFFER", "después de Óleo el Cronos sube y pasa por arriba del buffer KP1", ET.elev);
   etiqueta(G[3.2], 262.05, 50, 8.0, "RETORNO DE SKIDS POBRES (CPU4)", "a +3,2 por la pared, de la zona del elevador Montaje al cambio de skid", ET.skid, 2);

@@ -92,8 +92,11 @@ window.Recorrido = function (api) {
   const T_PREP = [[254.27, 101.75, 0.5, 9], [254.27, 96.99, 0.5, 9], [221.5, 96.99, 0.5, 9]];
   const T_PRETRAT = [[204.2, 96.99, 0.5, 9, "fosfato"], [3.0, 96.99, 0.5, 9]];
   const T_CATA = [[3.0, 90.73, 0.5, 9], [21.5, 90.73, 0.5, 9, "cata"], [111.7, 90.73, 0.5, 9]];
-  const T_HCATA = [[133.6, 90.73, 0.5, 9], [255.06, 90.73, 0.5, 9], [257.5, 90.7, 0.5, 9]];
-  const T_CSKID = [[257.5, 90.7, 0.5, 5.4], [257.5, 86.8, 0.5, 5.4], [257.2, 82.3, 0.5, 5.4, null, "pobre"], [257.9, 76.45, 0.5, 5.4]];
+  const T_HCATA = [[133.6, 90.73, 0.5, 9], [251.5, 90.73, 0.5, 9]];
+  // cota 5,4: fly rollers CPU5 hacia −x → mesa de desbloqueo → elevador de cambio (x 133, medio de la banda) → transferidores
+  // (x 122 y x 149,6) → CPU4 hacia +x por y 80,25 → mesas hasta la giratoria (250,5 · 76) → elevador CPU6 GR1
+  const T_CSKID = [[251.5, 90.73, 0.5, 5.4], [140.5, 90.51, 0.5, 5.4], [133.0, 90.51, 0.5, 5.4, null, "pobre"], [122.1, 90.51, 0.5, 5.4], [122.1, 84.25, 0.5, 5.4],
+    [149.63, 84.25, 0.5, 5.4], [149.63, 80.25, 0.5, 5.4], [245.0, 80.25, 0.5, 5.4], [245.0, 76.0, 0.5, 5.4], [250.5, 76.0, 0.5, 5.4], [257.9, 76.45, 0.5, 5.4]];
   const T_BAJA0 = [[257.9, 76.45, 0.72, 0], [254.0, 76.45, 0.72, 0]];
   const T_SELLADO = [[230, 76.45, 0.72, 0, "sellado"], [80.5, 76.45, 0.72, 0], [80.5, 67.7, 0.48, 0], [243.2, 67.7, 0.48, 0]];
   const T_SUBE9 = [[243.2, 57.7, 0.48, 0], [247.4, 57.7, 0.8, 0], [247.4, 57.73, 0.45, 9]];
@@ -125,8 +128,10 @@ window.Recorrido = function (api) {
     { r: ruta(cat(T_CHAPA, T_PREP, T_PRETRAT, T_CATA, T_HCATA, T_CSKID)), paso: MOVIL ? 16 : 8.5, v: 0.75, tipos: ["sedan", "cabina", "caja"] },
     { r: ruta(cat([[247.4, 57.7, 0.8, 0, "sellado", "pobre"]], T_SUBE9.slice(2), T_FONDO, T_REVCATA, T_ESMALTE, T_HESM, T_REVFIN, [[128.3, 15.5, 0.48, 0]])), paso: MOVIL ? 16 : 8.5, v: 0.75, tipos: ["sedan", "cabina", "caja"] },
     { r: ruta(cat([[185.48, 8.91, 0.48, 0, "pint", "pobre"]], T_L32, T_TUNEL)), paso: MOVIL ? 18 : 10, v: 0.55, tipos: ["sedan"] },
-    { r: ruta([[257.2, 82.3, 0.5, 5.4, null, "rico"], [248.07, 80.25, 0.5, 5.4], [149.63, 80.25, 0.5, 5.4], [149.63, 84.25, 0.5, 5.4], [122.1, 84.25, 0.5, 5.4], [122.1, 84.75, 0.5, 5.4], [122.1, 84.75, 0.45, 3.2], [13.8, 84.75, 0.45, 3.2], [13.8, 84.75, 0.45, 9], [8.51, 84.73, 0.45, 9], [8.51, 101.75, 0.45, 9], [51.3, 101.75, 0.45, 9], [51.3, 104.5, 0.75, 9], [51.3, 129.28, 0.75, 9], [62.82, 129.28, 1.7, 9]]), paso: MOVIL ? 22 : 11, v: 0.9, vacio: true },
-    { r: ruta([[262.05, 4.6, 0.48, 0, null, "pobre"], [262.05, 4.6, 0.45, 3.2], [262.05, 82.3, 0.45, 3.2], [262.05, 82.3, 0.45, 5.4], [257.2, 82.3, 0.5, 5.4]]), paso: MOVIL ? 22 : 11, v: 0.9, vacio: true },
+    // skid rico vacío: el elevador de cambio lo baja a +3,2 → acumulo inferior (y 84,75) hacia −x → elevador doble → cota 9 → Chapa
+    { r: ruta([[133.0, 90.51, 0.5, 5.4, null, "rico"], [133.0, 90.51, 0.45, 3.2], [133.0, 84.75, 0.45, 3.2], [13.8, 84.75, 0.45, 3.2], [13.8, 84.75, 0.45, 9], [8.51, 84.73, 0.45, 9], [8.51, 101.75, 0.45, 9], [51.3, 101.75, 0.45, 9], [51.3, 104.5, 0.75, 9], [51.3, 129.28, 0.75, 9], [62.82, 129.28, 1.7, 9]]), paso: MOVIL ? 22 : 11, v: 0.9, vacio: true },
+    // skid pobre vacío: elevador de retorno (zona elevador Montaje) → +3,2 por la pared → CPU4 GR7 → +5,4 por y 93 → elevador de cambio
+    { r: ruta([[262.05, 4.6, 0.48, 0, null, "pobre"], [262.05, 4.6, 0.45, 3.2], [262.05, 93.01, 0.45, 3.2], [262.05, 93.01, 0.45, 5.4], [133.0, 93.01, 0.5, 5.4], [133.0, 90.51, 0.5, 5.4]]), paso: MOVIL ? 22 : 11, v: 0.9, vacio: true },
   ];
   // movers + InstancedMesh por tipo
   const movers = [];
@@ -272,7 +277,7 @@ window.Recorrido = function (api) {
     a({ cota: 9, tit: "Pretratamiento", pts: T_PRETRAT, txt: "Pasa por un túnel de piletas: primero la desengrasan y la lavan, después le dan una capa de <b>fosfato</b>, que la protege del óxido y hace que la pintura agarre bien.", dato: "Bonder · 30 lugares · 9 skids de proceso (árbol de máquinas)" });
     a({ cota: 9, tit: "Cataforesis", pts: T_CATA, txt: "Un transferidor la pasa a la otra línea y se sumerge entera en la <b>cuba de cataforesis</b>, con corriente eléctrica: la pintura se pega en toda la chapa, también por dentro de los huecos. Es la primera capa contra la corrosión. Después pasa por los lavados.", dato: "19 lugares · cuba ED + LAVAGGI del plano" });
     a({ cota: 9, tit: "Horno de cataforesis", pts: T_HCATA, txt: "Pasa el túnel de conexión y entra al horno, donde la capa de cataforesis se endurece. Al final, un enfriador la baja de temperatura.", dato: "26 lugares · cuello de botella: 32 JPH" });
-    a({ cota: 5.4, tit: "Baja a la cota 5,4 y cambia de skid", pts: T_CSKID, swap: true, txt: "Un elevador la baja al piso intermedio. Primero, en la <b>mesa de desbloqueo</b>, las rosetas giran 90° y la sueltan. Después, en el pórtico de <b>cambio de skid</b>, pasa del skid rico al <b>skid pobre</b> (<i>paint skid</i>), que solo la apoya. El skid rico vacío vuelve por el acumulo de +3,2 m y un elevador doble a la carga de Chapa.", dato: "CPU5 GR3 cambio de skid · retorno skid rico CPU5 (+3,2) y CPU1 · ubicación del pórtico: a confirmar" });
+    a({ cota: 5.4, tit: "Baja a la cota 5,4 y cambia de skid", pts: T_CSKID, swap: true, txt: "Un elevador la baja al piso intermedio y unos fly rollers la llevan hasta el <b>medio de la planta</b>. Dos mesas antes del cambio, la <b>mesa de desbloqueo</b> gira 90° las rosetas y la suelta. En el <b>elevador de cambio de skid</b> se levanta la carrocería, el skid rico baja a +3,2 m y ella queda apoyada en un <b>skid pobre</b> (<i>paint skid</i>). Después vuelve hacia el elevador del sellado.", dato: "CPU5: fly rollers → estación de desbloqueo → elevador de cambio 05.1 (esquema COTA 5000, proyecto \"Mejora en cambio de skid\" 2026) · sigue por CPU4 hasta CPU6 GR1" });
     a({ cota: 0, tit: "Baja a la cota 0", pts: T_BAJA0, txt: "El elevador CPU6 GR1 la baja a planta baja, sobre la mesa pantógrafo de entrada al sellado.", dato: "CPU6 GR1 · elevador" });
     a({ cota: 0, tit: "Sellado", pts: T_SELLADO, txt: "En la cabina de sellado se pone sellador en las uniones de chapa, para que no entre agua ni polvo. Al fondo, una <b>mesa giratoria</b> la gira y un transferidor la pasa al carril de al lado, por donde vuelve.", dato: "Sellado upperbody · 26 lugares · giro en U: CPU6 GR5" });
     a({ cota: 9, tit: "Vuelve a subir a la cota 9", pts: T_SUBE9, txt: "Al final del carril de vuelta, otra <b>mesa giratoria</b> la gira para que entre derecho al <b>elevador a línea de fondo</b>, que la sube a la cota 9. Desde acá hasta la revisión final, todo pasa en la cota 9.", dato: "Mesas giratorias CPU6 GR10 · elevador CPU6 GR11" });
