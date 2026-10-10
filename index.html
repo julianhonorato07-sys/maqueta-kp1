@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f8fc">
 <title>Maqueta KP1 · Unidad de Pintura</title>
-<link rel="stylesheet" href="style.css?v=202610101613">
+<link rel="stylesheet" href="style.css?v=202610101620">
 </head>
 <body>
 <div id="escena"></div>
@@ -38,7 +38,7 @@
   </div>
   <label class="sep">Separar pisos <input type="range" id="separar" min="0" max="30" step="1" value="0"> <b id="separar-v">0 m</b></label>
   <select id="ir-a" aria-label="Ir a un lugar de la planta"></select>
-  <button id="abrir-recorrido" class="recorrido-btn">▶ Recorrido de la carrocería</button>
+  <button id="abrir-recorrido" class="recorrido-btn">▶ Recorridos: carrocería y skids</button>
 </div>
 
 <div id="nav" aria-label="Mover la cámara">
@@ -88,6 +88,7 @@
   <p id="rc-txt"></p>
   <p id="rc-dato" class="dato"></p>
   <div class="rc-opciones">
+    <div class="seg" id="rc-tipo" title="Qué seguir"><button data-v="carroceria" class="activo">Carrocería</button><button data-v="rico">Skid rico</button><button data-v="pobre">Skid pobre</button></div>
     <div class="seg" id="rc-modelo"><button data-v="cronos" class="activo">Cronos</button><button data-v="kp1">Titano / Dakota</button></div>
     <div class="seg" id="rc-def"><button data-v="ok" class="activo">Sale bien</button><button data-v="def">Tiene defectos</button></div>
   </div>
@@ -115,11 +116,11 @@
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
 <script src="lib/CSS2DRenderer.js"></script>
-<script src="data/nave.js?v=202610101613"></script>
-<script src="data/cotas.js?v=202610101613"></script>
-<script src="detalle_calles.js?v=202610101613"></script>
-<script src="cotas.js?v=202610101613"></script>
-<script src="recorrido.js?v=202610101613"></script>
-<script src="app.js?v=202610101613"></script>
+<script src="data/nave.js?v=202610101620"></script>
+<script src="data/cotas.js?v=202610101620"></script>
+<script src="detalle_calles.js?v=202610101620"></script>
+<script src="cotas.js?v=202610101620"></script>
+<script src="recorrido.js?v=202610101620"></script>
+<script src="app.js?v=202610101620"></script>
 </body>
 </html>

@@ -114,6 +114,9 @@ h1 { font-size: 17px; margin: 0; font-weight: 650; }
 #recorrido .seg { display: inline-flex; border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }
 #recorrido .seg button { border: 0; background: #fff; padding: 5px 10px; font: inherit; font-size: 12px; cursor: pointer; color: var(--texto); }
 #recorrido .seg button.activo { background: var(--azul); color: #fff; }
+#recorrido .seg[hidden] { display: none; }
+#rc-tipo button[data-v="rico"].activo { background: #b8860b; }
+#rc-tipo button[data-v="pobre"].activo { background: #4b5a6b; }
 #recorrido .rc-barra { height: 5px; background: #e3e9f0; border-radius: 99px; margin-top: 10px; overflow: hidden; }
 #rc-prog { height: 100%; width: 0; background: var(--azul); transition: width .2s; }
 #recorrido .rc-ctrl { display: flex; gap: 6px; align-items: center; margin-top: 10px; }
@@ -215,7 +218,7 @@ dialog button { margin-top: 8px; border: 0; background: var(--azul); color: #fff
   #recorrido h2 { font-size: 14px; }
   #recorrido .rc-opciones { margin-top: 6px; }
   #recorrido .rc-ctrl { margin-top: 8px; }
-  body.con-recorrido #pisos .botones, body.con-recorrido #pisos .sep { display: none; }
+  body.con-recorrido #pisos .botones, body.con-recorrido #pisos .sep, body.con-recorrido #pisos select { display: none; }
   #ayuda { bottom: calc(244px + env(safe-area-inset-bottom)); }
   #recorrido .paso-num b { font-size: 22px; }
   #nav { right: 8px; bottom: auto; top: calc(124px + env(safe-area-inset-top)); padding: 4px; gap: 4px; flex-direction: column; }

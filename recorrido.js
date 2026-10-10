@@ -265,9 +265,63 @@ window.Recorrido = function (api) {
   }
 
   // ---------------------------------------------------------------- (b) RECORRIDO GUIADO
-  const tourEstado = { activo: false, play: false, modelo: "cronos", def: false, paso: 0, s: 0, seguir: true };
+  // tipo: "carroceria" (sigue a una carrocería) · "rico" / "pobre" (sigue a un skid en su vuelta completa)
+  const tourEstado = { activo: false, play: false, tipo: "carroceria", modelo: "cronos", def: false, paso: 0, s: 0, seguir: true };
   const tourPt = {};
+
+  // ---- Vuelta del SKID RICO (deep skid): carga en Chapa → piletas y horno con la carrocería → cambio de skid → vuelve vacío
+  // carga: true = lleva carrocería · false = vacío · "fin" = la recibe al final del paso · "inicio" = la deja al empezar
+  function pasosRico() {
+    const S = [], a = (o) => S.push(Object.assign({ skid: "rico" }, o));
+    a({ cota: 9, tit: "Llega vacío a la carga de Chapa", carga: "fin", pts: [[51.3, 116.0, 0.75, 9, "chapa"], [51.3, 129.28, 0.75, 9], [62.82, 129.28, 1.7, 9]],
+      txt: "El <b>skid rico</b> (<i>deep skid</i>) es la base reforzada que lleva la carrocería por las piletas. Llega vacío por su carril de retorno y se para en la zona de carga, debajo del <b>elevador scocca BIW</b>. El elevador baja la carrocería de Chapistería y las <b>rosetas</b> del skid la traban.",
+      dato: "Plano N9000: Retorno skid pint. vacíos N+0,75 · Carga s/ skid pintura · 129 skids ricos (inventario jul. 2026)" });
+    a({ cota: 9, tit: "Con la carrocería, entra a la línea", carga: true, pts: [[68.82, 129.28, 1.7, 9], [68.82, 120.0, 1.7, 9], [68.82, 117.0, 0.5, 9], [68.82, 101.75, 0.5, 9]],
+      txt: "Con la carrocería trabada baja por su carril de +1,70 a +0,50 m. Un control verifica que el skid esté bien enganchado antes de entrar a la línea.", dato: "Verificación skid enganchado · CPU1" });
+    a({ cota: 9, tit: "Piletas: pretratamiento y cataforesis", carga: true, pts: [[254.27, 101.75, 0.5, 9], [254.27, 96.99, 0.5, 9], [204.2, 96.99, 0.5, 9, "fosfato"], [3.0, 96.99, 0.5, 9], [3.0, 90.73, 0.5, 9], [21.5, 90.73, 0.5, 9, "cata"], [111.7, 90.73, 0.5, 9]],
+      txt: "Para esto existe el skid rico: el transportador pendular sumerge <b>skid y carrocería juntos</b> en cada pileta. Las rosetas la mantienen trabada para que no flote ni se corra.", dato: "Transporte pendular TTS y cataforesis (CPU2)" });
+    a({ cota: 9, tit: "Horno de cataforesis", carga: true, pts: [[133.6, 90.73, 0.5, 9], [251.5, 90.73, 0.5, 9]], txt: "Pasa el horno junto con la carrocería.", dato: "CPU3 horno de cataforesis" });
+    a({ cota: 5.4, tit: "Baja a +5,4 y va hasta el cambio", carga: true, pts: [[251.5, 90.73, 0.5, 5.4], [140.5, 90.51, 0.5, 5.4]],
+      txt: "El elevador de salida del horno lo baja a +5,4 y los fly rollers lo llevan hasta el medio de la banda. Dos mesas antes del cambio, la <b>mesa de desbloqueo</b> gira 90° las rosetas y suelta la carrocería.", dato: "CPU5 GR1–GR2 fly rollers · GR3 estación de desbloqueo" });
+    a({ cota: 5.4, tit: "Cambio de skid: queda vacío", carga: "inicio", pts: [[133.0, 90.51, 0.5, 5.4]],
+      txt: "En el <b>elevador de cambio</b> se levanta la carrocería y el skid rico queda vacío. La carrocería sigue sobre un skid pobre.", dato: "CPU5 elevador de cambio 05.1 (esquema COTA 5000)" });
+    a({ cota: 3.2, tit: "Baja a +3,2 y se acumula", carga: false, pts: [[133.0, 90.51, 0.45, 3.2], [133.0, 84.75, 0.45, 3.2], [13.8, 84.75, 0.45, 3.2]],
+      txt: "El elevador lo baja a +3,2 m y viaja hacia el oeste por el <b>transporte de retorno y acumulo de skid rico</b>, donde los skids vacíos esperan en dos pisos.", dato: "CPU5 GR6–GR7 fly rollers (cota 3,2) · ACCUMULO SKID N 2 PIANI (plano N5400) · instructivo LT-PI-00-75" });
+    a({ cota: 9, tit: "Elevador doble: sube a la cota 9", carga: false, pts: [[13.8, 84.75, 0.45, 9], [8.51, 84.73, 0.45, 9]],
+      txt: "En la punta oeste, el <b>elevador doble del retorno de skid rico</b> lo sube a la cota 9.", dato: "CPU5 GR8 / GR9 elevadores · ubicación a confirmar" });
+    a({ cota: 9, tit: "Vuelve a la carga de Chapa", carga: false, pts: [[8.51, 101.75, 0.45, 9], [51.3, 101.75, 0.45, 9], [51.3, 104.5, 0.75, 9], [51.3, 116.0, 0.75, 9]],
+      txt: "Una mesa giratoria lo pasa al <b>carril de retorno de skids vacíos</b> (+0,75 m), que lo lleva otra vez a la zona de carga. Ahí empieza otra vuelta.", dato: "CPU1 · Retorno skid pint. vacíos (plano N9000)" });
+    return S;
+  }
+  // ---- Vuelta del SKID POBRE (paint skid): recibe la carrocería en el cambio → sellado, cota 9, Óleo, buffer → vacío en difusión → vuelve
+  function pasosPobre() {
+    const S = [], a = (o) => S.push(Object.assign({ skid: "pobre" }, o));
+    a({ cota: 5.4, tit: "Llega vacío al cambio de skid", carga: "fin", pts: [[178.0, 93.01, 0.5, 5.4, "cata"], [133.0, 93.01, 0.5, 5.4], [133.0, 90.51, 0.5, 5.4]],
+      txt: "El <b>skid pobre</b> (<i>paint skid</i>) es más liviano: no traba la carrocería, solo la apoya sobre puntalines y le restringe el movimiento lateral. Llega vacío por la línea de +5,4 al <b>elevador de cambio</b>, que le apoya encima la carrocería que viene de cataforesis.",
+      dato: "639 skids pobres (inventario jul. 2026) · CPU4 transporte retorno skids pobres" });
+    a({ cota: 5.4, tit: "Lleva la carrocería al sellado", carga: true, pts: [[122.1, 90.51, 0.5, 5.4], [122.1, 84.25, 0.5, 5.4], [149.63, 84.25, 0.5, 5.4], [149.63, 80.25, 0.5, 5.4], [245.0, 80.25, 0.5, 5.4], [245.0, 76.0, 0.5, 5.4], [250.5, 76.0, 0.5, 5.4], [257.9, 76.45, 0.5, 5.4]],
+      txt: "Por transferidores y la línea de +5,4 vuelve hacia la punta: una mesa giratoria lo deja en el elevador que baja al sellado.", dato: "CPU4 · mesa giratoria GR15 · elevador CPU6 GR1" });
+    a({ cota: 0, tit: "Sellado en cota 0", carga: true, pts: [[257.9, 76.45, 0.72, 0], [254.0, 76.45, 0.72, 0], [230.0, 76.45, 0.72, 0, "sellado"], [80.5, 76.45, 0.72, 0], [80.5, 67.7, 0.48, 0], [243.2, 67.7, 0.48, 0], [243.2, 57.7, 0.48, 0], [247.4, 57.7, 0.8, 0]],
+      txt: "Recorre la cabina de sellado, gira en U y vuelve hasta el elevador a línea de fondo.", dato: "CPU6 transporte de sellado" });
+    a({ cota: 9, tit: "Bajo carrocería y revisión", carga: true, pts: [[247.4, 57.73, 0.45, 9]].concat(T_FONDO, T_REVCATA),
+      txt: "En la cota 9 lleva la carrocería por la cabina de fondo (UBS & UBC), el horno de pregelado, la estación I, el acumulo lote colores y la revisión de cataforesis.", dato: "CPU8 fondo · CPU9 revisión fondo" });
+    a({ cota: 9, tit: "Esmalte y hornos", carga: true, pts: T_ESMALTE.concat(T_HESM), txt: "Sigue con la carrocería por la línea de esmalte y uno de los hornos de esmalte.", dato: "Línea de esmalte · hornos SX/DX" });
+    a({ cota: 9, tit: "Revisión final", carga: true, pts: T_REVFIN, txt: "Pasa la revisión final.", dato: "CPU11 revisión final" });
+    a({ cota: 0, tit: "Baja y pasa por Óleo", carga: true, pts: T_BAJAFIN.concat(T_OLEO), txt: "El elevador CPU11 GR08 lo baja a cota 0 y en Óleo le sacan los distanciales a la carrocería.", dato: "CPU12 · línea extracción distanciales" });
+    a({ cota: 0, tit: "Buffer y línea de salida (KP1)", carga: true, pts: T_BUFFER.concat(T_LINEA),
+      txt: "Con una cabina o caja de pickup pasa por el buffer y la línea de salida hasta difusión. (Con el Cronos: a confirmar si el skid sube con la carrocería al túnel o se lo sacan antes.)", dato: "Transporte buffer CIEM (CPU13)" });
+    a({ cota: 0, tit: "En difusión queda vacío", carga: "inicio", pts: T_DIFUSION, txt: "La mula se lleva la cabina y la caja: el skid pobre queda vacío en la línea.", dato: "SOP de difusión" });
+    a({ cota: 0, tit: "Va al elevador de retorno", carga: false, pts: [[261.2, 30.5, 0.48, 0], [261.2, 4.6, 0.48, 0], [262.05, 4.6, 0.48, 0]],
+      txt: "Vacío, va hasta el <b>elevador de retorno de skid pobre</b>, en la zona del elevador Montaje.", dato: "Camino entre difusión y el elevador: a confirmar" });
+    a({ cota: 3.2, tit: "Sube a +3,2 y va por la pared", carga: false, pts: [[262.05, 4.6, 0.45, 3.2], [262.05, 93.01, 0.45, 3.2]],
+      txt: "El elevador lo sube a +3,2 m y un transportador largo lo lleva junto a la pared del fondo de la nave.", dato: "CPU4 GR8–GR13 (cota 3,2) · transportador x 262 del plano N5400" });
+    a({ cota: 5.4, tit: "Sube a +5,4 y vuelve al cambio", carga: false, pts: [[262.05, 93.01, 0.45, 5.4], [178.0, 93.01, 0.5, 5.4]],
+      txt: "El elevador CPU4 GR7 lo sube a +5,4 y vuelve hacia el cambio de skid para recibir otra carrocería. Ahí empieza otra vuelta.", dato: "CPU4 GR7 elevador · ubicación a confirmar" });
+    return S;
+  }
   function pasos() {
+    if (tourEstado.tipo === "rico") return pasosRico();
+    if (tourEstado.tipo === "pobre") return pasosPobre();
     const K = tourEstado.modelo === "kp1", D = tourEstado.def, S = [];
     const a = (o) => S.push(o);
     a({ cota: 9, tit: "Llega de Chapistería", pts: T_CHAPA,
@@ -348,7 +402,10 @@ window.Recorrido = function (api) {
     $("rc-num").textContent = String(i + 1).padStart(2, "0");
     $("rc-tit").textContent = p.tit; $("rc-txt").innerHTML = p.txt; $("rc-dato").textContent = p.dato || "";
     const chip = $("rc-cota"); chip.textContent = COTA_TXT[p.cota]; chip.style.background = COTA_COL[p.cota];
-    marca.textContent = p.tit;
+    const T = tourEstado.tipo;
+    marca.textContent = (T === "rico" ? "Skid rico · " : T === "pobre" ? "Skid pobre · " : "") + p.tit;
+    const colMarca = T === "rico" ? "#b8860b" : T === "pobre" ? "#4b5a6b" : "#1f6feb";
+    marca.style.background = colMarca; halo.material.color.set(colMarca);
     // si los pisos están juntos, se muestra la cota del paso
     const M = maqueta;
     if (M.estado.sep === 0) { const piso = p.cota === 9 ? "9" : p.cota === 0 ? "0" : "5"; if (M.estado.piso !== piso) M.verPiso(piso); }
@@ -358,16 +415,21 @@ window.Recorrido = function (api) {
     carro.position.copy(W(tourPt.x, tourPt.y, 0)); carro.position.y = tourPt.z;
     carro.rotation.y = tourPt.ang;
     colgT.visible = !!tourPt.dip; if (tourPt.dip) colgT.scale.y = Math.max(0.05, alto(9, RIEL_PENDULAR) - (tourPt.z + 1.35));
-    const i = pasoDe(tourEstado.s), p = PASOS[i];
+    const i = pasoDe(tourEstado.s), p = PASOS[i], T = tourEstado.tipo;
     const swapI = PASOS.findIndex(x => x.swap);
-    const pobre = i > swapI || (i === swapI && tourEstado.s > (p.s0 + p.s1) / 2);
+    const pobre = T === "pobre" || (T === "carroceria" && (i > swapI || (i === swapI && tourEstado.s > (p.s0 + p.s1) / 2)));
     cSkid.material.color.set(pobre ? SKID_POBRE : SKID_RICO);
-    mCuerpo.color.set(tourPt.e === "pint" ? (tourEstado.modelo === "kp1" ? "#eef1f4" : "#c21f37") : EST[tourPt.e] || EST.chapa);
+    // en los recorridos de skid el skid se resalta y la carrocería aparece solo mientras la lleva
+    cSkid.material.emissive.set(T === "carroceria" ? 0x000000 : pobre ? 0x1f4f8f : 0x6b4f00);
+    const fr = (tourEstado.s - p.s0) / Math.max(0.01, p.s1 - p.s0);
+    const cargado = T === "carroceria" || p.carga === true || (p.carga === "fin" && fr > 0.75) || (p.carga === "inicio" && fr < 0.35);
+    cuerpo.visible = cargado; vid.visible = cargado && cuerpo.geometry === G_SEDAN;
+    mCuerpo.color.set(tourPt.e === "pint" ? (tourEstado.modelo === "kp1" || T === "pobre" ? "#eef1f4" : "#c21f37") : EST[tourPt.e] || EST.chapa);
     mulaT.visible = !!p.mula;
     cuerpo.position.y = p.mula ? 0.25 : 0; cSkid.visible = !p.mula || i < PASOS.length - 1;
     // pareja KP1: aparece cuando la cabina llega a la mitad del buffer; después va 5,5 m detrás (en la mula, sobre el carro)
     const iBuf = PASOS.findIndex(x => x.tit.startsWith("Buffer KP1"));
-    const verPar = tourEstado.modelo === "kp1" && iBuf >= 0 && (i > iBuf || (i === iBuf && tourEstado.s > PASOS[iBuf].s1 - 0.6));
+    const verPar = T === "carroceria" && tourEstado.modelo === "kp1" && iBuf >= 0 && (i > iBuf || (i === iBuf && tourEstado.s > PASOS[iBuf].s1 - 0.6));
     pareja.visible = verPar;
     if (verPar) {
       if (p.mula) { pareja.position.copy(carro.position); pareja.rotation.y = carro.rotation.y; pareja.translateX(-3.4); pareja.position.y = carro.position.y + 0.25; pSkid.visible = false; }
@@ -396,9 +458,13 @@ window.Recorrido = function (api) {
     i = Math.max(0, Math.min(PASOS.length - 1, i));
     tourEstado.s = PASOS[i].s0 + 0.01; tourEstado.paso = -1; ubicarCarro(); seguirCamara(0, true);
   }
-  function setModelo() {
-    cuerpo.geometry = tourEstado.modelo === "kp1" ? G_CABINA : G_SEDAN; vid.visible = tourEstado.modelo !== "kp1";
-    const i = Math.min(tourEstado.paso, 99); armarTour(); irAPaso(Math.min(i < 0 ? 0 : i, PASOS.length - 1));
+  function setModelo(desdeCero) {
+    const T = tourEstado.tipo;
+    cuerpo.geometry = T === "pobre" || (T === "carroceria" && tourEstado.modelo === "kp1") ? G_CABINA : G_SEDAN;
+    vid.visible = cuerpo.geometry === G_SEDAN;
+    // el modelo y "defectos" solo aplican al recorrido de la carrocería
+    $("rc-modelo").hidden = T !== "carroceria"; $("rc-def").hidden = T !== "carroceria";
+    const i = desdeCero ? 0 : Math.min(tourEstado.paso, 99); armarTour(); irAPaso(Math.min(i < 0 ? 0 : i, PASOS.length - 1));
   }
   function abrir() {
     tourEstado.activo = true; tour.visible = true; $("recorrido").hidden = false; document.body.classList.add("con-recorrido");
@@ -417,6 +483,11 @@ window.Recorrido = function (api) {
   $("rc-seguir").addEventListener("change", (e) => { tourEstado.seguir = e.target.checked; if (tourEstado.seguir) seguirCamara(0, true); });
   document.querySelectorAll("#rc-modelo button").forEach(b => b.addEventListener("click", () => { tourEstado.modelo = b.dataset.v; document.querySelectorAll("#rc-modelo button").forEach(x => x.classList.toggle("activo", x === b)); setModelo(); }));
   document.querySelectorAll("#rc-def button").forEach(b => b.addEventListener("click", () => { tourEstado.def = b.dataset.v === "def"; document.querySelectorAll("#rc-def button").forEach(x => x.classList.toggle("activo", x === b)); setModelo(); }));
+  document.querySelectorAll("#rc-tipo button").forEach(b => b.addEventListener("click", () => {
+    tourEstado.tipo = b.dataset.v; tourEstado.play = false; $("rc-play").textContent = "▶ Reproducir";
+    document.querySelectorAll("#rc-tipo button").forEach(x => x.classList.toggle("activo", x === b));
+    setModelo(true);
+  }));
   // al arrastrar la vista se deja de seguir (se puede volver a tildar "Seguir")
   controles.addEventListener("start", () => { if (tourEstado.activo && tourEstado.play) return; });
 
