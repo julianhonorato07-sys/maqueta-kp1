@@ -920,7 +920,8 @@ window.DetalleCalles = function (api) {
   for (const [x, y] of [[12.5, 66.6], [13.3, 66.6], [14.1, 66.6], [12.5, 67.4]]) { cil("#f2c94c", x, y, 0, 0.9, 0.3); cil("#2b2f33", x, y, 0.9, 0.04, 0.31); }
   for (const x of [11.5, 13.5]) { bloque("#5d6672", x, 70.8, 1.2, 0.6, 0, 0.2); cil("#1f5fa8", x, 70.8, 0.2, 1.2, 0.18); cil("#aeb7c2", x + 0.4, 70.8, 1.0, 1.8, 0.05); }
   bloque("#c9cdd1", 6.6, 72.6, 1.6, 0.5, 0, 2.0);
-  // 14b. CABINA PVC (pts 32.3–32.4): recinto vidriado sobre la huella del plano (x 27,7–76,8 · y 65,2–70,2)
+  // 14b. Recinto vidriado sobre la huella "CABINA PVC" del layout 2018 (x 27,7–76,8 · y 65,2–70,2; fotos pts 32.3–32.4).
+  //      Julian 10/10: el PVC es bajo carrocería y se hace en la COTA 9 → acá no se marca proceso de PVC.
   for (const y of [65.2, 70.2]) {
     caja("#f1f2f0", 27.7, y - 0.05, 76.8, y + 0.05, 0, 1.15);
     caja("#dfe8ef", 27.7, y - 0.02, 76.8, y + 0.02, 1.15, 3.0, { clave: "vidrio2", transparente: 0.35 });
@@ -931,8 +932,6 @@ window.DetalleCalles = function (api) {
   for (const x of [27.7, 76.8]) caja("#cdd3d8", x - 0.05, 65.2, x + 0.05, 70.2, 0, 4.3);
   caja("#d5dadf", 27.7, 65.2, 76.8, 70.2, 4.3, 4.4);
   caja("#2e8b57", 33.0, 65.08, 34.1, 65.14, 0, 2.2); caja("#dfe8ef", 33.15, 65.07, 33.95, 65.08, 1.0, 2.0, { clave: "vidrio2", transparente: 0.35 });
-  cartel("DOMINIO 5\nAPLICACIÓN PISO PVC\nESTACIÓN 42", 38.5, 65.1, 1.9, 1.0, 0.75, "-y", "#ffffff", "#7a6a2a");
-  cartel("CABINA PVC", 52, 65.1, 3.6, 2.4, 0.5, "-y", "#1d2f6b", "#ffffff");
   // 14c. Línea TRP-05 (plano y 67,7) dentro de la cabina y hasta el MASTER; TRP-04 (x 80,5) con transferencia
   rodillosRojos(20, 101, 67.7, 0.45);
   baranda(77, 101, 66.6); baranda(77, 101, 68.8);
@@ -1554,8 +1553,6 @@ window.DetalleCalles = function (api) {
     // SELLADO (Julian 10/10): TRP-03 por la cabina de sellado hacia −x → giro en U por la transferencia TRP-04 (x 80,5) →
     // vuelve por TRP-06 hacia +x → TRP-07 baja a la mesa giratoria (x 243,2) → ELEVADOR A LÍNEA FONDO → sube a cota 9
     { r: recorrido([[257.9, 76.45, 5.4], [257.9, 76.45, 0.72], [254, 76.45, 0.72], [80.5, 76.45, 0.72], [80.5, 67.7, 0.48], [243.2, 67.7, 0.48], [243.2, 57.7, 0.48], [247.4, 57.7, 0.8], [247.4, 57.7, 9.4]], 0.48), n: 64, v: 0.9, abierta: true, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
-    // TRP-05: lazo de la cabina PVC y el master de sellado (plano: y 67,7 hacia +x, master, vuelve por y 76 y gira en x 18)
-    { r: recorrido([[19.7, 67.7], [78, 67.7], [101.3, 67.7], [102.8, 66.2], [102.8, 57], [104.3, 55.5], [109.3, 55.5], [110.8, 57], [110.8, 74.5], [109.3, 76.45], [19.7, 76.45], [18.2, 74.5], [18.2, 69.2], [19.7, 67.7]], 0.48), n: 10, v: 0.5, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
     // CALESITA: lazo TRP-13 → 14 → 16 → 15 (y 30,9 hacia −x; y 22,9 hacia +x)
     { r: recorrido([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], 0.48), n: 22, v: 0.7, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
     // TRP-22 (macro → PINTO) y transferencia al buffer final, carril central y 8,5
@@ -1728,13 +1725,13 @@ window.DetalleCalles = function (api) {
   //     Fuentes: Gestión OPE Pintura 2025-2026 (árbol Proceso → Operación → Máquina: CPU6 TRANSPORTE DE SELLADO con
   //     GR1 ELEVADOR, GR3 TRP SELLADO1/2, GR4/GR6 MESA PANTÓGRAFO, GR5 TRANSFERIDOR LATERAL, GR10 MESA GIRATORIA, GR11 ELEVADOR;
   //     PROCESO DE SELLADO: estaciones de aplicación de sellador Nº1–5, cabina de sellado alto ABB, central de sellador ABB,
-  //     grupo reenvío; PROCESO DE PVC; SELLADO BAJO CARROCERÍA; CABINA EXTRACCIÓN DE DISTANCIALES; CPU11 REVISIÓN FINAL
+  //     grupo reenvío; CABINA EXTRACCIÓN DE DISTANCIALES; CPU11 REVISIÓN FINAL
   //     GR08 ELEVADOR; CPU12 TRANSPORTE FUERA DE LÍNEA; TRANSPORTE BUFFER), RDA vs OC 2026 ("Revisión esmalte / Óleo ceroso",
   //     "Sellado/PVC"), Overview 2026 diap. 4, Trazabilidad Caja-Cabina, plano "Zona difusión", plano municipal 2020
   //     ("CABINAS DE TRABAJO", "DEPÓSITO DE AUTOS", "Proyección entrepiso"). Ubicación de máquinas sin plano: interpretación (supuesto).
   // =============================================================================================
   const procesos = capa("procesos");
-  const DOM = { sellado: "#1f6feb", pvc: "#00a3c4", oleo: "#f39c12", reparacion: "#e74c3c", difusion: "#2e9d4f", acumulo: "#8e44ad", deposito: "#7f8c8d", servicio: "#b7950b" };
+  const DOM = { sellado: "#1f6feb", oleo: "#f39c12", reparacion: "#e74c3c", difusion: "#2e9d4f", acumulo: "#8e44ad", deposito: "#7f8c8d", servicio: "#b7950b" };
   // 25a. Zonas de dominio en el piso (traslúcidas) con borde
   function zonaDominio(color, x0, y0, x1, y1) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, y1 - y0), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.22, depthWrite: false }));
@@ -1743,7 +1740,6 @@ window.DetalleCalles = function (api) {
     procesos.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color })));
   }
   zonaDominio(DOM.sellado, 80, 73.4, 262, 79.1); zonaDominio(DOM.sellado, 78, 65.2, 249, 70.0); zonaDominio(DOM.sellado, 240.5, 55.0, 251, 65.2); zonaDominio(DOM.sellado, 79.4, 70.0, 81.6, 73.4);
-  zonaDominio(DOM.pvc, 5.2, 65.1, 78, 76.0); zonaDominio(DOM.pvc, 100.8, 52.6, 112.6, 65.2);
   zonaDominio(DOM.oleo, 121, 4.0, 186, 13.0);
   zonaDominio(DOM.reparacion, 139.3, 13.0, 184.4, 26.0); zonaDominio(DOM.reparacion, 97.1, 1.1, 121, 19.0);
   zonaDominio(DOM.difusion, 186, 3.8, 264.5, 13.3);
@@ -1768,8 +1764,7 @@ window.DetalleCalles = function (api) {
   etiqueta(80.5, 72.0, 7.5, "CPU6 GR5 · TRANSFERIDOR LATERAL", "giro en U: SELLADO1 → SELLADO2", DOM.sellado, 2);
   etiqueta(245.5, 57.7, 10.5, "CPU6 GR10 + GR11", "mesa giratoria + ELEVADOR → cota 9 (horno de fondo)", DOM.sellado, 2);
   etiqueta(90, 76.4, 5.5, "CABINA EXTRACCIÓN DE DISTANCIALES", "", DOM.sellado, 2);
-  etiqueta(52, 67.7, 6.5, "PROCESO DE PVC", "cabina PVC (dominio 5 · aplicación piso PVC · est. 42) · central PVC · lazo TRP-05", DOM.pvc);
-  etiqueta(106.7, 57, 7.5, "MASTER DE SELLADO E INSONORIZANTE", "", DOM.pvc, 2);
+  etiqueta(106.7, 57, 7.5, "MASTER DE SELLADO E INSONORIZANTE", "", DOM.sellado, 2);
   etiqueta(128.3, 15.5, 11.0, "CPU11 GR08 · ELEVADOR", "baja desde Revisión final (Finish line, cota 9)", DOM.oleo, 2);
   etiqueta(155, 8.9, 6.0, "ÓLEO · ESTACIÓN C", "óleo ceroso (cabinas PINTO) + montaje de frisos y otros · TRP-22", DOM.oleo);
   etiqueta(113, 10, 5.5, "ÁREA MACRO C.P.A.", "inspección con túnel de luces · TRP-17", DOM.reparacion, 2);
@@ -1809,8 +1804,6 @@ window.DetalleCalles = function (api) {
   }
   // Sellado: elevador GR1 → SELLADO1 (−x) → transferidor GR5 → SELLADO2 (+x) → mesa giratoria GR10 → elevador GR11
   flujoCinta([[258.5, 76.45], [80.5, 76.45], [80.5, 67.7], [243.2, 67.7], [243.2, 57.7], [247.4, 57.7]], DOM.sellado);
-  // PVC: lazo TRP-05 por cabina PVC y master
-  flujoCinta([[19.7, 67.7], [101.3, 67.7], [102.8, 66.2], [102.8, 57], [104.3, 55.5], [109.3, 55.5], [110.8, 57], [110.8, 74.5], [109.3, 76.45], [19.7, 76.45], [18.2, 74.5], [18.2, 69.2], [19.7, 67.7]], DOM.pvc, 4.2, 0.7);
   // Bajada CPU11 → Óleo (TRP-22) → Difusión → TRP-23 → Montaje KP1
   flujoCinta([[128.3, 15.5], [128.3, 8.9], [186.5, 8.9], [188.6, 8.5], [250.7, 8.5], [264.5, 8.9], [272, 8.9]], DOM.oleo);
   flujoCinta([[188.6, 8.5], [188.6, 11.4], [250.7, 11.4], [252.5, 8.9]], DOM.difusion, 4.62, 0.6);
