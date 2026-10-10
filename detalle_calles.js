@@ -1553,7 +1553,7 @@ window.DetalleCalles = function (api) {
   const LINEAS = [
     // SELLADO (Julian 10/10): TRP-03 por la cabina de sellado hacia −x → giro en U por la transferencia TRP-04 (x 80,5) →
     // vuelve por TRP-06 hacia +x → TRP-07 baja a la mesa giratoria (x 243,2) → ELEVADOR A LÍNEA FONDO → sube a cota 9
-    { r: recorrido([[254, 76.45, 0.72], [80.5, 76.45, 0.72], [80.5, 67.7, 0.48], [243.2, 67.7, 0.48], [243.2, 57.7, 0.48], [247.4, 57.7, 0.8], [247.4, 57.7, 9.4]], 0.48), n: 64, v: 0.9, abierta: true, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
+    { r: recorrido([[257.9, 76.45, 5.4], [257.9, 76.45, 0.72], [254, 76.45, 0.72], [80.5, 76.45, 0.72], [80.5, 67.7, 0.48], [243.2, 67.7, 0.48], [243.2, 57.7, 0.48], [247.4, 57.7, 0.8], [247.4, 57.7, 9.4]], 0.48), n: 64, v: 0.9, abierta: true, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
     // TRP-05: lazo de la cabina PVC y el master de sellado (plano: y 67,7 hacia +x, master, vuelve por y 76 y gira en x 18)
     { r: recorrido([[19.7, 67.7], [78, 67.7], [101.3, 67.7], [102.8, 66.2], [102.8, 57], [104.3, 55.5], [109.3, 55.5], [110.8, 57], [110.8, 74.5], [109.3, 76.45], [19.7, 76.45], [18.2, 74.5], [18.2, 69.2], [19.7, 67.7]], 0.48), n: 10, v: 0.5, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: ECOAT },
     // CALESITA: lazo TRP-13 → 14 → 16 → 15 (y 30,9 hacia −x; y 22,9 hacia +x)
@@ -1663,7 +1663,7 @@ window.DetalleCalles = function (api) {
   const mesa = new THREE.Mesh(new THREE.BoxGeometry(5.0, 0.16, 2.2), matPant); pant.add(mesa);
   const tijeras = [];
   for (const s of [-1, 1]) for (const d of [-1, 1]) { const t = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 0.08), matTijera); t.userData = { s, d }; pant.add(t); tijeras.push(t); }
-  const cargaPant = carroceriaMovil("sedan", ECOAT[0]); flujo.remove(cargaPant); pant.add(cargaPant);
+  const cargaPant = carroceriaMovil("sedan", ECOAT[0]); flujo.remove(cargaPant); pant.add(cargaPant); cargaPant.visible = false;   // la carga real llega por el elevador GR1 (flujo animado)
   const cPant = W(257.9, 76.45, 0);
   function moverPantografo(t) {
     const h = 0.35 + 0.85 * (0.5 + 0.5 * Math.sin(t * 0.5));
@@ -1721,6 +1721,167 @@ window.DetalleCalles = function (api) {
     for (const s of [-1, 1]) caja("#7d858d", x + s * w * 0.4, y - 0.01, x + s * w * 0.4 + 0.02, y + 0.01, 4.55, 6.2);
   }
   if (animar) { let tp = 0; animar.push((dt) => { if (!grupo.visible) return; tp += dt; moverPantografo(tp); moverElevador(dt); }); }
+
+
+  // =============================================================================================
+  // 25) DOMINIOS Y FLUJO DE OPERACIONES DE LA COTA 0 (capa "procesos")
+  //     Fuentes: Gestión OPE Pintura 2025-2026 (árbol Proceso → Operación → Máquina: CPU6 TRANSPORTE DE SELLADO con
+  //     GR1 ELEVADOR, GR3 TRP SELLADO1/2, GR4/GR6 MESA PANTÓGRAFO, GR5 TRANSFERIDOR LATERAL, GR10 MESA GIRATORIA, GR11 ELEVADOR;
+  //     PROCESO DE SELLADO: estaciones de aplicación de sellador Nº1–5, cabina de sellado alto ABB, central de sellador ABB,
+  //     grupo reenvío; PROCESO DE PVC; SELLADO BAJO CARROCERÍA; CABINA EXTRACCIÓN DE DISTANCIALES; CPU11 REVISIÓN FINAL
+  //     GR08 ELEVADOR; CPU12 TRANSPORTE FUERA DE LÍNEA; TRANSPORTE BUFFER), RDA vs OC 2026 ("Revisión esmalte / Óleo ceroso",
+  //     "Sellado/PVC"), Overview 2026 diap. 4, Trazabilidad Caja-Cabina, plano "Zona difusión", plano municipal 2020
+  //     ("CABINAS DE TRABAJO", "DEPÓSITO DE AUTOS", "Proyección entrepiso"). Ubicación de máquinas sin plano: interpretación (supuesto).
+  // =============================================================================================
+  const procesos = capa("procesos");
+  const DOM = { sellado: "#1f6feb", pvc: "#00a3c4", oleo: "#f39c12", reparacion: "#e74c3c", difusion: "#2e9d4f", acumulo: "#8e44ad", deposito: "#7f8c8d", servicio: "#b7950b" };
+  // 25a. Zonas de dominio en el piso (traslúcidas) con borde
+  function zonaDominio(color, x0, y0, x1, y1) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, y1 - y0), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.22, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.copy(W((x0 + x1) / 2, (y0 + y1) / 2, 0.11)); procesos.add(m);
+    const pts = [[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]].map(([x, y]) => W(x, y, 0.13));
+    procesos.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color })));
+  }
+  zonaDominio(DOM.sellado, 80, 73.4, 262, 79.1); zonaDominio(DOM.sellado, 78, 65.2, 249, 70.0); zonaDominio(DOM.sellado, 240.5, 55.0, 251, 65.2); zonaDominio(DOM.sellado, 79.4, 70.0, 81.6, 73.4);
+  zonaDominio(DOM.pvc, 5.2, 65.1, 78, 76.0); zonaDominio(DOM.pvc, 100.8, 52.6, 112.6, 65.2);
+  zonaDominio(DOM.oleo, 121, 4.0, 186, 13.0);
+  zonaDominio(DOM.reparacion, 139.3, 13.0, 184.4, 26.0); zonaDominio(DOM.reparacion, 97.1, 1.1, 121, 19.0);
+  zonaDominio(DOM.difusion, 186, 3.8, 264.5, 13.3);
+  zonaDominio(DOM.deposito, 191.5, 13.3, 252, 37.2);
+  zonaDominio(DOM.acumulo, 3.8, 12.9, 96, 32.9); zonaDominio(DOM.acumulo, 2, 36.2, 62, 42.7); zonaDominio(DOM.acumulo, 2, 45.7, 62, 61.8);
+  zonaDominio(DOM.servicio, 71.5, 42.9, 86.4, 51.0); zonaDominio(DOM.servicio, 225.3, 43.3, 233.3, 49.0);
+
+  // 25b. Carteles flotantes (HTML) con el nombre del dominio y sus máquinas
+  const etiquetas = [];
+  // nivel 1 = dominio (siempre visible) · nivel 2 = máquina/detalle (solo de cerca). El subtítulo aparece al acercarse.
+  function etiqueta(x, y, z, titulo, sub, color, nivel) {
+    const div = document.createElement("div");
+    const n2 = nivel === 2;
+    div.style.cssText = `background:${color};color:#fff;padding:${n2 ? "2px 6px" : "3px 9px"};border-radius:6px;font:600 ${n2 ? 10.5 : 12.5}px Segoe UI,Arial,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.35);text-align:center;line-height:1.25;max-width:230px;pointer-events:none;white-space:nowrap`;
+    div.innerHTML = `<div>${titulo}</div>` + (sub ? `<div class="sub" style="font-weight:400;font-size:10px;opacity:.95;white-space:normal;display:none">${sub}</div>` : "");
+    const o = new THREE.CSS2DObject(div); o.position.copy(W(x, y, z)); procesos.add(o);
+    etiquetas.push({ o, nivel: nivel || 1, sub: div.querySelector(".sub") });
+  }
+  etiqueta(170, 76.2, 7.0, "SELLADO · CPU6", "TRP SELLADO1 · estaciones de aplicación de sellador Nº1–5 · cabina sellado alto ABB · CRUZCOTTO DX/SX", DOM.sellado);
+  etiqueta(170, 67.7, 7.0, "SELLADO · CPU6 – retorno", "TRP SELLADO2 (TRP-06) hacia el elevador de fondo", DOM.sellado, 2);
+  etiqueta(257.9, 76.45, 8.5, "CPU6 GR1 · ELEVADOR", "entra desde cota 5,4 (clear zone) · mesa pantógrafo GR4/GR6", DOM.sellado, 2);
+  etiqueta(80.5, 72.0, 7.5, "CPU6 GR5 · TRANSFERIDOR LATERAL", "giro en U: SELLADO1 → SELLADO2", DOM.sellado, 2);
+  etiqueta(245.5, 57.7, 10.5, "CPU6 GR10 + GR11", "mesa giratoria + ELEVADOR → cota 9 (horno de fondo)", DOM.sellado, 2);
+  etiqueta(90, 76.4, 5.5, "CABINA EXTRACCIÓN DE DISTANCIALES", "", DOM.sellado, 2);
+  etiqueta(52, 67.7, 6.5, "PROCESO DE PVC", "cabina PVC (dominio 5 · aplicación piso PVC · est. 42) · central PVC · lazo TRP-05", DOM.pvc);
+  etiqueta(106.7, 57, 7.5, "MASTER DE SELLADO E INSONORIZANTE", "", DOM.pvc, 2);
+  etiqueta(128.3, 15.5, 11.0, "CPU11 GR08 · ELEVADOR", "baja desde Revisión final (Finish line, cota 9)", DOM.oleo, 2);
+  etiqueta(155, 8.9, 6.0, "ÓLEO · ESTACIÓN C", "óleo ceroso (cabinas PINTO) + montaje de frisos y otros · TRP-22", DOM.oleo);
+  etiqueta(113, 10, 5.5, "ÁREA MACRO C.P.A.", "inspección con túnel de luces · TRP-17", DOM.reparacion, 2);
+  etiqueta(162, 21, 5.5, "REPARACIÓN · ESTACIÓN R", "Box de retoques = \"cabinas de trabajo\" (plano 2020) · CPU12 fuera de línea", DOM.reparacion);
+  etiqueta(220, 8.5, 7.0, "DIFUSIÓN · BUFFER KP1 · ESTACIÓN D", "TRANSPORTE BUFFER: 3 carriles + carril junto al depósito → TRP-23 → MONTAJE KP1", DOM.difusion);
+  etiqueta(262, 8.9, 5.0, "→ MONTAJE KP1", "salida TRP-23 por fachada sur", DOM.difusion);
+  etiqueta(214, 31, 6.0, "DEPÓSITO DE AUTOS", "plano 2020 · acopio de carrocerías y cajas (deliberadas, macro, montaje)", DOM.deposito);
+  etiqueta(50, 23, 5.0, "ACUMULO · CALESITA", "zona C · 160 skids (cap. geométrica)", DOM.acumulo);
+  etiqueta(32, 39.4, 5.0, "ACUMULO · ZONA D", "48 skids", DOM.acumulo, 2);
+  etiqueta(45, 54, 5.0, "ACUMULO · ZONA E", "138 skids", DOM.acumulo, 2);
+  etiqueta(79, 47, 4.5, "CENTRAL DE SELLADOR ABB", "centrale sigillante", DOM.servicio, 2);
+  etiqueta(229.3, 46, 4.5, "MINI CENTRAL DE PINTURA", "", DOM.servicio, 2);
+  etiqueta(232, 13.0, 9.2, "↑ CRONOS → cota 9 → Montaje Cronos", "según Overview (punto de subida a confirmar)", "#5d6d7e", 2);
+
+  // 25c. Flechas de flujo animadas (cinta con chevrons) a 4,6 m, por encima de los equipos
+  const cvF = document.createElement("canvas"); cvF.width = 128; cvF.height = 32;
+  { const g = cvF.getContext("2d"); g.clearRect(0, 0, 128, 32); g.fillStyle = "#ffffff"; for (let k = 0; k < 2; k++) { const o = k * 64; g.beginPath(); g.moveTo(o + 8, 2); g.lineTo(o + 34, 16); g.lineTo(o + 8, 30); g.lineTo(o + 22, 30); g.lineTo(o + 48, 16); g.lineTo(o + 22, 2); g.closePath(); g.fill(); } }
+  const texF = new THREE.CanvasTexture(cvF); texF.wrapS = THREE.RepeatWrapping;
+  const cintas = [];
+  function flujoCinta(pts, color, z, ancho) {
+    const zz = z || 4.6, a = (ancho || 0.9) / 2, pos = [], uv = [], idx = [];
+    let s = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i], q = pts[Math.min(i + 1, pts.length - 1)], r = pts[Math.max(i - 1, 0)];
+      const dx = (q[0] - r[0]), dy = (q[1] - r[1]), L = Math.hypot(dx, dy) || 1, nx = -dy / L * a, ny = dx / L * a;
+      if (i > 0) s += Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]);
+      const A = W(p[0] + nx, p[1] + ny, zz), B = W(p[0] - nx, p[1] - ny, zz);
+      pos.push(A.x, A.y, A.z, B.x, B.y, B.z); uv.push(s / 2.2, 1, s / 2.2, 0);
+      if (i > 0) { const k = i * 2; idx.push(k - 2, k - 1, k, k - 1, k + 1, k); }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+    const base = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }));
+    const t = texF.clone(); t.needsUpdate = true; t.wrapS = THREE.RepeatWrapping;
+    const flechas = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+    flechas.position.y = 0.01; procesos.add(base, flechas); cintas.push(t);
+  }
+  // Sellado: elevador GR1 → SELLADO1 (−x) → transferidor GR5 → SELLADO2 (+x) → mesa giratoria GR10 → elevador GR11
+  flujoCinta([[258.5, 76.45], [80.5, 76.45], [80.5, 67.7], [243.2, 67.7], [243.2, 57.7], [247.4, 57.7]], DOM.sellado);
+  // PVC: lazo TRP-05 por cabina PVC y master
+  flujoCinta([[19.7, 67.7], [101.3, 67.7], [102.8, 66.2], [102.8, 57], [104.3, 55.5], [109.3, 55.5], [110.8, 57], [110.8, 74.5], [109.3, 76.45], [19.7, 76.45], [18.2, 74.5], [18.2, 69.2], [19.7, 67.7]], DOM.pvc, 4.2, 0.7);
+  // Bajada CPU11 → Óleo (TRP-22) → Difusión → TRP-23 → Montaje KP1
+  flujoCinta([[128.3, 15.5], [128.3, 8.9], [186.5, 8.9], [188.6, 8.5], [250.7, 8.5], [264.5, 8.9], [272, 8.9]], DOM.oleo);
+  flujoCinta([[188.6, 8.5], [188.6, 11.4], [250.7, 11.4], [252.5, 8.9]], DOM.difusion, 4.62, 0.6);
+  flujoCinta([[188.6, 8.5], [188.6, 6.0], [250.7, 6.0], [252.5, 8.9]], DOM.difusion, 4.62, 0.6);
+  // Fuera de línea (CPU12): Óleo → Box de retoques (R) → vuelve a la línea; Macro (TRP-17) → elevador
+  flujoCinta([[142, 9.4], [142, 17.6], [176, 17.6], [176, 9.4]], DOM.reparacion, 4.4, 0.6);
+  flujoCinta([[100.3, 17.4], [126.4, 17.4], [128.3, 15.5]], DOM.reparacion, 4.4, 0.6);
+  // Acumulo: lazo de la calesita
+  flujoCinta([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], DOM.acumulo, 4.2, 0.7);
+  // flechas verticales de los elevadores (subida / bajada entre cotas)
+  function flechaVertical(x, y, sube, color) {
+    const m = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.4, 16), new THREE.MeshBasicMaterial({ color }));
+    m.position.copy(W(x, y, sube ? 9.6 : 5.0)); if (!sube) m.rotation.x = Math.PI; procesos.add(m);
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 4.0, 10), new THREE.MeshBasicMaterial({ color }));
+    c.position.copy(W(x, y, 7.2)); procesos.add(c);
+  }
+  flechaVertical(257.9, 76.45, false, DOM.sellado); flechaVertical(247.4, 57.7, true, DOM.sellado); flechaVertical(128.3, 15.5, false, DOM.oleo); flechaVertical(232, 13.0, true, "#5d6d7e");
+
+  // 25d. Elementos físicos del dominio SELLADO (según OPE): estaciones de aplicación Nº1–5, cabina de sellado alto ABB
+  //      (robots), cabina de extracción de distanciales y grupo de reenvío
+  for (let k = 0; k < 5; k++) {
+    const x = 226 - k * 22;
+    cartel("ESTACIÓN DE APLICACIÓN\nDE SELLADOR Nº" + (k + 1), x, 76.45, 4.4, 2.6, 0.75, "+y", "#1f6feb", "#ffffff", true);
+    for (const s of [-1, 1]) caja("#7d858d", x + s * 1.1, 76.44, x + s * 1.1 + 0.02, 76.46, 4.78, 5.2);
+  }
+  // cabina de sellado alto ABB: recinto vidriado con 2 robots naranjas (entrada de la línea, supuesto)
+  caja("#dfe8ef", 234, 73.7, 250, 73.75, 0.4, 3.6, { clave: "vidrio2", transparente: 0.35 }); caja("#dfe8ef", 234, 78.9, 250, 78.95, 0.4, 3.6, { clave: "vidrio2", transparente: 0.35 });
+  for (let x = 234; x <= 250; x += 2) for (const y of [73.72, 78.92]) caja("#2b2f33", x - 0.05, y - 0.05, x + 0.05, y + 0.05, 0.4, 3.6);
+  caja("#c7ccd1", 234, 73.7, 250, 78.95, 3.6, 3.7);
+  function robotABB(x, y, lado) {
+    bloque("#e8611c", x, y, 0.7, 0.7, 0.4, 0.9); cil("#e8611c", x, y, 0.9, 0.5, 0.32);
+    diag("#e8611c", x, y, 1.4, x + 0.3, y + lado * 0.6, 2.6, 0.26); diag("#e8611c", x + 0.3, y + lado * 0.6, 2.6, x + 0.9, y + lado * 1.4, 2.2, 0.2);
+    bloque("#2b2f33", x + 0.95, y + lado * 1.5, 0.2, 0.2, 1.9, 2.2);
+  }
+  robotABB(240, 74.4, +1); robotABB(245, 78.3, -1);
+  cartel("CABINA DE SELLADO ALTO · ABB", 242, 73.68, 3.2, 3.6, 0.5, "-y", "#ffffff", "#e8611c");
+  // cabina de extracción de distanciales (al final de SELLADO1, antes del transferidor)
+  caja("#cfd8dc", 84, 73.7, 96, 73.8, 0.4, 3.8); caja("#cfd8dc", 84, 78.85, 96, 78.95, 0.4, 3.8); caja("#b0bec5", 84, 73.7, 96, 78.95, 3.8, 3.95);
+  for (const x of [86, 90, 94]) { bloque("#9aa5b1", x, 76.45, 1.4, 1.2, 3.95, 4.5); cil("#cfd5db", x, 76.45, 4.5, 2.5, 0.25); }
+  cartel("CABINA EXTRACCIÓN\nDE DISTANCIALES", 90, 73.68, 2.8, 2.6, 0.7, "-y", "#ffffff", "#1d2f6b");
+  bloque("#5d6672", 81.6, 72.0, 1.2, 0.6, 0, 1.6); cartel("CPU6\nGR5", 81.6, 71.69, 1.2, 0.5, 0.4, "-y", "#f2c94c", "#111111");   // tablero del transferidor
+  // elevador de entrada CPU6 GR1: torre que baja desde cota 5,4 sobre la mesa pantógrafo
+  for (const [x, y] of [[255.4, 74.6], [260.4, 74.6], [255.4, 78.3], [260.4, 78.3]]) caja("#aeb6be", x - 0.14, y - 0.14, x + 0.14, y + 0.14, 0, 6.2);
+  for (const z of [2.8, 5.4, 6.0]) { caja("#22346a", 255.3, 74.5, 260.5, 74.65, z, z + 0.18); caja("#22346a", 255.3, 78.25, 260.5, 78.4, z, z + 0.18); }
+  cartel("CPU6 GR1 · ELEVADOR", 257.9, 74.45, 4.6, 3.0, 0.45, "-y", "#f2c94c", "#111111");
+
+  // 25e. DIFUSIÓN mejorada (plano "Zona difusión"): carril de acumulo junto al depósito (y ≈ 14,3), identificación de carriles,
+  //      semáforos de fin de carril, numeración de posiciones, cruces peatonales hacia la fachada y portón de salida a Montaje
+  for (let x = 192; x < 245.5; x += 4.45) { bloque("#f2c94c", x, 14.3, 0.3, 1.4, 0.15, 0.3); for (const s of [-1, 1]) caja("#dfe3e7", x - 2.0, 14.3 + s * 0.6 - 0.05, x + 2.0, 14.3 + s * 0.6 + 0.05, 0.15, 0.45); }
+  for (let x = 192.5; x < 245; x += 0.9) cil("#c9ced3", x, 14.3, 0.38, 1.1, 0.05, "y");
+  for (const x of [196, 205, 214, 223, 241]) { skid(x, 14.3, 0.45, true); pickup(x - 0.6, 14.3, 0.75, true, x % 2 ? false : true, elegir(PINTADO)); }
+  for (const [y, n] of [[6.0, 1], [8.5, 2], [11.4, 3], [14.3, 4]]) {
+    cartel("CARRIL " + n + (n === 4 ? " · ACUMULO" : " · KP1"), 189.4, y, 1.5, 1.6, 0.4, "-x", "#2e9d4f", "#ffffff");
+    bloque("#2b2f33", 251.6, y + 0.85, 0.15, 0.15, 0, 2.2); bloque("#1f2328", 251.6, y + 0.85, 0.22, 0.22, 2.2, 2.75);
+    cil(n === 2 ? "#2ecc71" : "#e74c3c", 251.48, y + 0.85, 2.48, 0.04, 0.08, "x");
+    for (let x = 194, p = 1; x < 250; x += 4.45, p++) pinta("#ffffff", x - 0.3, y - 0.95, x + 0.3, y - 0.75, 0.07);
+  }
+  for (const x of [186.5, 210.5, 233.5, 250.5]) for (let k = 0; k < 4; k++) pinta("#ffffff", x - 1.2 + k * 0.7, 0.45, x - 0.85 + k * 0.7, 3.55, 0.065);
+  caja("#2e9d4f", 264.6, 7.4, 264.8, 10.4, 0, 3.4); caja("#1f2328", 264.75, 7.6, 264.8, 10.2, 0.3, 3.2);   // vano de salida TRP-23
+  cartel("A MONTAJE KP1 →", 263.0, 8.9, 3.8, 2.4, 0.5, "+x", "#2e9d4f", "#ffffff", true);
+  for (const s of [-1, 1]) caja("#7d858d", 262.99, 8.9 + s * 1.0, 263.01, 8.9 + s * 1.0 + 0.02, 4.05, 6.0);
+
+  // visibilidad de las etiquetas HTML con la capa y animación de las flechas
+  if (animar) animar.push((dt) => {
+    const v = procesos.visible, cam = window.__maqueta && window.__maqueta.camara, zm = cam ? cam.zoom : 1;
+    for (const e of etiquetas) {
+      e.o.visible = v && (e.nivel === 1 || zm > 2.6);
+      if (e.sub) e.sub.style.display = zm > 4.5 ? "block" : "none";
+    }
+    if (v) for (const t of cintas) t.offset.x -= dt * 0.9;
+  });
 
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
