@@ -1,4 +1,4 @@
-/* Detalle fino de las calles S, "entre S y T" y T de la cota 0.
+/* Detalle fino de las calles de la cota 0: S, "entre S y T", T (fotos 08/10) y U, mitad T–U, V, W, entre W y X, X, A (fotos 09/10).
  * Todo sale del relevamiento fotográfico de Julian (08/10/2026, docs/relevamiento_calles.md).
  * Posiciones: ancladas a columnas con cartel (A0x / B0x = n° × 12 m). Medidas y cantidades: ESTIMADAS por foto.
  * Se llama desde app.js con window.DetalleCalles(api). Coordenadas en metros del plano (x al sur, y al este). */
@@ -98,8 +98,8 @@ window.DetalleCalles = function (api) {
       cil("#1d2228", x, y, z + 0.32, 0.12, 0.33, largoX ? "y" : "x");
     }
   }
-  function sedan(cx, cy, z, largoX) {
-    const c = elegir(ECOAT), A = 1.74;
+  function sedan(cx, cy, z, largoX, color) {
+    const c = color || elegir(ECOAT), A = 1.74;
     // Cronos: capó bajo, cabina, baúl; 4,36 m
     perfil(cx, cy, z, largoX, [
       [-2.18, -1.30, 0.30, 0.82, 0.96], [-1.30, -0.75, 0.30, 0.92], [-0.75, 1.05, 0.30, 0.95],
@@ -109,8 +109,8 @@ window.DetalleCalles = function (api) {
     perfil(cx, cy, z, largoX, [[-0.6, 0.78, 1.0, 1.4, 0.91]], A, "#3b4656");   // vanos de ventanilla (hueco oscuro)
     ruedasHueco(cx, cy, z, largoX, [-1.33, 1.28], A);
   }
-  function pickup(cx, cy, z, largoX, soloCaja) {
-    const c = elegir(ECOAT), A = 1.86;
+  function pickup(cx, cy, z, largoX, soloCaja, color) {
+    const c = color || elegir(ECOAT), A = 1.86;
     if (!soloCaja) {   // cabina doble de Titano/Dakota (skid propio)
       perfil(cx, cy, z, largoX, [
         [-1.75, -1.0, 0.45, 1.05, 0.96], [-1.0, 1.35, 0.45, 1.12],
@@ -722,6 +722,478 @@ window.DetalleCalles = function (api) {
   for (let x = 100; x <= 140; x += 2.4) caja("#e3a800", x, 78.93, x + 0.08, 79.03, 0.9, 3.6);
   // pt 24 atrás: tablero con cartel de riesgo eléctrico junto a la reja
   bloque("#d5d9dd", 98, 79.3, 0.6, 0.35, 0, 1.5); cartel("⚡ RIESGO\nELÉCTRICO", 98, 79.12, 1.1, 0.4, 0.3, "-y", "#f2c94c", "#111111");
+
+
+  // =============================================================================================
+  // RELEVAMIENTO 09/10: calles U, mitad T–U, V, W, entre W y X, X y A (fotos pts 31–79).
+  // Ubicación por carteles de columna (C02…C20, D05…D20, E10…E22, B01/C01/D01) y por el plano.
+  // Medidas, cantidades y colores: ESTIMADOS por foto (supuesto).
+  // =============================================================================================
+  const BIW = ["#d3d6da", "#c5c9cd", "#dfe2e5", "#b9bec3"];                 // chapa en blanco (sin pintar)
+  const PINTADO = ["#f2f2f2", "#16181c", "#1f3f9e", "#8d949b", "#5b2a2a", "#c9ccd0", "#f2f2f2", "#16181c"];
+  const SKID_GRIS = "#5d6672";
+
+  // ---- utilidades nuevas
+  // barra diagonal (riostras en X, cerchas, escaleras de gato) con cajitas escalonadas
+  function diag(color, x0, y0, z0, x1, y1, z1, w) {
+    const L = Math.hypot(x1 - x0, y1 - y0, z1 - z0), n = Math.max(2, Math.ceil(L / 0.3));
+    for (let i = 0; i < n; i++) {
+      const t = (i + 0.5) / n, dx = Math.abs(x1 - x0) / n, dy = Math.abs(y1 - y0) / n, dzz = Math.abs(z1 - z0) / n;
+      const x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t, z = z0 + (z1 - z0) * t;
+      caja(color, x - (w + dx) / 2, y - (w + dy) / 2, x + (w + dx) / 2, y + (w + dy) / 2, z - (w + dzz) / 2, z + (w + dzz) / 2);
+    }
+  }
+  // transportador de rodillos rojo con largueros (fotos U, mitad T–U, calesita)
+  function rodillosRojos(x0, x1, y, z, ancho, enX) {
+    const a = ancho || 1.3, h = z || 0.45;
+    if (enX !== false) {
+      caja("#c8462f", x0, y - a / 2, x1, y - a / 2 + 0.12, h - 0.18, h);
+      caja("#c8462f", x0, y + a / 2 - 0.12, x1, y + a / 2, h - 0.18, h);
+      for (let x = x0; x < x1; x += 1.6) for (const s of [-1, 1]) caja("#9b3524", x, y + s * a / 2 - 0.06, x + 0.1, y + s * a / 2 + 0.06, 0, h - 0.18);
+      for (let x = x0 + 0.2; x < x1; x += 0.8) for (const s of [-1, 1]) cil("#e0573c", x, y + s * (a / 2 - 0.06), h - 0.06, 0.16, 0.07, "y");
+    } else {
+      caja("#c8462f", y - a / 2, x0, y - a / 2 + 0.12, x1, h - 0.18, h);
+      caja("#c8462f", y + a / 2 - 0.12, x0, y + a / 2, x1, h - 0.18, h);
+      for (let x = x0; x < x1; x += 1.6) for (const s of [-1, 1]) caja("#9b3524", y + s * a / 2 - 0.06, x, y + s * a / 2 + 0.06, x + 0.1, 0, h - 0.18);
+      for (let x = x0 + 0.2; x < x1; x += 0.8) for (const s of [-1, 1]) cil("#e0573c", y + s * (a / 2 - 0.06), x, h - 0.06, 0.16, 0.07, "x");
+    }
+  }
+  // baranda amarilla de dos travesaños a lo largo de x (o de y)
+  function baranda(x0, x1, y, enX, color, alto) {
+    const c = color || "#f2c94c", H = alto || 1.1;
+    if (enX !== false) {
+      for (let x = x0; x <= x1 + 0.01; x += 2) caja(c, x, y - 0.03, x + 0.06, y + 0.03, 0, H);
+      caja(c, x0, y - 0.03, x1, y + 0.03, H - 0.06, H); caja(c, x0, y - 0.03, x1, y + 0.03, H * 0.5, H * 0.5 + 0.05);
+    } else {
+      for (let x = x0; x <= x1 + 0.01; x += 2) caja(c, y - 0.03, x, y + 0.03, x + 0.06, 0, H);
+      caja(c, y - 0.03, x0, y + 0.03, x1, H - 0.06, H); caja(c, y - 0.03, x0, y + 0.03, x1, H * 0.5, H * 0.5 + 0.05);
+    }
+  }
+  // cerco de malla (azul de la calesita, amarillo de jaulas) con postes y tope amarillo al pie
+  function cercoMalla(x0, x1, y, enX, color, alto, topes) {
+    const H = alto || 2.0, k = "malla" + color;
+    if (enX !== false) {
+      caja(color, x0, y - 0.015, x1, y + 0.015, 0.1, H, { clave: k, transparente: 0.3 });
+      for (let x = x0; x <= x1 + 0.01; x += 2.5) { caja(color, x, y - 0.04, x + 0.06, y + 0.04, 0, H); if (topes) caja("#f2c94c", x - 0.5, y - 0.18, x + 0.5, y + 0.18, 0, 0.18); }
+      caja(color, x0, y - 0.03, x1, y + 0.03, H - 0.05, H);
+    } else {
+      caja(color, y - 0.015, x0, y + 0.015, x1, 0.1, H, { clave: k, transparente: 0.3 });
+      for (let x = x0; x <= x1 + 0.01; x += 2.5) { caja(color, y - 0.04, x, y + 0.04, x + 0.06, 0, H); if (topes) caja("#f2c94c", y - 0.18, x - 0.5, y + 0.18, x + 0.5, 0, 0.18); }
+      caja(color, y - 0.03, x0, y + 0.03, x1, H - 0.05, H);
+    }
+  }
+  // carro-soporte de carrocería (patas largas en "U" de las fotos de acopio)
+  function soporte(cx, cy, largoX) {
+    const [lx, ly] = largoX ? [4.6, 1.3] : [1.3, 4.6];
+    for (const s of [-1, 1]) {
+      if (largoX) bloque("#6b737d", cx, cy + s * 0.55, lx, 0.14, 0, 0.14); else bloque("#6b737d", cx + s * 0.55, cy, 0.14, ly, 0, 0.14);
+    }
+    for (const t of [-1.4, 1.4]) {
+      if (largoX) { bloque("#7d858d", cx + t, cy, 0.12, 1.2, 0.14, 0.26); for (const s of [-0.45, 0.45]) bloque("#7d858d", cx + t, cy + s, 0.1, 0.1, 0.26, 0.55); }
+      else { bloque("#7d858d", cx, cy + t, 1.2, 0.12, 0.14, 0.26); for (const s of [-0.45, 0.45]) bloque("#7d858d", cx + s, cy + t, 0.1, 0.1, 0.26, 0.55); }
+    }
+  }
+  // camioneta terminada (cabina + caja + ruedas) para auditoría
+  function camioneta(cx, cy, largoX, color) {
+    const d = largoX ? [1, 0] : [0, 1];
+    pickup(cx - d[0] * 1.15, cy - d[1] * 1.15, 0.15, largoX, false, color);
+    pickup(cx + d[0] * 1.75, cy + d[1] * 1.75, 0.15, largoX, true, color);
+    for (const e of [-2.45, 2.15]) for (const s of [-1, 1]) {
+      const [x, y] = largoX ? [cx + e, cy + s * 0.86] : [cx + s * 0.86, cy + e];
+      cil("#1b1e22", x, y, 0.38, 0.28, 0.38, largoX ? "y" : "x");
+    }
+    if (largoX) bloque("#2b2f33", cx - 3.0, cy, 0.25, 1.7, 0.45, 0.8); else bloque("#2b2f33", cx, cy - 3.0, 1.7, 0.25, 0.45, 0.8);
+  }
+  // pared de chapa galvanizada (recintos altos de máquinas) con montantes azules
+  function galvanizado(x0, x1, y, enX, z1, cara) {
+    const H = z1 || 7.0;
+    if (enX !== false) {
+      caja("#b9c0c6", x0, y - 0.04, x1, y + 0.04, 0, H);
+      for (let x = x0; x < x1; x += 0.5) caja("#a5adb4", x, y + cara * 0.04, x + 0.16, y + cara * 0.07, 0, H);
+      for (let x = x0; x <= x1 + 0.01; x += 3) caja("#22346a", x - 0.12, y + cara * 0.04, x + 0.12, y + cara * 0.3, 0, H);
+      caja("#22346a", x0, y + cara * 0.04, x1, y + cara * 0.12, 3.6, 3.75);
+    } else {
+      caja("#b9c0c6", y - 0.04, x0, y + 0.04, x1, 0, H);
+      for (let x = x0; x < x1; x += 0.5) caja("#a5adb4", y + cara * 0.04, x, y + cara * 0.07, x + 0.16, 0, H);
+      for (let x = x0; x <= x1 + 0.01; x += 3) caja("#22346a", y + cara * 0.04, x - 0.12, y + cara * 0.3, x + 0.12, 0, H);
+      caja("#22346a", y + cara * 0.04, x0, y + cara * 0.12, x1, 3.6, 3.75);
+    }
+  }
+  // arco de luces de inspección (túnel de luz: pórticos blancos a dos aguas con tubos LED)
+  function tunelLuz(x0, x1, cy, ancho) {
+    const a = (ancho || 4.2) / 2;
+    for (let x = x0; x <= x1; x += 1.4) {
+      for (const s of [-1, 1]) { caja("#eef1f4", x, cy + s * a - 0.05, x + 0.08, cy + s * a + 0.05, 0, 2.2); diag("#eef1f4", x + 0.04, cy + s * a, 2.2, x + 0.04, cy, 3.1, 0.07); }
+      for (const s of [-1, 1]) caja("#f7fbff", x + 0.1, cy + s * a * 0.55 - 0.03, x + 1.3, cy + s * a * 0.55 + 0.03, 2.62, 2.68, { clave: "luz", emisivo: true });
+    }
+    caja("#f7fbff", x0, cy - 0.03, x1 + 0.08, cy + 0.03, 3.08, 3.14, { clave: "luz", emisivo: true });
+  }
+  // código de columna (amarillo sobre azul) en cualquier línea de ejes
+  function codigosLinea(yEje, letra, caras) {
+    for (const c of colsEje(yEje).filter(c => c[2] > 0.45)) {
+      const n = Math.round(c[0] / 12);
+      if (Math.abs(c[0] - n * 12) > 1.0) continue;
+      for (const cara of caras) cartel(letra + String(n).padStart(2, "0"), c[0], c[1] + cara * (c[2] / 2 + 0.02), 4.0, 0.55, 0.3, cara > 0 ? "+y" : "-y", "#1d2f6b", "#f2c94c");
+    }
+  }
+  // banda amarilla abulonada en columnas (fotos U, T–U, V, W: forro amarillo de 1–2,4 m)
+  function forroAmarillo(yEje, xa, xb) {
+    for (const c of colsEje(yEje).filter(c => c[0] >= xa && c[0] <= xb)) {
+      const w = c[2] / 2 + 0.03;
+      caja("#f2c230", c[0] - w, c[1] - w, c[0] + w, c[1] + w, 0.9, 2.4);
+      caja("#8f979f", c[0] - w - 0.01, c[1] - w - 0.01, c[0] + w + 0.01, c[1] + w + 0.01, 2.4, 2.7);
+    }
+  }
+  // calle peatonal genérica a lo largo de x: piso, bordes amarillos, senda verde opcional, cebras, carteles colgantes
+  function calleX(x0, x1, y0, y1, senda, rotulo, zTop) {
+    pinta("#b4bbc3", x0, y0, x1, y1, 0.02);
+    pinta("#f2c94c", x0, y0 + 0.2, x1, y0 + 0.3, 0.035); pinta("#f2c94c", x0, y1 - 0.3, x1, y1 - 0.2, 0.035);
+    if (senda) { pinta("#f2c94c", x0, senda[0] - 0.08, x1, senda[1] + 0.08, 0.04); pinta("#2e9d6a", x0, senda[0], x1, senda[1], 0.05); pinta("#ffffff", x0, senda[0] - 0.2, x1, senda[0] - 0.12, 0.045); }
+    for (let x = x0 + 26; x < x1 - 4; x += 48) for (let k = 0; k < 5; k++) pinta("#ffffff", x + k * 0.9, y0 + 0.35, x + k * 0.9 + 0.45, y1 - 0.35, 0.06);
+    for (let x = x0 + 9; x < x1; x += 37) cil("#3a3f45", x, (y0 + y1) / 2, 0.03, 0.03, 0.32);
+    const yM = (y0 + y1) / 2, zt = zTop || 6.2;
+    for (let x = x0 + 3; x < x1; x += 6) { caja("#e9f2ff", x - 0.6, yM - 0.07, x + 0.6, yM + 0.07, zt - 1.6, zt - 1.52, { clave: "luz", emisivo: true }); caja("#9aa5b1", x - 0.01, yM - 0.01, x + 0.01, yM + 0.01, zt - 1.52, zt); }
+    if (rotulo) for (let x = x0 + 4; x < x1; x += 48) {
+      cartel("CALLE\n" + rotulo, x, yM, 3.7, 0.6, 0.7, "+x", "#ffffff", "#111111", true);
+      caja("#7d858d", x, yM - 0.25, x + 0.02, yM - 0.23, 4.05, zt); caja("#7d858d", x, yM + 0.23, x + 0.02, yM + 0.25, 4.05, zt);
+    }
+  }
+  // fila de carrocerías sobre soportes (largo a lo ancho de la calle = transversal)
+  function filaAcopio(x0, x1, cy, paso, colores, mezcla) {
+    for (let x = x0; x <= x1; x += paso) {
+      soporte(x, cy, false);
+      const t = azar();
+      if (t < (mezcla || 0.45)) sedan(x, cy, 0.55, false, elegir(colores));
+      else if (t < 0.75) pickup(x, cy - 0.6, 0.55, false, false, elegir(colores));
+      else pickup(x, cy, 0.55, false, true, elegir(colores));
+    }
+  }
+
+  // ============================================================= 14) CALLE U (y ≈ 60,6–63,4) – pts 31–40
+  calleX(2, 262, 60.6, 63.4, [62.55, 63.15], "U");
+  forroAmarillo(61.7, 0, 264); forroAmarillo(52.0, 120, 264);
+  codigosLinea(52.0, "C", [+1]);
+  // 14a. CENTRAL P.V.C. (pt 31.4): jaula de malla amarilla con tanque naranja, tambores y bombas
+  for (const [a, b, y, enX] of [[5.6, 16.4, 64.8, true], [5.6, 16.4, 73.3, true], [64.8, 73.3, 5.6, false], [64.8, 73.3, 16.4, false]]) cercoMalla(a, b, y, enX, "#e3a800", 2.6);
+  cartel("CENTRAL P.V.C.", 11, 64.75, 2.0, 2.6, 0.9, "-y", "#ffffff", "#111111");
+  cil("#e67e22", 9.0, 68.5, 0, 2.6, 1.0); cil("#c9d1da", 9.0, 68.5, 2.6, 0.4, 0.3);
+  for (const [x, y] of [[12.5, 66.2], [13.3, 66.2], [14.1, 66.2], [12.5, 67.0]]) { cil("#f2c94c", x, y, 0, 0.9, 0.3); cil("#2b2f33", x, y, 0.9, 0.04, 0.31); }
+  for (const x of [11.5, 13.5]) { bloque("#5d6672", x, 70.5, 1.2, 0.6, 0, 0.2); cil("#1f5fa8", x, 70.5, 0.2, 1.2, 0.18); cil("#aeb7c2", x + 0.4, 70.5, 1.0, 1.8, 0.05); }
+  bloque("#c9cdd1", 6.6, 72.3, 1.6, 0.5, 0, 2.0);
+  // 14b. CABINA PVC (pts 32.3–32.4): recinto vidriado, marco azul oscuro, zócalo blanco, cartel de estación
+  for (const y of [65.2, 70.2]) {
+    const cara = y < 68 ? -1 : 1;
+    caja("#f1f2f0", 27.7, y - 0.05, 76.8, y + 0.05, 0, 1.15);
+    caja("#dfe8ef", 27.7, y - 0.02, 76.8, y + 0.02, 1.15, 3.0, { clave: "vidrio2", transparente: 0.35 });
+    caja("#cdd3d8", 27.7, y - 0.05, 76.8, y + 0.05, 3.0, 4.3);
+    for (let x = 27.7; x <= 76.9; x += 2.45) caja("#1d2f6b", x - 0.07, y - 0.08, x + 0.07, y + 0.08, 0, 4.3);
+    caja("#1d2f6b", 27.7, y - 0.08, 76.8, y + 0.08, 1.1, 1.2); caja("#1d2f6b", 27.7, y - 0.08, 76.8, y + 0.08, 2.95, 3.05);
+    void cara;
+  }
+  for (const x of [27.7, 76.8]) caja("#cdd3d8", x - 0.05, 65.2, x + 0.05, 70.2, 0, 4.3);
+  caja("#d5dadf", 27.7, 65.2, 76.8, 70.2, 4.3, 4.4);
+  caja("#2e8b57", 33.0, 65.08, 34.1, 65.14, 0, 2.2); caja("#dfe8ef", 33.15, 65.07, 33.95, 65.08, 1.0, 2.0, { clave: "vidrio2", transparente: 0.35 });
+  cartel("DOMINIO 5\nAPLICACIÓN PISO PVC\nESTACIÓN 42", 38.5, 65.1, 1.9, 1.0, 0.75, "-y", "#ffffff", "#7a6a2a");
+  cartel("CABINA PVC", 52, 65.1, 3.6, 2.4, 0.5, "-y", "#1d2f6b", "#ffffff");
+  // 14c. Línea TRP-05 dentro de la cabina y tramo hasta el MASTER (rodillos rojos + carrocerías)
+  rodillosRojos(20, 101, 67.7, 0.45);
+  for (let x = 23, i = 0; x < 100; x += 6.2, i++) { skid(x, 67.7, 0.45, true); if (i % 3 === 1) pickup(x, 67.7, 0.75, true, i % 2 === 0); else sedan(x, 67.7, 0.75, true); }
+  baranda(77, 101, 66.6); baranda(77, 101, 68.8);
+  // 14d. Lado oeste norte (pts 31–33): cabinas y cajas de pickup en blanco sobre soportes, en fila junto a la calle
+  for (let x = 8, i = 0; x < 62; x += 5.4, i++) { soporte(x, 58.6, true); if (i % 2) pickup(x, 58.6, 0.55, true, true, elegir(BIW)); else pickup(x, 58.6, 0.55, true, false, elegir(["#d3d6da", "#4a4f57", "#bfc3c7"])); }
+  // carteles en columnas forradas (pts 32.2 y 33.2)
+  cartel("A DISPOSICIÓN DE\nLABORATORIO\n←", 36.0, 61.32, 1.7, 0.75, 0.7, "-y", "#ffffff", "#c0392b");
+  cartel("BOX CHAPA\n⇆", 60.0, 61.32, 1.8, 0.75, 0.45, "-y", "#ffffff", "#111111");
+  // puesto de trabajo de chapa (pt 31.2): escritorio, silla, carro, cesto
+  bloque("#e8e1cc", 20.5, 57.5, 1.4, 0.7, 0, 0.75); bloque("#2b4f8f", 19.5, 57.5, 0.6, 0.7, 0, 0.9);
+  bloque("#2b2f33", 21.4, 56.6, 0.5, 0.5, 0.45, 0.5); bloque("#9aa1a8", 18.0, 56.8, 1.0, 0.7, 0.4, 0.45);
+  cil("#7d858d", 22.6, 57.6, 0, 0.7, 0.25);
+  for (const x of [15, 15.6, 16.2]) bloque("#1d3f8f", x, 56.0, 0.55, 0.5, 0, 1.9);   // lockers azules
+  // 14e. MASTER DE SELLADO (pts 35–36): plataforma elevada con baranda amarilla y cartel
+  caja("#8e99a6", 100.8, 52.6, 112.6, 61.6, 4.4, 4.55, { clave: "rejilla", transparente: 0.75 });
+  for (const [x, y] of [[100.9, 52.7], [112.5, 52.7], [100.9, 61.5], [112.5, 61.5], [106.7, 52.7], [106.7, 61.5]]) caja("#23395d", x - 0.12, y - 0.12, x + 0.12, y + 0.12, 0, 4.4);
+  for (const y of [52.6, 61.6]) { caja("#f2c94c", 100.8, y - 0.03, 112.6, y + 0.03, 5.5, 5.56); for (let x = 100.8; x <= 112.6; x += 1.5) caja("#f2c94c", x, y - 0.03, x + 0.05, y + 0.03, 4.55, 5.56); }
+  escalera(96.5, 62.2, -1, 4.4, "#f2c94c");
+  cartel("AREA DE MASTER:\nSELLADO E\nINSONORIZANTE", 106.7, 61.66, 5.0, 1.7, 0.9, "-y", "#ffffff", "#c0392b", true);
+  rodillosRojos(103.5, 110, 55.5, 0.45); rodillosRojos(103.5, 110, 58.5, 0.45);
+  for (const x of [104.5, 108.6]) { skid(x, 58.5, 0.45, true); pickup(x, 58.5, 0.75, true, true); }
+  tunelLuz(103, 109, 55.5, 3.6);
+  // 14f. RELAX (pts 35.1, 36.3): piso azul, mesas y bancos metálicos, máquinas expendedoras, dispenser
+  pinta("#2f62c8", 113.2, 55.0, 121.8, 61.0, 0.03);
+  for (const [x, y] of [[115.0, 56.4], [115.0, 58.2], [118.6, 56.4], [118.6, 58.2], [118.6, 60.0]]) {
+    bloque("#b6bec6", x, y, 2.4, 0.75, 0.72, 0.77); for (const dx of [-1.05, 1.05]) bloque("#7d858d", x + dx, y, 0.06, 0.6, 0, 0.72);
+    for (const dy of [-0.65, 0.65]) { bloque("#9aa3ad", x, y + dy, 2.4, 0.3, 0.43, 0.47); for (const dx of [-1.0, 1.0]) bloque("#7d858d", x + dx, y + dy, 0.05, 0.25, 0, 0.43); }
+  }
+  bloque("#c0392b", 113.6, 60.4, 0.9, 0.8, 0, 1.85); cartel("Coca-Cola", 113.6, 59.99, 1.3, 0.7, 0.4, "-y", "#c0392b", "#ffffff");
+  bloque("#1f2328", 114.6, 60.4, 0.9, 0.8, 0, 1.85); bloque("#dfe8ef", 114.6, 60.0, 0.6, 0.02, 0.6, 1.6, { clave: "vidrio2", transparente: 0.35 });
+  bloque("#f4f6f8", 115.6, 60.5, 0.35, 0.35, 0, 1.05); cil("#3b8fd8", 115.6, 60.5, 1.05, 0.45, 0.14);
+  bloque("#1f3f9e", 121.2, 55.6, 0.9, 0.9, 0, 2.0); cartel("STELLANTIS", 121.2, 55.14, 1.6, 0.8, 0.2, "-y", "#1f3f9e", "#ffffff");
+  for (const x of [120.6, 121.3]) cil("#2b2f33", x, 61.1, 0, 0.9, 0.28);
+  cartel("“TU SEGURIDAD TAMBIÉN ES LA DE ELLOS”\n“YOUR SAFETY IS ALSO THEIRS...”", 112.0, 62.0, 5.6, 6.0, 1.6, "+x", "#2c3e7a", "#ffffff", true);
+  cartel("“PASOS FIRMES Y SEGUROS EN EL TRABAJO\nPARA DISFRUTAR LOS PRIMEROS DE TUS HIJOS”", 131.0, 62.0, 5.6, 6.0, 1.8, "-x", "#3c6f9a", "#ffffff", true);
+  // pizarras de gestión con patas (pt 36.3)
+  for (const x of [123.5, 125.5]) { bloque("#ffffff", x, 63.6, 1.8, 0.05, 0.6, 2.0); bloque("#7d858d", x, 63.6, 1.9, 0.08, 0, 0.6); }
+  // 14g. UTE 1 (pt 36.2): oficina con marcos naranjas sobre azul, paneles blancos y vidrio
+  for (const [a, b, y, enX] of [[122.5, 127.7, 55.3, true], [122.5, 127.7, 59.7, true], [55.3, 59.7, 122.5, false], [55.3, 59.7, 127.7, false]]) {
+    if (enX) { caja("#f4f4f2", a, y - 0.05, b, y + 0.05, 0, 1.0); caja("#dfe8ef", a, y - 0.02, b, y + 0.02, 1.0, 2.4, { clave: "vidrio2", transparente: 0.35 }); caja("#d7dbdf", a, y - 0.05, b, y + 0.05, 2.4, 3.0); for (let x = a; x <= b; x += 1.3) caja("#e67e22", x, y - 0.07, x + 0.06, y + 0.07, 0, 3.0); }
+    else { caja("#f4f4f2", y - 0.05, a, y + 0.05, b, 0, 1.0); caja("#dfe8ef", y - 0.02, a, y + 0.02, b, 1.0, 2.4, { clave: "vidrio2", transparente: 0.35 }); caja("#d7dbdf", y - 0.05, a, y + 0.05, b, 2.4, 3.0); for (let x = a; x <= b; x += 1.3) caja("#e67e22", y - 0.07, x, y + 0.07, x + 0.06, 0, 3.0); }
+  }
+  caja("#1d3f8f", 122.5, 59.75, 127.7, 59.8, 0, 0.12);
+  caja("#2350a8", 126.8, 59.72, 127.4, 59.78, 0.6, 2.6); cartel("U\nT\nE\n1", 127.1, 59.79, 1.6, 0.5, 1.8, "+y", "#2350a8", "#ffffff");
+  bloque("#ffffff", 124.4, 57.4, 2.4, 0.9, 0.72, 0.76); persona(124.4, 58.3, 0, false);
+  // 14h. TRP-06: línea de rodillos rojos con baranda amarilla a lo largo de U sur (pts 37–46)
+  pinta("#cfe0d2", 78, 65.8, 248, 69.7, 0.018);
+  for (let x = 78, k = 0; x < 248; x += 0.4, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", x, 65.85, x + 0.4, 66.15, 0.035);
+  rodillosRojos(78, 248, 67.7, 0.5, 1.4);
+  baranda(113, 248, 66.4); baranda(113, 248, 69.0);
+  for (let x = 116, i = 0; x < 246; x += 6.3, i++) {
+    skid(x, 67.7, 0.5, true);
+    if (i % 4 === 3) pickup(x, 67.7, 0.8, true, false); else if (i % 4 === 1) pickup(x, 67.7, 0.8, true, true); else sedan(x, 67.7, 0.8, true);
+  }
+  for (const x of [128, 150, 172, 196, 220, 240]) { bloque("#dfe3e7", x, 66.1, 0.6, 0.5, 0, 1.2); bloque("#c5cbd1", x, 66.1, 0.66, 0.56, 1.2, 1.35); cil("#2ecc71", x + 0.2, 66.0, 1.35, 0.12, 0.05); }
+  // 14i. Entrepiso de cota 5,4 sobre la línea: columnas azules, cerchas naranjas, rejilla y baranda amarilla (pts 41–46)
+  for (let x = 114; x <= 246; x += 6) {
+    for (const y of [64.2, 71.2]) caja("#22346a", x - 0.15, y - 0.15, x + 0.15, y + 0.15, 0, 5.4);
+    caja("#e67e22", x - 0.08, 64.2, x + 0.08, 71.2, 4.9, 5.4);
+  }
+  for (const y of [64.2, 71.2]) {
+    caja("#e67e22", 114, y - 0.1, 246, y + 0.1, 4.6, 4.75); caja("#e67e22", 114, y - 0.1, 246, y + 0.1, 5.25, 5.4);
+    for (let x = 114; x < 246; x += 1.5) diag("#e67e22", x, y, 4.7, x + 1.5, y, 5.3, 0.07);
+    for (let x = 114; x <= 246; x += 1.5) caja("#f2c94c", x, y - 0.03, x + 0.05, y + 0.03, 5.45, 6.5);
+    caja("#f2c94c", 114, y - 0.03, 246, y + 0.03, 6.45, 6.5); caja("#f2c94c", 114, y - 0.03, 246, y + 0.03, 5.95, 6.0);
+  }
+  caja("#8e99a6", 114, 64.2, 246, 71.2, 5.4, 5.45, { clave: "rejilla", transparente: 0.75 });
+  escalera(142, 63.8, -1, 5.4, "#f2c94c"); escalera(206, 63.8, -1, 5.4, "#f2c94c");
+  // carteles 5S de WCM colgados sobre la línea, mirando a la calle U (pts 37–40)
+  for (const [x, txt, fondo] of [[168, "1° SEIRI\nSEPARAR", "#3c78c8"], [182, "2° SEITON\nORDENAR", "#e9c23a"], [196, "3° SEISO\nLIMPIAR", "#d6578a"], [210, "4° SEIKETSU\nESTANDARIZAR", "#c0392b"], [224, "5° SHITSUKE\nDISCIPLINA", "#4aa3df"]])
+    cartel(txt, x, 71.1, 4.4, 3.0, 1.2, "-y", fondo, "#ffffff", true);
+  // pizarrón de seguridad "AYUDA VISUAL" en columna (pt 35.2)
+  cartel("AYUDA VISUAL\nSeguridad", 140.0, 64.02, 1.7, 0.6, 0.8, "-y", "#ffffff", "#1f2a3a");
+  // 14j. Lado oeste de U sur: estructura de soporte de cota 9 (columnas azules, cerchas naranjas, riostras en X)
+  for (let x = 126; x <= 246; x += 6) {
+    caja("#22346a", x - 0.2, 60.2, x + 0.2, 60.6, 0, 9.0);
+    caja("#22346a", x - 0.2, 50.8, x + 0.2, 51.2, 0, 9.0);
+    caja("#e67e22", x - 0.08, 50.8, x + 0.08, 60.6, 7.6, 8.2);
+  }
+  for (const y of [60.4, 51.0]) { caja("#e67e22", 126, y - 0.1, 246, y + 0.1, 7.4, 7.55); caja("#e67e22", 126, y - 0.1, 246, y + 0.1, 8.6, 8.75); for (let x = 126; x < 246; x += 2) diag("#e67e22", x, y, 7.5, x + 2, y, 8.65, 0.08); }
+  for (const x0 of [132, 186, 228]) { diag("#22346a", x0, 60.4, 0.2, x0 + 6, 60.4, 7.4, 0.3); diag("#22346a", x0 + 6, 60.4, 0.2, x0, 60.4, 7.4, 0.3); }
+  // tanques/cajones de acero inoxidable con nervios blancos y escalera de gato amarilla (pts 37.2, 38.3)
+  for (const [a, b] of [[128, 150], [182, 200], [204, 226]]) {
+    caja("#c6ccd1", a, 53.0, b, 59.0, 0.4, 4.6);
+    for (let x = a; x <= b; x += 1.5) caja("#eef1f4", x, 52.9, x + 0.12, 59.1, 0.4, 4.6);
+    for (const z of [1.4, 2.4, 3.4]) caja("#eef1f4", a, 52.9, b, 59.1, z, z + 0.1);
+    for (let x = a + 2; x < b; x += 4) for (const dy of [-0.8, 0.8]) caja("#7d858d", x, 56 + dy, x + 0.15, 56 + dy + 0.15, 0, 0.4);
+    // tolvas arriba
+    for (let x = a + 3; x < b; x += 7) for (let k = 0; k < 4; k++) { const w = 2.6 - k * 0.5; bloque("#aab2b9", x, 56, w, w, 6.6 - k * 0.45, 7.05 - k * 0.45); }
+    caja("#f2c94c", a + 1.0, 52.75, a + 1.06, 52.8, 0, 6.2); caja("#f2c94c", a + 1.5, 52.75, a + 1.56, 52.8, 0, 6.2);
+    for (let z = 0.3; z < 6.2; z += 0.3) caja("#f2c94c", a + 1.0, 52.74, a + 1.56, 52.78, z, z + 0.04);
+    for (let z = 2.2; z < 6.2; z += 0.6) caja("#f2c94c", a + 0.85, 52.4, a + 1.7, 52.46, z, z + 0.05);
+  }
+  // MAQ-02 (máquina sin nombre del plano): recinto de chapa galvanizada con transportador TRP-10
+  galvanizado(153.4, 178.3, 59.9, true, 7.0, +1); galvanizado(153.4, 178.3, 55.1, true, 7.0, -1);
+  for (const x of [153.4, 178.3]) galvanizado(55.1, 59.9, x, false, 7.0, x < 160 ? -1 : 1);
+  rodillosRojos(150, 182, 56.9, 0.45);
+  // escalera verde a la cota 9 y carrocerías tapadas con nylon (pt 39.2)
+  escalera(176, 52.2, -1, 7.6, "#2e8b57");
+  for (const x of [131, 136, 141]) { soporte(x, 51.8, true); bloque("#e6eaee", x, 51.8, 4.2, 1.8, 0.55, 1.75, { clave: "film", transparente: 0.7 }); }
+  // tablero B1 y camilla naranja de rescate (pt 36.4)
+  bloque("#cfd3d7", 134.0, 63.6, 1.4, 0.5, 0, 2.2); cartel("TABLERO\nB1", 134.0, 63.34, 2.3, 0.5, 0.35, "-y", "#f2c94c", "#111111");
+  bloque("#e67e22", 136.0, 64.0, 0.5, 0.15, 0.2, 2.0);
+  // lockers amarillos detrás de la línea (pts 37.4, 38.4)
+  for (let x = 228; x < 236; x += 0.6) bloque("#e9c23a", x, 70.8, 0.55, 0.5, 0, 1.9);
+
+  // ============================================================= 15) MITAD DE CALLE ENTRE T Y U (y ≈ 70,4–73,3) – pts 41–46
+  pinta("#b4bbc3", 124, 69.8, 240, 73.3, 0.021);
+  pinta("#2e9d6a", 124, 70.0, 240, 70.6, 0.05); pinta("#ffffff", 124, 70.7, 240, 70.78, 0.05); pinta("#f2c94c", 124, 73.0, 240, 73.1, 0.05);
+  // cerramiento de la cabina de sellado (SIGILLATURA): panel gris verdoso, marcos naranjas, ventanas
+  caja("#93a6a3", 124.8, 73.3, 235.1, 73.4, 0, 1.6);
+  caja("#dfe8ef", 124.8, 73.33, 235.1, 73.37, 1.6, 2.9, { clave: "vidrio2", transparente: 0.35 });
+  caja("#a7b3b4", 124.8, 73.3, 235.1, 73.4, 2.9, 4.0);
+  for (const z of [1.55, 2.88]) caja("#e67e22", 124.8, 73.26, 235.1, 73.3, z, z + 0.07);
+  for (let x = 124.8; x <= 235.2; x += 1.6) caja("#e67e22", x, 73.26, x + 0.06, 73.3, 0, 4.0);
+  for (let x = 126; x <= 235; x += 6) caja("#1d2f6b", x - 0.1, 73.12, x + 0.1, 73.3, 0, 4.0);
+  // lockers amarillos, dispensers de agua y carteles contra el cerramiento
+  for (const x0 of [127, 147, 171, 203, 226]) for (let k = 0; k < 4; k++) { bloque("#e9c23a", x0 + k * 0.62, 72.95, 0.58, 0.5, 0, 1.9); bloque("#c9a52c", x0 + k * 0.62, 72.69, 0.5, 0.02, 1.0, 1.8); }
+  for (const x of [134, 184, 214]) { bloque("#f4f6f8", x, 72.95, 0.35, 0.35, 0, 1.05); cil("#3b8fd8", x, 72.95, 1.05, 0.45, 0.14); }
+  for (const x of [138, 188, 218]) cartel("¡SECOS!", x, 73.22, 1.0, 0.5, 0.3, "-y", "#e67e22", "#ffffff");
+  cartel("↑ VÍA DE\nESCAPE", 238, 71.5, 3.2, 0.8, 0.6, "-x", "#1e8449", "#ffffff", true);
+  // atriles con piezas (capós) y bancos de trabajo amarillos inclinados (pts 43.1, 46.3)
+  for (const x of [131, 160, 192]) { bloque("#f2c94c", x, 72.5, 1.4, 0.7, 0.7, 0.75); diag("#f2c94c", x - 0.6, 72.3, 0, x - 0.6, 72.7, 0.7, 0.05); diag("#f2c94c", x + 0.6, 72.3, 0, x + 0.6, 72.7, 0.7, 0.05); bloque("#c7c9c4", x, 72.5, 1.3, 0.6, 0.9, 1.0); }
+  // operarios trabajando en la línea y caminando (pts 41.2, 45.4)
+  for (const x of [119, 121, 152, 199]) persona(x, entre(66.6, 68.8), 0, false);
+  persona(176, 71.6, 0, false); persona(232, 72.4, 0, true);
+
+  // ============================================================= 16) CALLES V y W NORTE + CALESITA (pts 48–55, 60–63)
+  calleX(2, 96, 42.6, 45.4, null, "V");
+  calleX(2, 96, 33.6, 36.4, null, "W");
+  codigosLinea(26.0, "D", [+1, -1]);
+  // 16a. acopio de carrocerías en blanco (BIW) sobre soportes, transversales a las calles (pts 48.1, 49.x, 50.x)
+  filaAcopio(5, 62, 39.4, 2.5, BIW, 0.55);
+  filaAcopio(14, 62, 48.6, 2.5, BIW.concat(["#16181c", "#1f3f9e"]), 0.5);
+  // carrocería azul suelta y cartel BOX CHAPA en columna (pt 49.4)
+  cartel("BOX CHAPA\n←", 48.0, 46.1, 1.8, 0.7, 0.4, "+y", "#ffffff", "#111111");
+  // carteles "MANTENIMIENTO PINTURA" al fondo (pts 49.2, 50.2)
+  cartel("MANTENIMIENTO PINTURA", 3.0, 52.0, 3.8, 5.0, 0.55, "+x", "#ffffff", "#1f2a3a");
+  // equipos de dosificación con tambor azul (pt 50.3–50.4) junto a V y conos
+  for (const x of [66, 70]) { caja("#22346a", x - 0.9, 46.2, x + 0.9, 46.3, 0, 2.6); bloque("#cfd3d7", x - 0.4, 46.6, 0.6, 0.3, 1.2, 1.9); cil("#1f5fa8", x + 0.3, 46.8, 0, 1.1, 0.42); for (const dx of [-0.85, 0.85]) caja("#22346a", x + dx, 46.2, x + dx + 0.08, 47.6, 0, 2.6); }
+  for (const x of [63.5, 64.5]) { cil("#e67e22", x, 45.6, 0, 0.7, 0.15); bloque("#e67e22", x, 45.6, 0.36, 0.36, 0, 0.04); }
+  // 16b. CALESITA: cercos de malla azul con topes amarillos y transportadores de rodillos rojos (pts 54–55, 61–63)
+  cercoMalla(4, 96, 33.3, true, "#2a55b8", 2.0, true);
+  cercoMalla(4, 96, 19.0, true, "#2a55b8", 2.0, true);
+  for (const y of [30.9, 22.9]) rodillosRojos(4.6, 95, y, 0.45, 1.4);
+  rodillosRojos(20.1, 33, 7.2, 0.45, 1.4, false); rodillosRojos(20.1, 33, 92.8, 0.45, 1.4, false);
+  for (const [y, desde] of [[30.9, 8], [22.9, 11]]) for (let x = desde, i = 0; x < 92; x += 6.4, i++) {
+    skid(x, y, 0.45, true);
+    const col = elegir(PINTADO);
+    if (i % 3 === 0) sedan(x, y, 0.75, true, col); else pickup(x, y, 0.75, true, i % 3 === 2, col);
+  }
+  // zona de acumulo dentro de la calesita: carrocerías pintadas en soportes (pt 61.2)
+  filaAcopio(12, 88, 26.9, 2.8, PINTADO, 0.3);
+  // pupitres de mando con botonera (pts 54.1, 63.4, 79.4)
+  for (const [x, y] of [[50, 33.0], [94, 20.0], [20, 19.3]]) { bloque("#d9d5c8", x, y, 0.8, 0.5, 0, 1.3); bloque("#c4c0b2", x, y, 0.86, 0.56, 1.3, 1.45); for (let k = 0; k < 6; k++) cil(elegir(["#2ecc71", "#c0392b", "#f1c40f", "#2b2f33"]), x - 0.3 + k * 0.12, y - 0.29, 1.15, 0.04, 0.035, "y"); }
+  cartel("HIDRANTE", 52.0, 34.0, 3.2, 0.7, 0.2, "+x", "#c0392b", "#ffffff");
+  // 16c. Calle entre W y X (lado oeste de la calesita, y ≈ 16–18,8): pared galvanizada alta y transferencias naranjas (pts 60–61)
+  calleX(2, 96, 16.0, 18.8, [18.0, 18.6], null);
+  galvanizado(12, 96, 15.8, true, 7.5, +1);
+  for (const x of [6, 9]) { bloque("#e9a21a", x, 18.2, 2.4, 1.2, 0.3, 0.45); baranda(4, 11, 19.2, true, "#e9a21a"); }
+  bloque("#7d858d", 30, 16.4, 0.6, 0.6, 0, 0.9); bloque("#c0392b", 31, 16.4, 0.5, 0.5, 0, 0.5);   // cesto y cajones (pt 60.2)
+  for (const x of [32, 33.4]) bloque("#b08a5a", x, 16.5, 1.2, 0.8, 0, 0.5);
+
+  // ============================================================= 17) CALLES V y W SUR (pts 51–53, 56–59)
+  // recintos galvanizados de MAQ-01 y MAQ-03 con transportador interior (túnel con carrocerías, pt 51.1)
+  for (const [a, b] of [[118.8, 138.8], [188.4, 213.3]]) {
+    galvanizado(a, b, 44.1, true, 7.0, -1); galvanizado(a, b, 48.9, true, 7.0, +1);
+    for (const x of [a, b]) galvanizado(44.1, 48.9, x, false, 7.0, x === a ? -1 : 1);
+    rodillosRojos(a - 1.5, b + 1.5, 45.9, 0.45);
+    for (let x = a + 3, i = 0; x < b - 2; x += 6.2, i++) { skid(x, 45.9, 0.45, true); sedan(x, 45.9, 0.75, true); }
+  }
+  // calle V sur (y ≈ 41,2–43,8) con senda verde y vigas naranjas arriba
+  calleX(98, 250, 41.2, 43.8, [43.0, 43.6], "V", 5.6);
+  for (let x = 100; x < 250; x += 6) caja("#e9a21a", x - 0.1, 38.0, x + 0.1, 44.0, 5.0, 5.35);
+  escalera(140, 43.4, -1, 5.0, "#aeb6be"); escalera(214, 43.4, -1, 5.0, "#aeb6be");
+  // pared galvanizada muy alta del lado este de W sur con carteles de acopio (pts 56–59)
+  galvanizado(126, 246, 37.6, true, 12.0, -1);
+  for (const [x, txt, fondo] of [[168, "CARROCERÍAS\nDELIBERADAS\nUTE 3", "#2f7fd1"], [192, "CARROCERÍAS\nLISTAS PARA MACRO", "#2f7fd1"],
+    [222, "CARROCERÍAS LUEGO\nDE MACRO PARA REPARAR", "#e23a77"], [238, "CARROCERÍAS\nLISTAS PARA MONTAJE", "#7cc242"]])
+    cartel(txt, x, 37.3, 3.4, 3.4, 0.9, "-y", fondo, "#ffffff");
+  cartel("SALIDA →", 242, 37.3, 3.8, 1.1, 0.4, "-y", "#1e8449", "#ffffff");
+  // calle W sur: piso gastado con franjas amarillo/negro junto a las columnas D
+  pinta("#a9b0b8", 126, 27.0, 246, 31.0, 0.021);
+  for (let x = 126, k = 0; x < 246; x += 0.6, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", x, 27.0, x + 0.6, 27.5, 0.04);
+  // cajas de pickup en soportes, en peine contra la pared (pts 56.1, 56.4, 57.4, 58.3)
+  for (let x = 130, i = 0; x < 212; x += 2.4, i++) {
+    soporte(x, 34.6, false);
+    pickup(x, 34.6, 0.55, false, true, elegir(i % 5 === 0 ? ["#16181c", "#1f3f9e"] : BIW));
+  }
+  cartel("BOX", 150, 32.2, 1.6, 0.4, 0.25, "-y", "#ffffff", "#111111");
+  // lado oeste (línea D): conductos de extracción galvanizados, tableros y escalera verde (pts 56.2–56.3)
+  for (let x = 132; x < 246; x += 12) { caja("#aeb6be", x + 0.4, 25.2, x + 1.6, 26.4, 0, 9.0); caja("#aeb6be", x + 0.4, 26.4, x + 1.6, 27.0, 2.0, 3.4); }
+  bloque("#d5d2c6", 170, 26.6, 1.2, 0.5, 0, 2.0); cartel("B1", 170, 26.86, 2.0, 0.3, 0.2, "+y", "#f2c94c", "#111111");
+  escalera(176, 26.0, -1, 5.4, "#2e8b57");
+  // cajones de madera, pallets y bandejas negras (pts 58.1, 59.x)
+  for (let x = 214; x < 244; x += 2.2) {
+    const y = entre(31.5, 35.5);
+    bloque("#c8a774", x, y, 2.0, 1.2, 0, 0.14);
+    if (azar() < 0.5) { bloque("#d4b483", x, y, 1.9, 1.1, 0.14, entre(0.9, 1.6), { clave: "film", transparente: 0.85 }); for (let k = 0; k < 3; k++) bloque("#a07a48", x - 0.9 + k * 0.9, y, 0.1, 1.15, 0.14, 1.0); }
+    else for (let k = 0; k < 4; k++) bloque("#202327", x, y, 1.8, 1.0, 0.14 + k * 0.2, 0.3 + k * 0.2);
+  }
+  // estanterías de repuestos con largueros naranjas y operario con chaleco (pt 59.2)
+  for (let x = 222; x < 236; x += 2.8) { for (const dx of [-1.3, 1.3]) for (const dy of [-0.45, 0.45]) bloque("#22346a", x + dx, 24.0 + dy, 0.08, 0.08, 0, 2.6); for (const z of [0.2, 1.0, 1.8, 2.5]) bloque("#e67e22", x, 24.0, 2.7, 1.0, z, z + 0.08); for (let k = 0; k < 4; k++) bloque(elegir(["#c8a774", "#f2c94c", "#ffffff"]), x - 1 + k * 0.6, 24.0, 0.5, 0.7, 1.08, 1.5); }
+  persona(228, 26.6, 0, true);
+
+  // ============================================================= 18) CALLE X SUR – fachada oeste, PINTO y BUFFER FINAL (pts 70–76)
+  calleX(98, 262, 0.4, 3.6, [0.75, 1.35], "X", 6.0);
+  codigosLinea(0.0, "E", [+1]);
+  // fachada interior: bocas de incendio con caño rojo, aerotermos, carteles SALIDA, tableros
+  for (const c of colsEje(0.0).filter(c => c[0] > 98 && c[0] < 263)) {
+    const x = c[0];
+    bloque("#c0392b", x + 0.5, 0.55, 0.75, 0.25, 0.4, 1.15); bloque("#e8e8e8", x + 0.5, 0.68, 0.55, 0.02, 0.5, 1.05);
+    cil("#c0392b", x - 0.55, 0.45, 0.4, 6.0, 0.06);
+    bloque("#aeb4ba", x + 1.4, 0.6, 0.75, 0.6, 3.6, 4.3); for (let z = 3.7; z < 4.25; z += 0.08) bloque("#6f7780", x + 1.4, 0.91, 0.65, 0.02, z, z + 0.03);
+  }
+  for (const x of [118, 154, 202, 250]) {   // puertas dobles verdes de emergencia (pts 70.2, 76.2)
+    caja("#2ea84f", x - 1.2, 0.12, x + 1.2, 0.18, 0, 2.4);
+    caja("#ffffff", x - 1.0, 0.19, x - 0.2, 0.2, 1.3, 1.9); caja("#ffffff", x + 0.2, 0.19, x + 1.0, 0.2, 1.3, 1.9);
+    caja("#c0392b", x - 1.0, 0.2, x + 1.0, 0.22, 1.0, 1.05);
+    cartel("SALIDA ↓", x, 0.2, 2.75, 0.8, 0.28, "+y", "#1e8449", "#ffffff");
+    cartel("POR FAVOR\nMANTENER LA\nPUERTA CERRADA", x + 0.6, 0.21, 1.6, 0.45, 0.3, "+y", "#c0392b", "#ffffff");
+  }
+  caja("#e9b10a", 108.5, 0.12, 112.5, 0.2, 0, 4.6);   // portón rápido amarillo (pt 70.1)
+  for (let x = 254, i = 0; x < 262; x += 1.3, i++) caja(i % 2 ? "#e0a50a" : "#e9b10a", x, 0.12, x + 1.25, 0.24, 0, 5.2);   // portones plegables (pt 76.1)
+  // AREA MACRO CPA: cartel colgante (pt 70.1)
+  cartel("AREA\nMACRO C.P.A.", 100.5, 6.0, 3.6, 2.2, 1.0, "-y", "#ffffff", "#1e6b35", true);
+  // cabinas de retoque PINTO (plástico transparente, perfilería de aluminio, malla abajo) sobre TRP-22 (pts 72.1–72.4)
+  for (const [a, n] of [[134, 2], [143, 3], [152, 4], [161, 5]]) {
+    const b = a + 8.4;
+    caja("#e9eef3", a, 4.0, b, 12.2, 3.6, 3.7, { clave: "film", transparente: 0.7 });
+    for (const y of [4.0, 12.2]) caja("#eef3f7", a, y - 0.02, b, y + 0.02, 0, 3.6, { clave: "cortina", transparente: 0.4 });
+    for (const x of [a, b]) caja("#eef3f7", x - 0.02, 4.0, x + 0.02, 12.2, 0, 3.6, { clave: "cortina", transparente: 0.4 });
+    for (let x = a; x <= b + 0.01; x += 2.1) for (const y of [4.0, 12.2]) caja("#cfd6dc", x - 0.05, y - 0.05, x + 0.05, y + 0.05, 0, 3.7);
+    caja("#aeb6be", a, 3.95, b, 4.0, 0.1, 1.4, { clave: "mallaG", transparente: 0.4 });
+    for (let z = 0, k = 0; z < 2.4; z += 0.3, k++) caja(k % 2 ? "#1f2328" : "#f2c94c", a - 0.08, 3.9, a + 0.08, 4.0, z, z + 0.3);
+    cartel("PINTO" + String(n).padStart(2, "0"), a + 1.0, 3.93, 3.2, 0.9, 0.35, "-y", "#ffffff", "#1f2a3a");
+    for (let x = a + 1; x < b; x += 1.6) caja("#f7fbff", x, 6.5, x + 1.2, 6.56, 3.5, 3.56, { clave: "luz", emisivo: true });
+  }
+  rodillosRojos(121, 185, 8.9, 0.45, 1.3);
+  for (let x = 136, i = 0; x < 170; x += 9, i++) { skid(x, 8.9, 0.45, true); sedan(x, 8.9, 0.75, true, elegir(PINTADO)); }
+  for (const x of [139, 157]) persona(x, 6.4, 0, false);
+  // carros de malla naranja para piezas (pt 72.1)
+  for (const [x, y] of [[124, 3.4], [126, 3.4], [128, 3.4], [124, 0.9], [126.2, 0.9], [128.4, 0.9], [130.6, 0.9]]) {
+    bloque("#e67e22", x, y, 1.8, 0.8, 0.3, 0.35);
+    bloque("#e67e22", x, y, 1.8, 0.8, 0.35, 1.3, { clave: "mallaN", transparente: 0.6 });
+    for (const [dx, dy] of [[-0.8, -0.35], [0.8, -0.35], [-0.8, 0.35], [0.8, 0.35]]) cil("#2b2f33", x + dx, y + dy, 0, 0.3, 0.08);
+    bloque("#1f5fa8", x, y, 0.6, 0.4, 0.4, 0.6);
+  }
+  // BUFFER FINAL LÍNEA: cerco de malla azul, entrepiso blanco con borde amarillo y transportadores (pts 74–76)
+  cercoMalla(186, 252, 3.75, true, "#2a55b8", 2.2, false);
+  for (let x = 188; x <= 252; x += 6) for (const y of [4.1, 13.0]) caja("#eef1f4", x - 0.15, y - 0.15, x + 0.15, y + 0.15, 0, 3.8);
+  caja("#e6e3d6", 186, 3.9, 252, 13.3, 3.8, 3.95, { clave: "rejilla2", transparente: 0.85 });
+  caja("#f2c94c", 186, 3.85, 252, 4.0, 3.95, 4.45);
+  for (const y of [6.0, 8.5, 11.4]) {
+    caja("#dfe3e7", 191.5, y - 0.65, 250.7, y - 0.55, 0.15, 0.45); caja("#dfe3e7", 191.5, y + 0.55, 250.7, y + 0.65, 0.15, 0.45);
+    for (let x = 192; x < 250.7; x += 0.9) cil("#c9ced3", x, y, 0.38, 1.1, 0.05, "y");
+    for (let x = 194; x < 250; x += 4.5) bloque("#f2c94c", x, y, 0.3, 1.4, 0.15, 0.3);
+  }
+  for (const [x, y] of [[198, 6.0], [214, 8.5], [230, 11.4], [242, 6.0]]) { skid(x, y, 0.45, true); sedan(x, y, 0.75, true, elegir(PINTADO)); }
+  escalera(186.5, 3.0, -1, 3.8, "#f2c94c");
+  // depósito con cajones bajo entrepiso al extremo sur (pt 76.1)
+  for (const [x, y] of [[255, 6], [257.5, 6], [255, 8.5], [257.5, 9], [260, 7]]) { bloque("#c8a774", x, y, 2.0, 1.4, 0, 0.9); bloque("#b08a5a", x, y, 2.0, 1.4, 0.9, 1.6); }
+  for (const x of [252.6, 253.2, 253.8]) { cil("#e67e22", x, 3.2, 0, 0.7, 0.15); bloque("#e9c23a", x, 3.0, 0.4, 0.3, 0, 0.9); }
+
+  // ============================================================= 19) CALLE A – fachada norte y auditoría de producto terminado (pts 77–79)
+  pinta("#b4bbc3", 0.4, 2, 3.4, 100, 0.021);
+  pinta("#f2c94c", 3.1, 2, 3.2, 100, 0.035); pinta("#f2c94c", 0.55, 2, 0.65, 100, 0.035);
+  for (const c of N.columnas.filter(c => Math.abs(c[0]) < 0.6 && c[4] === 0 && c[1] > 1 && c[1] < 103)) {
+    const lin = [["A", 103.98], ["B", 82], ["B1", 71.7], ["B2", 61.7], ["C", 52], ["C1", 45.8], ["C2", 36.2], ["D", 26], ["D1", 13]].find(([, y]) => Math.abs(c[1] - y) < 0.8);
+    if (lin && lin[0].length === 1) cartel(lin[0] + "01", c[0] + c[2] / 2 + 0.02, c[1], 4.0, 0.55, 0.3, "+x", "#1d2f6b", "#f2c94c");
+    caja("#f2c230", c[0] + c[2] / 2, c[1] - 0.3, c[0] + c[2] / 2 + 0.06, c[1] + 0.3, 0.1, 2.0);   // forro amarillo de pie
+  }
+  // puerta de emergencia verde + estación de válvulas de incendio con caños rojos (pt 78.2)
+  caja("#2ea84f", 0.12, 44.0, 0.2, 46.4, 0, 2.4); caja("#ffffff", 0.21, 44.3, 0.22, 45.1, 1.3, 1.9);
+  cartel("EXIT", 0.25, 45.2, 2.6, 1.6, 0.25, "+x", "#1e8449", "#ffffff");
+  for (const y of [47.0, 47.6, 48.2]) cil("#c0392b", 0.5, y, 0, 3.4, 0.09);
+  cil("#c0392b", 0.6, 47.6, 0.45, 2.4, 0.13, "y"); cil("#c0392b", 0.6, 47.0, 1.2, 0.3, 0.16, "x");
+  for (const y of [46.8, 48.4]) bloque("#cfd3d7", 0.3, y + 1.4, 0.2, 0.5, 1.3, 1.9);
+  for (let z = 0, k = 0; z < 1.6; z += 0.2, k++) caja(k % 2 ? "#1f2328" : "#f2c94c", 0.9, 46.6, 0.96, 46.66, z, z + 0.2);
+  // auditoría: piso turquesa, elevador de 2 columnas "COBI", túnel de luz y camionetas terminadas (pts 48.2–48.4, 78.1, 78.4, 79.3)
+  pinta("#5fb3ae", 4.0, 38.0, 14.0, 58.0, 0.025);
+  for (let y = 38, k = 0; y < 58; y += 0.5, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", 3.6, y, 4.0, y + 0.5, 0.04);
+  for (const s of [-1, 1]) { bloque("#1f3fa0", 8.5 + s * 1.7, 52.5, 0.45, 0.45, 0, 3.6); }
+  cartel("C\nO\nB\nI", 8.5 - 1.7 - 0.24, 52.5, 1.9, 0.35, 1.6, "-x", "#1f3fa0", "#ffffff");
+  for (const dy of [-0.9, 0.9]) bloque("#c8462f", 8.5, 52.5 + dy, 3.4, 0.25, 0, 0.12);
+  camioneta(8.5, 52.5, true, "#7d838a");
+  tunelLuz(6.0, 11.6, 44.0, 4.4);
+  camioneta(8.8, 44.0, true, "#f2f2f2");
+  camioneta(6.5, 39.5, true, "#16181c"); camioneta(11.5, 56.8, true, "#f2f2f2"); camioneta(5.6, 56.8, true, "#16181c");
+  bloque("#c9cdd1", 4.6, 49.0, 0.5, 0.4, 0, 1.1); bloque("#eef1f4", 12.6, 48.5, 1.0, 0.6, 0.8, 0.85);
+  persona(10.8, 41.5, 0, false); persona(7.0, 50.0, 0, false);
+  // jaula de malla amarilla y tablero gris junto a la fachada (pt 78.3)
+  for (const [a, b, y, enX] of [[3.8, 9.5, 62.0, true], [3.8, 9.5, 68.0, true], [62.0, 68.0, 9.5, false]]) cercoMalla(a, b, y, enX, "#e3a800", 2.2);
+  cil("#e67e22", 7.0, 65.0, 0, 1.8, 0.7);
+  bloque("#cfd3d7", 1.0, 72.0, 0.4, 0.7, 0, 1.9);
+  // cajones y butacas en espera junto a la pared (pt 79.1)
+  for (const [x, y] of [[1.6, 26.0], [1.6, 27.4], [2.4, 29.0]]) { bloque("#c8a774", x, y, 1.0, 1.2, 0, 0.8); bloque("#d9c19a", x, y, 0.9, 1.1, 0.8, 1.1); }
+  bloque("#e8eaec", 1.4, 30.6, 0.6, 0.6, 0, 0.9); cil("#e6a12a", 1.4, 31.6, 0, 0.9, 0.3);
 
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
