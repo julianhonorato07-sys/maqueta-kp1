@@ -1215,8 +1215,8 @@ window.DetalleCalles = function (api) {
   // SALÓN DE ACOPIO de W sur (plano: recinto x 191,5–252 · y 13,3–37,2; pared alta a lo largo de y 37,3 desde x 100)
   galvanizado(100, 252, 37.3, true, 7.5, -1); galvanizado(100, 252, 37.3, true, 7.5, +1);
   galvanizado(13.3, 32.0, 191.5, false, 7.5, +1); galvanizado(36.0, 37.2, 191.5, false, 7.5, +1);
-  galvanizado(13.3, 37.2, 252.0, false, 7.5, -1); galvanizado(191.5, 252, 13.3, true, 7.5, +1);
-  for (const [a, b, y] of [[191.5, 252, 13.3]]) { caja("#f2c94c", a, y - 0.03, b, y + 0.03, 8.5, 8.56); for (let x = a; x <= b; x += 1.5) caja("#f2c94c", x, y - 0.03, x + 0.05, y + 0.03, 7.5, 8.56); }   // baranda arriba (pt 58.2)
+  galvanizado(13.3, 37.2, 252.0, false, 7.5, -1);
+  // (Julian 10/10: el lado y 13,3, entre el buffer y el acopio, va abierto: sin chapa ni baranda)
   for (const [x, txt, fondo] of [[194, "CARROCERÍAS\nDELIBERADAS\nUTE 3", "#2f7fd1"], [214, "CARROCERÍAS\nLISTAS PARA MACRO", "#2f7fd1"],
     [228, "CARROCERÍAS LUEGO\nDE MACRO PARA REPARAR", "#e23a77"], [240, "CARROCERÍAS\nLISTAS PARA MONTAJE", "#7cc242"]])
     cartel(txt, x, 37.0, 3.4, 3.4, 0.9, "-y", fondo, "#ffffff");
