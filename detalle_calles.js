@@ -1768,7 +1768,7 @@ window.DetalleCalles = function (api) {
   etiqueta(90, 76.4, 5.5, "CABINA EXTRACCIÓN DE DISTANCIALES", "", DOM.sellado, 2);
   etiqueta(106.7, 57, 7.5, "MASTER DE SELLADO E INSONORIZANTE", "", DOM.sellado, 2);
   etiqueta(128.3, 15.5, 11.0, "CPU11 GR08 · ELEVADOR", "baja desde Revisión final (Finish line, cota 9)", DOM.oleo, 2);
-  etiqueta(155, 8.9, 6.0, "ÓLEO · ESTACIÓN C", "óleo ceroso (cabinas PINTO) + montaje de frisos y otros · TRP-22", DOM.oleo);
+  etiqueta(155, 8.9, 6.0, "ÓLEO · ESTACIÓN C", "carrocerías OK por friction rollers · montaje de frisos y otros · el Cronos casi siempre va directo · TRP-22", DOM.oleo);
   etiqueta(113, 10, 5.5, "ÁREA MACRO C.P.A.", "inspección con túnel de luces · TRP-17", DOM.reparacion, 2);
   etiqueta(162, 21, 5.5, "REPARACIÓN · ESTACIÓN R", "Box de retoques = \"cabinas de trabajo\" (plano 2020) · CPU12 fuera de línea", DOM.reparacion);
   etiqueta(220, 8.5, 7.0, "DIFUSIÓN · BUFFER · ESTACIÓN D", "TRANSPORTE BUFFER: carriles 1–2 KP1 (cabina + caja) · carril 3 Cronos · carril 4 acumulo junto al depósito", DOM.difusion);
@@ -1818,6 +1818,42 @@ window.DetalleCalles = function (api) {
   flujoCinta([[100.3, 17.4], [126.4, 17.4], [128.3, 15.5]], DOM.reparacion, 4.4, 0.6);
   // Acumulo: lazo de la calesita
   flujoCinta([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], DOM.acumulo, 4.2, 0.7);
+  // MULA (Julian 10/10): carrocería con defectos al bajar de revisión final → la mula la lleva al Box de retoques;
+  // si el box está lleno, la deja en el acumulo del depósito (carteles "Luego de macro para reparar", fotos W sur)
+  const RUTA_BOX = [[128.3, 13.2], [134, 13.2], [134, 20.5], [160, 20.5]];
+  const RUTA_ACUM = [[160, 20.5], [186, 20.5], [186, 28.5], [212, 28.5]];
+  flujoCinta(RUTA_BOX, DOM.reparacion, 4.35, 0.5);
+  flujoCinta(RUTA_ACUM, DOM.reparacion, 4.35, 0.35);
+  etiqueta(140, 22.5, 4.8, "MULA → BOX DE RETOQUES", "carrocerías con defectos al bajar de revisión final", DOM.reparacion, 2);
+  etiqueta(206, 30.5, 4.8, "ACUMULO PARA BOX", "si el box de retoques está lleno, la mula las deja acá", DOM.reparacion, 2);
+  etiqueta(257.9, 79.5, 9.8, "COTA 5 · CAMBIO DE SKID", "deep skid (pretrat./cata) → paint skid · el deep skid vuelve vacío por cota 5", DOM.sellado, 2);
+  {
+    // mula (tractor eléctrico verde) + carro con una carrocería, va y vuelve por la ruta box → acumulo
+    const mula = new THREE.Group();
+    const caja3 = (c, lx, ly, lz, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(lx, lz, ly), new THREE.MeshLambertMaterial({ color: c })); m.position.set(x, z + lz / 2, -y); m.castShadow = true; mula.add(m); };
+    caja3(0x2ea84f, 1.6, 1.0, 0.9, 0, 0, 0.15);   caja3(0x1d2a33, 0.7, 0.9, 0.7, -0.3, 0, 1.05);   // tractor + asiento/cabina
+    caja3(0xf2c94c, 4.8, 1.8, 0.12, -3.6, 0, 0.45);                                                    // plataforma del carro
+    caja3(0xb8ad8f, 4.2, 1.7, 0.75, -3.6, 0, 0.6); caja3(0xb8ad8f, 2.0, 1.55, 0.5, -3.8, 0, 1.35);    // carrocería con defecto
+    caja3(0xc0392b, 0.3, 0.3, 0.3, -1.6, 0.9, 1.9);                                                    // marca roja de "a reparar"
+    procesos.add(mula);
+    const ruta = RUTA_BOX.concat(RUTA_ACUM.slice(1));
+    const tramos = []; let L = 0;
+    for (let i = 1; i < ruta.length; i++) { const [a, b] = [ruta[i - 1], ruta[i]], l = Math.hypot(b[0] - a[0], b[1] - a[1]); tramos.push({ a, b, l, s0: L }); L += l; }
+    let s = 0, sentido = 1;
+    const ubicarMula = () => {
+      const t = tramos.find(tr => s >= tr.s0 && s <= tr.s0 + tr.l) || tramos[tramos.length - 1];
+      const f = (s - t.s0) / t.l, x = t.a[0] + (t.b[0] - t.a[0]) * f, y = t.a[1] + (t.b[1] - t.a[1]) * f;
+      mula.position.copy(W(x, y, 0));
+      mula.rotation.y = Math.atan2(-(t.b[1] - t.a[1]) * sentido, (t.b[0] - t.a[0]) * sentido);
+    };
+    ubicarMula();
+    if (animar) animar.push((dt) => {
+      if (!procesos.visible) return;
+      s += 3.0 * dt * sentido;   // ≈ 11 km/h (ilustrativo)
+      if (s > L) { s = L; sentido = -1; } else if (s < 0) { s = 0; sentido = 1; }
+      ubicarMula();
+    });
+  }
   // flechas verticales de los elevadores (subida / bajada entre cotas)
   function flechaVertical(x, y, sube, color) {
     const m = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.4, 16), new THREE.MeshBasicMaterial({ color }));
