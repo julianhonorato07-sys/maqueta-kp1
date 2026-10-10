@@ -1086,7 +1086,7 @@ window.DetalleCalles = function (api) {
   // ============================================================= 16c) CALLE X NORTE = "entre W y X" de las fotos (plano: y 10,4–12,7, x 0–96) – pts 60–62
   calleX(2, 96, 10.4, 12.7, [10.5, 11.1], "X");
   // pared galvanizada alta del lado de los locales (Box chapistería, talleres, depósito, pañol), plano y ≈ 9,6
-  galvanizado(0.5, 53.0, 9.45, true, 6.5, +1); galvanizado(55.0, 79.0, 9.45, true, 6.5, +1);
+  galvanizado(0.5, 18.3, 9.45, true, 6.5, +1);   // chapistería: chapa galvanizada alta (fotos 60.1–61.4); el resto de los locales tiene rejas amarillas (sección 26)
   for (const [x, w] of [[30, 1.0], [31.4, 1.2], [33.0, 1.2]]) bloque(elegir(["#b08a5a", "#c8a774"]), x, 9.9, w, 0.7, 0, 0.6);
   cil("#c0392b", 28.6, 9.95, 0, 0.6, 0.3);
   // franja entre la calle X y la calesita (y 12,9–18,8): fila de cajas/cabinas de pickup sobre soportes + pasillo (pts 61–62)
@@ -1610,7 +1610,6 @@ window.DetalleCalles = function (api) {
   cartelEtapa("REPARATION BOX · BOX DE RETOQUES", 162, 16.0, 4.6, 6.0, "-y", "#c0392b");
   cartelEtapa("DIFUSIÓN · KP1 POR ABAJO · CRONOS POR TÚNEL", 219, 8.6, 5.6, 8.0, "-y", "#2e7d32");
   cartelEtapa("CALESITA · ACUMULO (CAJA, CABINA, CRONOS)", 50, 26.9, 4.8, 7.0, "+y", "#e67e22");
-  cartelEtapa("BOX MANTENIMIENTO", 65.6, 10.0, 3.8, 3.4, "-y", "#455a64");
 
   // 24b. Estaciones de conteo MIP (cubos amarillos con letra, como en el boceto de Trazabilidad) + lector y PC
   function estacionMIP(letra, x, y, txt) {
@@ -1779,6 +1778,7 @@ window.DetalleCalles = function (api) {
   etiqueta(50, 23, 5.0, "ACUMULO · CALESITA", "zona C · 160 skids (cap. geométrica)", DOM.acumulo);
   etiqueta(32, 39.4, 5.0, "ACUMULO · ZONA D", "48 skids", DOM.acumulo, 2);
   etiqueta(45, 54, 5.0, "ACUMULO · ZONA E", "138 skids", DOM.acumulo, 2);
+  etiqueta(43.5, 4.6, 4.2, "BOX MANTENIMIENTO", "bancos, herramientas, repuestos · taller, pañol y área de descanso al lado", "#455a64");
   etiqueta(79, 47, 4.5, "CENTRAL DE SELLADOR ABB", "centrale sigillante", DOM.servicio, 2);
   etiqueta(229.3, 46, 4.5, "MINI CENTRAL DE PINTURA", "", DOM.servicio, 2);
 
@@ -1890,6 +1890,126 @@ window.DetalleCalles = function (api) {
     }
     if (v) for (const t of cintas) t.offset.x -= dt * 0.9;
   });
+
+
+  // =============================================================================================
+  // 26) LOCALES DE LA FACHADA NORTE-OESTE (ejes 1–7, y 0–9,5): BOX CHAPISTERÍA, SCRAP, BOX DEPÓSITO ×2, BOX MANTENIMIENTO,
+  //     BOX LUBRICANTES, TALLER HERRERÍA / MESAS DE TRABAJO, ARCHIVO, SALA TÉCNICA, ÁREA DE DESCANSO, PAÑOL / ALMACENAJE.
+  //     Huellas y nombres: plano 2018 (301/303) y plano municipal 2020 ("Box depósito", "Box mantenimiento", "Mantenimiento",
+  //     "Archivo", "Sala técnica", "Área de descanso", "Almacenaje", rejas H 2,00 / 3,00 / 3,10 / 4,00 m).
+  //     Frente: chapa galvanizada en la chapistería y rejas amarillas en el resto (fotos 60.1–61.4). Equipamiento interior: SUPUESTO.
+  // =============================================================================================
+  const YF = 9.45;   // frente de los locales sobre la calle X norte
+  function reja(x0, x1, y, alto, enX) { cercoMalla(x0, x1, y, enX, "#e3a800", alto, false); }
+  function estanteria(x0, x1, y, prof, alto, carga) {
+    const n = Math.max(1, Math.round((x1 - x0) / 2.7));
+    const paso = (x1 - x0) / n;
+    for (let i = 0; i <= n; i++) for (const s of [-1, 1]) bloque("#1f4fa8", x0 + i * paso, y + s * prof / 2, 0.08, 0.08, 0, alto);
+    for (let z = 0.15; z < alto; z += 0.9) {
+      caja("#e67e22", x0, y - prof / 2 - 0.04, x1, y - prof / 2 + 0.04, z, z + 0.1); caja("#e67e22", x0, y + prof / 2 - 0.04, x1, y + prof / 2 + 0.04, z, z + 0.1);
+      caja("#b9a07a", x0, y - prof / 2, x1, y + prof / 2, z + 0.1, z + 0.12);
+      if (carga !== false) for (let x = x0 + 0.3; x < x1 - 0.4; x += entre(0.5, 0.9)) bloque(elegir(["#c8a774", "#b08a5a", "#d9c19a", "#2f5fb8", "#7d858d", "#e9e4cf"]), x, y + entre(-0.1, 0.1), entre(0.35, 0.6), prof * 0.8, z + 0.12, z + 0.12 + entre(0.25, 0.65));
+    }
+  }
+  function banco(x, y, largoX, conMorsa) {   // banco de trabajo con tablero perforado de herramientas
+    const [lx, ly] = largoX ? [2.0, 0.8] : [0.8, 2.0];
+    bloque("#8d6e4a", x, y, lx, ly, 0.85, 0.92); bloque("#3a4a5c", x, y, lx * 0.95, ly * 0.95, 0.1, 0.8);
+    if (conMorsa) { bloque("#1f5fa8", x + (largoX ? 0.7 : 0), y + (largoX ? 0 : 0.7), 0.25, 0.25, 0.92, 1.1); }
+    for (let k = 0; k < 6; k++) bloque(elegir(["#c0392b", "#2b2f33", "#f2c94c", "#7d858d"]), x + (largoX ? -0.8 + k * 0.3 : 0), y + (largoX ? 0 : -0.8 + k * 0.3), 0.18, 0.18, 0.92, 0.98);
+  }
+  function panelHerr(x0, x1, y, cara) {   // panel perforado en la pared con herramientas colgadas
+    caja("#d7dadc", x0, y, x1, y + cara * 0.03, 1.1, 2.1);
+    for (let x = x0 + 0.2; x < x1 - 0.1; x += 0.25) bloque(elegir(["#c0392b", "#2b2f33", "#f2c94c", "#7d858d", "#1f5fa8"]), x, y + cara * 0.06, 0.06, 0.04, entre(1.3, 1.6), entre(1.7, 2.0));
+  }
+  function lockers(x0, n, y, color) { for (let k = 0; k < n; k++) { bloque(color || "#2e5c9a", x0 + k * 0.42, y, 0.4, 0.5, 0, 1.9); bloque("#1b2a3a", x0 + k * 0.42, y - 0.26, 0.3, 0.01, 1.5, 1.6); } }
+  function cartelLocal(txt, x, ancho) { cartel(txt, x, YF + 0.05, 2.6, ancho || 3.2, 0.55, "+y", "#ffffff", "#1d2f6b"); }
+
+  // 26a. Frente sobre la calle X norte: galvanizado en la chapistería, rejas amarillas (alturas del plano 2020) en el resto
+  reja(18.3, 22.0, YF, 3.1); reja(22.0, 28.5, YF, 2.0); reja(28.5, 36.5, YF, 2.0); reja(36.5, 50.4, YF, 2.0); reja(50.4, 53.0, YF, 2.0);
+  reja(56.0, 79.0, YF, 3.0);
+  for (const x of [18.3, 22.0, 28.5, 36.5, 50.4, 53.0]) reja(0, YF, x, x === 18.3 ? 3.1 : x === 53.0 ? 4.0 : 2.0, false);
+  reja(0, YF, 56.0, 4.0, false); reja(0, YF, 72.0, 3.0, false);
+  for (const [x, w] of [[20.2, 1.2], [25.0, 1.4], [32.5, 1.4], [43.0, 1.6], [51.7, 1.0], [60.0, 1.6], [75.5, 1.4]]) caja("#2b2f33", x - w / 2, YF - 0.02, x + w / 2, YF + 0.02, 0, 0.06);   // umbrales de las puertas de reja
+  cartelLocal("BOX CHAPISTERÍA", 9.0, 3.6); cartelLocal("PARTICULARES\nSCRAP PINTURA", 20.2, 2.4); cartelLocal("BOX DEPÓSITO", 25.2); cartelLocal("BOX DEPÓSITO", 32.5);
+  cartelLocal("BOX MANTENIMIENTO", 43.5, 4.0); cartelLocal("BOX\nLUBRICANTES", 51.7, 2.0); cartelLocal("MANTENIMIENTO\nTALLER · MESAS DE TRABAJO", 63.5, 4.2); cartelLocal("PAÑOL MANTENIMIENTO\nALMACENAJE", 75.5, 4.0);
+
+  // 26b. BOX CHAPISTERÍA (x 0,8–18): 3 carrocerías en reparación sobre soportes (las 3 del plano), banco, carro de herramientas,
+  //      lijadoras y enrollador de aire, luces de inspección
+  pinta("#c9ccd0", 0.8, 0.2, 18.2, 9.3, 0.022);
+  for (const x of [7.2, 9.4, 12.6]) { soporte(x, 5.0, false); sedan(x, 5.0, 0.55, false, elegir(["#c5c9cd", "#16181c", "#8d949b"])); }
+  for (const x of [5.4, 11.0, 15.0]) { bloque("#f7fbff", x, 5.0, 0.12, 4.0, 3.2, 3.28, { clave: "luz", emisivo: true }); caja("#9aa5b1", x - 0.01, 3.0, x + 0.01, 3.02, 3.28, 6.0); }
+  banco(3.0, 1.2, true, true); panelHerr(1.8, 4.6, 0.15, +1); bloque("#c0392b", 4.8, 7.8, 0.8, 0.5, 0.1, 1.0);
+  cil("#2b2f33", 16.8, 1.0, 2.2, 0.15, 0.3, "y"); cil("#f2c94c", 16.8, 1.0, 0, 2.2, 0.04);
+  persona(10.8, 7.2, 0, false); persona(8.2, 3.0, 0, false);
+  // 26c. PARTICULARES SCRAP (x 18,3–22): contenedores metálicos con piezas y volquete
+  for (const [x, y] of [[19.3, 2.0], [21.0, 2.0], [19.3, 4.4], [21.0, 4.4]]) { bloque("#4a5462", x, y, 1.4, 1.1, 0.1, 0.9); for (let k = 0; k < 3; k++) bloque(elegir(BIW), x + entre(-0.4, 0.4), y + entre(-0.3, 0.3), 0.6, 0.4, 0.8, entre(1.0, 1.3)); }
+  bloque("#2f5fb8", 20.2, 7.4, 3.0, 1.6, 0.1, 1.1); cartel("SCRAP", 20.2, 6.58, 0.7, 1.2, 0.35, "-y", "#ffffff", "#c0392b");
+  // 26d. BOX DEPÓSITO ×2 (x 22–28,5 y 28,5–36,5): estanterías con cajas y pallets
+  estanteria(22.4, 28.1, 0.8, 1.0, 3.0); estanteria(22.4, 28.1, 4.6, 1.0, 2.6);
+  estanteria(28.9, 36.1, 0.8, 1.0, 3.0); estanteria(28.9, 36.1, 4.6, 1.0, 2.6);
+  for (const [x, y] of [[24.0, 7.6], [26.4, 7.6], [31.0, 7.6], [34.0, 7.6]]) { bloque("#b08a5a", x, y, 1.2, 1.0, 0, 0.14); bloque(elegir(["#c8a774", "#d9c19a"]), x, y, 1.1, 0.95, 0.14, entre(0.8, 1.5), { clave: "film", transparente: 0.85 }); }
+  // 26e. BOX MANTENIMIENTO (x 36,5–50,4; plano 2020): bancos con morsa, paneles de herramientas, taladro de columna, amoladora,
+  //      estantería de repuestos (motores, reductores, rodillos), carro de herramientas, lockers y pizarra de gestión
+  pinta("#d5d9dc", 36.6, 0.2, 50.3, 9.3, 0.022);
+  for (const x of [38.6, 41.2, 43.8]) banco(x, 1.1, true, true);
+  panelHerr(37.5, 45.0, 0.15, +1);
+  bloque("#2f6b4f", 46.5, 1.0, 0.6, 0.6, 0, 0.2); cil("#2f6b4f", 46.5, 1.0, 0.2, 1.4, 0.07); bloque("#2f6b4f", 46.5, 1.1, 0.5, 0.7, 1.4, 1.8); cil("#9aa5b1", 46.5, 0.85, 1.1, 0.3, 0.03);   // taladro de columna
+  bloque("#3a4a5c", 48.2, 1.0, 0.5, 0.4, 0, 0.9); cil("#7d858d", 48.0, 1.0, 1.0, 0.1, 0.15, "x"); cil("#7d858d", 48.4, 1.0, 1.0, 0.1, 0.15, "x");   // amoladora de banco
+  estanteria(37.0, 44.6, 5.4, 1.0, 2.7, false);
+  for (let x = 37.5, z = 0.27; x < 44.2; x += 0.9) { cil("#1f5fa8", x, 5.4, z, 0.45, 0.22, "x"); bloque("#7d858d", x + 0.3, 5.4, 0.3, 0.3, z, z + 0.3); }   // motores y reductores
+  for (let x = 37.4; x < 44.4; x += 0.35) cil("#9aa5b1", x, 5.4, 1.4, 0.9, 0.05, "y");   // rodillos de transportador
+  for (let x = 37.6; x < 44.4; x += 0.7) bloque(elegir(["#c8a774", "#2f5fb8", "#e9e4cf"]), x, 5.4, 0.5, 0.7, 2.07, 2.45);
+  bloque("#c0392b", 46.0, 4.6, 0.9, 0.5, 0.1, 1.1); for (const z of [0.35, 0.6, 0.85]) bloque("#8f2a20", 46.0, 4.34, 0.85, 0.02, z, z + 0.02);
+  lockers(46.6, 8, 8.9); lockers(38.0, 6, 8.9, "#7d858d");
+  bloque("#ffffff", 49.9, 5.2, 0.05, 1.8, 0.9, 2.0); cartel("GESTIÓN\nMANTENIMIENTO\nEWO · TPM", 49.87, 5.2, 1.45, 1.6, 0.9, "-x", "#ffffff", "#1d2f6b");
+  bloque("#e9e4cf", 47.6, 7.0, 1.6, 0.8, 0.72, 0.76); for (const dx of [-0.7, 0.7]) bloque("#7d858d", 47.6 + dx, 7.0, 0.05, 0.7, 0, 0.72); bloque("#2b2f33", 47.6, 7.0, 0.5, 0.35, 0.76, 1.1);   // escritorio con PC
+  persona(41.2, 2.0, 0, false); persona(45.2, 6.6, 0, true);
+  cartel("BOX MANTENIMIENTO", 43.5, 0.0, 3.6, 4.2, 0.6, "+y", "#455a64", "#ffffff");
+  // 26f. BOX LUBRICANTES (x 50,4–53): 5 tanques/IBC y 2 tambores del plano + bandejas antiderrame y bombas de trasvase
+  for (let k = 0; k < 5; k++) { const y = 3.8 + k * 0.95; bloque("#f2c94c", 51.8, y, 1.2, 0.85, 0, 0.12); bloque("#eef2f5", 51.8, y, 1.0, 0.75, 0.12, 1.1, { clave: "ibc", transparente: 0.85 }); bloque("#5d6672", 51.8, y, 1.05, 0.8, 0.12, 0.2); }
+  for (const y of [1.4, 2.4]) { cil(elegir(["#1f5fa8", "#c0392b"]), 51.6, y, 0, 0.9, 0.29); cil("#7d858d", 51.6, y, 0.9, 0.5, 0.03); }
+  cartel("⚠ INFLAMABLES\nPROHIBIDO FUMAR", 51.7, 0.0, 2.2, 2.0, 0.6, "+y", "#f2c94c", "#c0392b");
+  // 26g. Pasillo x 53–56 con puerta a la fachada (plano) y cebra hasta la calle X
+  for (let k = 0; k < 4; k++) pinta("#ffffff", 53.4 + k * 0.65, 0.4, 53.7 + k * 0.65, YF, 0.06);
+  // 26h. MANTENIMIENTO (x 56–72): TALLER HERRERÍA (soldadora, yunque, perfiles), MESAS DE TRABAJO, GRÚA PLUMA 250 kg – 3,8 m
+  //      y PRENSA HIDRÁULICA (rótulos del plano 2018), ARCHIVO y SALA TÉCNICA (oficinas bajas), ÁREA DE DESCANSO (plano 2020)
+  pinta("#d5d9dc", 56.1, 0.2, 71.9, 9.3, 0.022);
+  bloque("#1f4fa8", 57.4, 1.0, 0.7, 0.5, 0, 0.9); cil("#2b2f33", 57.9, 1.0, 0.9, 0.3, 0.2, "y"); cartel("SOLDADORA", 57.4, 1.26, 0.7, 0.6, 0.18, "+y", "#ffffff", "#1f2a3a");
+  bloque("#2b2f33", 59.0, 1.2, 0.5, 0.3, 0, 0.5); bloque("#3a3f45", 59.0, 1.2, 0.7, 0.3, 0.5, 0.75);   // yunque
+  for (let k = 0; k < 6; k++) bloque("#7d858d", 57.6, 2.6 + k * 0.08, 3.0, 0.06, 0.4 + k * 0.05, 0.46 + k * 0.05);   // perfiles en caballete
+  for (const [x, y] of [[57.6, 5.7], [57.6, 6.7], [57.6, 7.7]]) { bloque("#7d858d", x, y, 0.8, 0.6, 0, 0.9); bloque("#2f6b4f", x, y, 0.6, 0.5, 0.9, 1.3); }   // máquinas herramienta del plano
+  banco(60.3, 7.0, true, true); banco(61.6, 8.6, true, false);
+  // grúa pluma (columna + brazo giratorio 3,8 m con polipasto) y prensa hidráulica
+  cil("#f2c94c", 61.0, 4.4, 0, 3.2, 0.16); bloque("#f2c94c", 61.0, 4.4, 0.6, 0.6, 0, 0.12);
+  diag("#f2c94c", 61.0, 4.4, 3.0, 63.4, 7.0, 3.0, 0.18); bloque("#c0392b", 62.6, 6.1, 0.25, 0.25, 2.4, 2.9); cil("#2b2f33", 62.6, 6.1, 1.6, 0.8, 0.02);
+  cartel("GRÚA PLUMA\n250 kg – 3,8 m", 61.0, 4.24, 2.0, 0.9, 0.5, "-y", "#f2c94c", "#111111");
+  for (const s of [-0.6, 0.6]) bloque("#c0392b", 59.7 + s, 3.4, 0.15, 0.6, 0, 2.4);
+  bloque("#c0392b", 59.7, 3.4, 1.5, 0.6, 2.2, 2.45); bloque("#c0392b", 59.7, 3.4, 1.5, 0.6, 0.8, 0.95); cil("#2b2f33", 59.7, 3.4, 1.5, 0.7, 0.12);
+  cartel("PRENSA\nHIDRÁULICA", 59.7, 3.08, 1.6, 1.0, 0.45, "-y", "#ffffff", "#c0392b");
+  // oficinas bajas del plano (ARCHIVO x 61–66, BOX/SALA TÉCNICA x 66–71, y 0,3–2,2): tabiques, vidrio, techo
+  for (const [a, b] of [[61.2, 66.0], [66.2, 71.2]]) {
+    caja("#f4f4f2", a, 2.1, b, 2.2, 0, 1.0); caja("#dfe8ef", a, 2.13, b, 2.17, 1.0, 2.3, { clave: "vidrio2", transparente: 0.35 }); caja("#e4e7ea", a, 2.1, b, 2.2, 2.3, 2.7);
+    for (const x of [a, b]) caja("#f4f4f2", x - 0.05, 0.3, x + 0.05, 2.2, 0, 2.7);
+    caja("#e9ecef", a, 0.3, b, 2.2, 2.7, 2.8);
+  }
+  for (let x = 61.6; x < 65.6; x += 0.5) bloque("#7d858d", x, 0.6, 0.45, 0.45, 0, 1.8);   // archivos metálicos
+  bloque("#e9e4cf", 68.6, 1.2, 1.6, 0.8, 0.72, 0.76); bloque("#2b2f33", 68.6, 1.2, 0.5, 0.35, 0.76, 1.1); bloque("#2b4f8f", 68.6, 1.8, 0.5, 0.5, 0, 0.9);
+  cartel("ARCHIVO", 63.6, 2.23, 2.2, 1.2, 0.3, "+y", "#ffffff", "#1d2f6b"); cartel("SALA TÉCNICA", 68.7, 2.23, 2.2, 1.6, 0.3, "+y", "#ffffff", "#1d2f6b");
+  // área de descanso (plano 2020, x 63–70 · y 3,5–9,5): piso verde, mesas y bancos, microondas, dispenser
+  pinta("#7fbf9a", 63.2, 3.6, 70.6, 9.2, 0.03);
+  for (const [x, y] of [[65.0, 5.2], [65.0, 7.4], [68.6, 5.2], [68.6, 7.4]]) {
+    bloque("#b6bec6", x, y, 2.2, 0.75, 0.72, 0.77); for (const dx of [-0.95, 0.95]) bloque("#7d858d", x + dx, y, 0.06, 0.6, 0, 0.72);
+    for (const dy of [-0.65, 0.65]) bloque("#9aa3ad", x, y + dy, 2.2, 0.3, 0.43, 0.47);
+  }
+  bloque("#e9e4cf", 70.2, 8.6, 0.6, 1.4, 0, 0.9); bloque("#2b2f33", 70.2, 8.4, 0.45, 0.4, 0.9, 1.2); bloque("#f4f6f8", 70.2, 9.0, 0.35, 0.35, 0, 1.05); cil("#3b8fd8", 70.2, 9.0, 1.05, 0.45, 0.14);
+  cartel("ÁREA DE DESCANSO", 66.8, 9.42, 2.3, 2.6, 0.45, "-y", "#2e9d4f", "#ffffff");
+  persona(65.2, 4.6, 0, false); persona(68.4, 7.9, 0, false);
+  // 26i. PAÑOL MANTENIMIENTO / ALMACENAJE (x 72–79): mostrador con ventanilla, estanterías de repuestos, cajones gaveteros
+  estanteria(72.6, 78.6, 1.0, 0.9, 2.7); estanteria(72.6, 78.6, 3.4, 0.9, 2.7); estanteria(72.6, 78.6, 5.8, 0.9, 2.7);
+  bloque("#c9cdd1", 75.5, 8.4, 4.0, 0.6, 0, 1.0); bloque("#8d6e4a", 75.5, 8.4, 4.1, 0.7, 1.0, 1.05);
+  for (let k = 0; k < 4; k++) bloque("#c0392b", 73.2 + k * 0.7, 7.4, 0.6, 0.5, 0, 1.2);
+  cartel("PAÑOL", 75.5, 9.1, 2.0, 1.4, 0.4, "+y", "#455a64", "#ffffff");
+  persona(75.5, 7.8, 0, false);
 
   // ============================================================= construir mallas
   for (const { color, opc, pos, alto: esAlto } of baldes.values()) {
