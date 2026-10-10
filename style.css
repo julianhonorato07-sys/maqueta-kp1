@@ -75,6 +75,25 @@ h1 { font-size: 17px; margin: 0; font-weight: 650; }
 }
 .recorrido-btn:hover { background: #2c3b52; }
 
+#pisos select {
+  border: 1px solid var(--borde); background: #fff; border-radius: 8px; padding: 6px 8px;
+  font: inherit; font-size: 12.5px; color: var(--texto); cursor: pointer;
+}
+
+/* Botones de navegación (abajo a la derecha) */
+#nav {
+  position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: row; gap: 6px;
+  padding: 6px; background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; box-shadow: var(--sombra);
+}
+#nav button {
+  width: 38px; height: 38px; border: 1px solid var(--borde); background: #fff; border-radius: 10px;
+  font: inherit; font-size: 18px; line-height: 1; color: var(--texto); cursor: pointer; display: grid; place-items: center;
+}
+#nav button:hover { background: var(--azul-suave); }
+#nav .brujula span { display: inline-flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 700; line-height: 1; transition: transform .1s linear; }
+#nav .brujula i { font-style: normal; color: #c0392b; font-size: 11px; }
+#ver-ayuda { font-weight: 700; color: var(--azul) !important; }
+
 /* Recorrido guiado de la carrocería */
 #recorrido {
   position: fixed; left: 16px; bottom: 16px; width: 420px; max-width: calc(100vw - 32px);
@@ -108,7 +127,7 @@ body.con-recorrido #ayuda { display: none; }
 #capas {
   position: fixed; top: 96px; right: 16px; width: 230px; padding: 14px 16px;
   background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio);
-  box-shadow: var(--sombra); font-size: 13px;
+  box-shadow: var(--sombra); font-size: 13px; max-height: calc(100vh - 186px); overflow: auto;
 }
 #capas summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
 #capas summary::-webkit-details-marker { display: none; }
@@ -123,7 +142,7 @@ body.con-recorrido #ayuda { display: none; }
 button.link { border: 0; background: none; padding: 6px 0 0; color: var(--azul); font: inherit; font-size: 12px; cursor: pointer; }
 
 #ayuda {
-  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); text-align: center;
   font-size: 12px; color: var(--texto-suave); background: var(--panel);
   padding: 6px 14px; border-radius: 999px; border: 1px solid var(--borde);
 }
@@ -199,6 +218,10 @@ dialog button { margin-top: 8px; border: 0; background: var(--azul); color: #fff
   body.con-recorrido #pisos .botones, body.con-recorrido #pisos .sep { display: none; }
   #ayuda { bottom: calc(200px + env(safe-area-inset-bottom)); }
   #recorrido .paso-num b { font-size: 22px; }
+  #nav { right: 8px; bottom: auto; top: calc(124px + env(safe-area-inset-top)); padding: 4px; gap: 4px; flex-direction: column; }
+  #nav button { width: 40px; height: 40px; }
+  #nav button[data-nav="arriba"], #nav button[data-nav="abajo"] { display: none; }
+  #ayuda { white-space: normal !important; }
   .eje { font-size: 10px; padding: 0 5px; }
   dialog { max-width: calc(100vw - 24px); max-height: 80vh; padding: 16px; }
 }

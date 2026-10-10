@@ -590,8 +590,14 @@
   }
   encuadrar();
   const controles = new THREE.OrbitControls(camara, renderer.domElement);
-  Object.assign(controles, { enableDamping: true, dampingFactor: 0.08, screenSpacePanning: true,
-    maxPolarAngle: Math.PI / 2 - 0.05, minZoom: 0.12, maxZoom: 25 });
+  // Navegación tipo mapa (Julian 10/10: "es muy difícil mover la cámara"): arrastrar = mover sobre el piso,
+  // clic derecho o Shift + arrastrar = girar, rueda = zoom hacia donde apunta el mouse (lo maneja navegar()).
+  // En celular: 1 dedo = mover, 2 dedos = zoom y girar.
+  Object.assign(controles, { enableDamping: true, dampingFactor: 0.12, screenSpacePanning: false, rotateSpeed: 0.55,
+    maxPolarAngle: Math.PI / 2 - 0.05, minZoom: 0.12, maxZoom: 30 });
+  controles.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+  controles.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
+  let pisoY = 0;   // altura (mostrada) del piso que se está mirando: ahí pivota la cámara
 
   const VISTAS = {
     iso: { dir: new THREE.Vector3(1, 0.82, 1), zoom: 0.78 },
@@ -603,6 +609,7 @@
   function vista(nombre) {
     const v = VISTAS[nombre];
     const c0 = v.centro ? W(v.centro[0], v.centro[1], 0) : new THREE.Vector3();
+    c0.y = pisoY;
     controles.target.copy(c0);
     camara.position.copy(c0);
     camara.position.add(v.dir.clone().normalize().multiplyScalar(400));
@@ -649,12 +656,12 @@
     document.querySelectorAll("#pisos button[data-piso]").forEach(b => b.classList.toggle("activo", b.dataset.piso === p));
     if (window.__recorrido) window.__recorrido.alCambiarVista(estado);
   }
+  const alturaPiso = (p) => (ALTO_PISO[p] || 0) + (p === "9" ? 2 : p === "5" ? 1 : 0) * estado.sep;
   function verPiso(p) {
-    const antes = estado.piso;
-    estado.piso = p;
     // la cámara pivota a la altura del piso elegido
-    const dy = ((ALTO_PISO[p] || 0) + (p === "9" ? 2 : p === "5" ? 1 : 0) * estado.sep) - ((ALTO_PISO[antes] || 0) + (antes === "9" ? 2 : antes === "5" ? 1 : 0) * estado.sep);
-    controles.target.y += dy; camara.position.y += dy;
+    const dy = alturaPiso(p) - alturaPiso(estado.piso);
+    estado.piso = p;
+    controles.target.y += dy; camara.position.y += dy; pisoY = alturaPiso(p);
     aplicarVista();
   }
   document.querySelectorAll("#capas input[data-capa]").forEach(chk => chk.addEventListener("change", () => {
@@ -664,8 +671,132 @@
   document.getElementById("cortar").addEventListener("change", (ev) => { estado.cortar = ev.target.checked; aplicarVista(); });
   document.querySelectorAll("#pisos button[data-piso]").forEach(b => b.addEventListener("click", () => verPiso(b.dataset.piso)));
   const sepInput = document.getElementById("separar");
-  if (sepInput) sepInput.addEventListener("input", () => { estado.sep = Number(sepInput.value); document.getElementById("separar-v").textContent = estado.sep + " m"; aplicarVista(); });
+  if (sepInput) sepInput.addEventListener("input", () => {
+    const h0 = alturaPiso(estado.piso);
+    estado.sep = Number(sepInput.value); document.getElementById("separar-v").textContent = estado.sep + " m";
+    const dy = alturaPiso(estado.piso) - h0; controles.target.y += dy; camara.position.y += dy; pisoY = alturaPiso(estado.piso);
+    aplicarVista();
+  });
   aplicarVista();
+
+  // ---------------------------------------------------------------- navegación fácil
+  // zoom hacia el mouse, doble clic para acercar ahí, botones de girar / inclinar / norte, menú "Ir a…" y teclado
+  const lienzo = renderer.domElement, rc = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  let vuelo = null;   // animación suave de la cámara
+  const esf = new THREE.Spherical(), esf1 = new THREE.Spherical();
+  /** vuelo de cámara: destino del target, zoom y (opcional) giro/inclinación en radianes */
+  function volar(destino, zoom, dTheta, dPhi) {
+    const off = camara.position.clone().sub(controles.target);
+    esf.setFromVector3(off); esf1.copy(esf);
+    esf1.theta += dTheta || 0; esf1.phi = Math.min(controles.maxPolarAngle, Math.max(0.05, esf1.phi + (dPhi || 0)));
+    vuelo = { t: 0, T: 0.8, t0: controles.target.clone(), t1: destino ? destino.clone() : controles.target.clone(), z0: camara.zoom,
+      z1: Math.min(controles.maxZoom, Math.max(controles.minZoom, zoom || camara.zoom)), s0: esf.clone(), s1: esf1.clone() };
+  }
+  function avanzarVuelo(dt) {
+    if (!vuelo) return;
+    vuelo.t += dt;
+    const u = Math.min(1, vuelo.t / vuelo.T), k = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    controles.target.lerpVectors(vuelo.t0, vuelo.t1, k);
+    esf.set(vuelo.s0.radius, vuelo.s0.phi + (vuelo.s1.phi - vuelo.s0.phi) * k, vuelo.s0.theta + (vuelo.s1.theta - vuelo.s0.theta) * k);
+    camara.position.copy(controles.target).add(new THREE.Vector3().setFromSpherical(esf));
+    camara.zoom = vuelo.z0 + (vuelo.z1 - vuelo.z0) * k; camara.updateProjectionMatrix();
+    if (u >= 1) vuelo = null;
+  }
+  controles.addEventListener("start", () => { vuelo = null; });
+  // punto del piso (a la altura del piso que se mira) bajo el mouse
+  function puntoBajo(cx, cy) {
+    const r = lienzo.getBoundingClientRect();
+    ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+    rc.setFromCamera(ndc, camara);
+    const plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), -controles.target.y), p = new THREE.Vector3();
+    return rc.ray.intersectPlane(plano, p) ? p : null;
+  }
+  // rueda: zoom hacia el mouse (el punto bajo el cursor queda quieto)
+  lienzo.addEventListener("wheel", (ev) => {
+    ev.preventDefault(); ev.stopImmediatePropagation(); vuelo = null;
+    const r = lienzo.getBoundingClientRect();
+    ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+    const antes = new THREE.Vector3(ndc.x, ndc.y, 0).unproject(camara);
+    const f = Math.pow(1.0018, -Math.max(-300, Math.min(300, ev.deltaY)));
+    camara.zoom = Math.min(controles.maxZoom, Math.max(controles.minZoom, camara.zoom * f)); camara.updateProjectionMatrix();
+    const despues = new THREE.Vector3(ndc.x, ndc.y, 0).unproject(camara);
+    const d = antes.sub(despues); camara.position.add(d); controles.target.add(d);
+  }, { passive: false, capture: true });
+  // doble clic: centra y acerca ahí
+  lienzo.addEventListener("dblclick", (ev) => {
+    const p = puntoBajo(ev.clientX, ev.clientY); if (!p) return;
+    volar(p, Math.max(camara.zoom * 2, 2.2));
+  });
+  // botones en pantalla
+  const ALTO_VISTA = () => (camara.top - camara.bottom) / camara.zoom;
+  const acciones = {
+    zin: () => volar(null, camara.zoom * 1.6), zout: () => volar(null, camara.zoom / 1.6),
+    izq: () => volar(null, null, Math.PI / 6), der: () => volar(null, null, -Math.PI / 6),
+    arriba: () => volar(null, null, 0, -0.22), abajo: () => volar(null, null, 0, 0.22),
+    norte: () => { const off = camara.position.clone().sub(controles.target); esf.setFromVector3(off); const [nx, ny] = (N.exterior && N.exterior.norte) || [0, 1]; let d = Math.atan2(-nx, ny) - esf.theta; d = Math.atan2(Math.sin(d), Math.cos(d)); volar(null, null, d); },
+  };
+  document.querySelectorAll("#nav button[data-nav]").forEach(b => b.addEventListener("click", () => acciones[b.dataset.nav]()));
+  // la brújula muestra dónde queda el norte
+  const brujula = document.querySelector("#nav .brujula span");
+  // teclado: flechas / WASD mueven, Q y E giran, + y − acercan, R vuelve a la vista inicial
+  function mover(dx, dy) {
+    const fwd = new THREE.Vector3(); camara.getWorldDirection(fwd); fwd.y = 0; if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1).applyQuaternion(camara.quaternion); fwd.y = 0; fwd.normalize();
+    const der = new THREE.Vector3(-fwd.z, 0, fwd.x), paso = ALTO_VISTA() * 0.12;
+    const d = der.multiplyScalar(dx * paso).add(fwd.multiplyScalar(dy * paso));
+    volar(controles.target.clone().add(d), camara.zoom); vuelo.T = 0.25;
+  }
+  window.addEventListener("keydown", (ev) => {
+    if (/INPUT|SELECT|TEXTAREA/.test(ev.target.tagName)) return;
+    const k = ev.key.toLowerCase();
+    const mapa = { arrowup: () => mover(0, 1), w: () => mover(0, 1), arrowdown: () => mover(0, -1), s: () => mover(0, -1), arrowleft: () => mover(-1, 0), a: () => mover(-1, 0),
+      arrowright: () => mover(1, 0), d: () => mover(1, 0), q: acciones.izq, e: acciones.der, "+": acciones.zin, "=": acciones.zin, "-": acciones.zout, r: () => vista("iso") };
+    if (mapa[k]) { ev.preventDefault(); mapa[k](); }
+  });
+  // menú "Ir a…": lugares del proceso por cota (x, y del plano; zoom)
+  const LUGARES = [
+    ["Cota +9", "9", [["Ingreso desde Chapistería", 66, 118, 3], ["Preparación manual", 232, 97, 4.5], ["Pretratamiento", 112, 97, 2.2], ["Cataforesis", 36, 90.7, 3.5], ["Horno de cataforesis", 181, 90.7, 2.2],
+      ["Bajo carrocería UBS & UBC", 164, 57.7, 3.2], ["Horno de fondo (pregelado)", 78, 57.6, 2.2], ["Estación I y acumulo lote colores", 55, 71, 2.6], ["Revisión de cataforesis", 190, 68, 2.4],
+      ["Línea de esmalte", 200, 46, 2.4], ["Robots de esmalte (de cerca)", 199, 46, 8], ["Hornos de esmalte", 60, 46, 2.6], ["Revisión final", 63, 20, 2.6]]],
+    ["Cotas +5,4 y +3,2", "5", [["Cambio de skid", 257, 84, 4.5], ["Acumulo de skids (2 pisos)", 60, 84.7, 2.6], ["Clear zone de skids pobres", 190, 97, 2.6], ["Level +3,2 sobre el buffer", 222, 9, 3], ["Retorno de skids pobres", 262, 50, 2.2]]],
+    ["Cota 0", "0", [["Cabina de sellado", 170, 76, 2.2], ["Giro en U del sellado (mesa giratoria)", 80.5, 72, 4.5], ["Elevador a línea de fondo", 245, 57.7, 4.5], ["Calesita y acumulo", 50, 27, 2.2],
+      ["Bajada de revisión final", 128.3, 15.5, 4.5], ["Óleo", 155, 8.9, 3], ["Box de retoques", 162, 20, 3], ["Buffer KP1 y línea de salida", 220, 10, 2.6], ["Difusión → Montaje KP1", 257, 30, 3.5], ["Depósito de autos", 214, 26, 2.6]]],
+  ];
+  const sel = document.getElementById("ir-a");
+  if (sel) {
+    sel.innerHTML = `<option value="">Ir a…</option>` + LUGARES.map(([g, , items], gi) => `<optgroup label="${g}">` + items.map((it, ii) => `<option value="${gi}.${ii}">${it[0]}</option>`).join("") + "</optgroup>").join("");
+    sel.addEventListener("change", () => {
+      if (!sel.value) return;
+      const [gi, ii] = sel.value.split(".").map(Number), [, piso, items] = LUGARES[gi], [, x, y, z] = items[ii];
+      if (estado.sep === 0 && estado.piso !== piso) verPiso(piso);
+      const destino = W(x, y, 0); destino.y = alturaPiso(piso);
+      // vista un poco más desde arriba (se ve adentro de cabinas y hornos)
+      esf.setFromVector3(camara.position.clone().sub(controles.target));
+      volar(destino, z * (MOVIL ? 0.75 : 1), 0, esf.phi > 0.85 ? 0.85 - esf.phi : 0);
+      sel.value = ""; sel.blur();
+    });
+  }
+  // arrastrar con el mouse = "agarrar" el piso: el punto que agarrás queda pegado al cursor (como Google Maps).
+  // Con Shift / Ctrl o clic derecho se gira (lo maneja OrbitControls). En pantallas táctiles lo maneja OrbitControls.
+  let arrastre = null;
+  lienzo.style.cursor = "grab";
+  lienzo.addEventListener("pointerdown", (ev) => {
+    if (ev.pointerType !== "mouse" || ev.button !== 0 || ev.shiftKey || ev.ctrlKey || ev.metaKey) return;
+    const p = puntoBajo(ev.clientX, ev.clientY); if (!p) return;
+    ev.stopImmediatePropagation(); vuelo = null;
+    arrastre = { p0: p, id: ev.pointerId }; lienzo.setPointerCapture(ev.pointerId); lienzo.style.cursor = "grabbing";
+    ocultarAyuda(9000);
+    // en el recorrido guiado, si el usuario mueve la vista se deja de seguir a la carrocería (se vuelve a tildar "Seguir")
+    const R = window.__recorrido;
+    if (R && R.estado.activo && R.estado.seguir) { R.estado.seguir = false; const c = document.getElementById("rc-seguir"); if (c) c.checked = false; }
+  }, { capture: true });
+  lienzo.addEventListener("pointermove", (ev) => {
+    if (!arrastre || ev.pointerId !== arrastre.id) return;
+    const p = puntoBajo(ev.clientX, ev.clientY); if (!p) return;
+    const d = arrastre.p0.clone().sub(p); camara.position.add(d); controles.target.add(d);
+  });
+  const soltar = (ev) => { if (arrastre && ev.pointerId === arrastre.id) { arrastre = null; lienzo.style.cursor = "grab"; } };
+  lienzo.addEventListener("pointerup", soltar); lienzo.addEventListener("pointercancel", soltar);
+  lienzo.addEventListener("contextmenu", (ev) => ev.preventDefault());
   // En celular el panel de capas arranca plegado y se pliega al tocar la maqueta
   const panelCapas = document.getElementById("capas");
   if (!MOVIL) panelCapas.open = true;   // en compu arranca abierto; en celular, plegado
@@ -675,7 +806,12 @@
   }
   // La ayuda desaparece después de la primera interacción
   const ayuda = document.getElementById("ayuda");
-  controles.addEventListener("start", () => { ayuda.style.transition = "opacity .6s"; ayuda.style.opacity = "0"; }, { once: true });
+  // la ayuda queda unos segundos después de empezar a moverse; el botón "?" la vuelve a mostrar
+  let tAyuda = null;
+  const ocultarAyuda = (ms) => { clearTimeout(tAyuda); tAyuda = setTimeout(() => { ayuda.style.transition = "opacity .6s"; ayuda.style.opacity = "0"; }, ms); };
+  controles.addEventListener("start", () => ocultarAyuda(9000), { once: true });
+  const botonAyuda = document.getElementById("ver-ayuda");
+  if (botonAyuda) botonAyuda.addEventListener("click", () => { ayuda.style.transition = "opacity .2s"; ayuda.style.opacity = "1"; ocultarAyuda(9000); });
   const dlg = document.getElementById("supuestos");
   document.getElementById("lista-supuestos").innerHTML = N.supuestos.concat(window.COTAS && window.COTAS.supuestos || []).map(s => `<li>${s}</li>`).join("");
   document.getElementById("ver-supuestos").addEventListener("click", () => dlg.showModal());
@@ -694,7 +830,13 @@
     requestAnimationFrame(animar);
     const dt = Math.min(reloj.getDelta(), 0.1);
     for (const f of animar_vida) f(dt);
+    avanzarVuelo(dt);
     controles.update();
+    // brújula: la "N" apunta al norte real de la planta según cómo está girada la cámara
+    if (brujula && N.exterior && N.exterior.norte) {
+      const v = new THREE.Vector3(N.exterior.norte[0], 0, -N.exterior.norte[1]).applyQuaternion(camara.quaternion.clone().invert());
+      brujula.style.transform = `rotate(${Math.atan2(v.x, v.y)}rad)`;
+    }
     // de lejos se ocultan las etiquetas de ejes; de cerca, las del entorno
     document.body.classList.toggle("lejos", camara.zoom < (MOVIL ? 1.3 : 0.5));
     document.body.classList.toggle("cerca", camara.zoom > 1.6);
