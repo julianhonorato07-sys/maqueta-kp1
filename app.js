@@ -136,24 +136,34 @@
   const e = N.espesor_muro;
   const tipos = { envolvente: C.envolvente, anexos: C.anexos, internos: C.internos, tabiques: C.tabiques };
   const muroCompleto = {}, muroCortado = {};
+  // cortes: 3,5 m (ver la cota 0), 8,9 m (ver la cota 5,4) y 12,5 m (ver la cota 9)
+  const ALTURAS_CORTE = [N.corte_muros, 8.9, 12.5];
   for (const [t, color] of Object.entries(tipos)) {
     const destino = capa(t === "tabiques" ? "internos" : t);
     muroCompleto[t] = malla(geoMuros(N.muros[t], e), mat(color), true, t !== "tabiques");
-    muroCortado[t] = malla(geoMuros(N.muros[t], e, { hmax: N.corte_muros }), mat(color), true, t !== "tabiques");
-    muroCortado[t].visible = false;
-    destino.add(muroCompleto[t], muroCortado[t]);
+    muroCortado[t] = {};
+    for (const hc of ALTURAS_CORTE) {
+      muroCortado[t][hc] = malla(geoMuros(N.muros[t], e, { hmax: hc }), mat(color), true, t !== "tabiques");
+      muroCortado[t][hc].visible = false;
+      destino.add(muroCortado[t][hc]);
+    }
+    destino.add(muroCompleto[t]);
   }
 
   // Columnas
   const plat = N.columnas.filter(c => Math.abs(c[5] - 9) < 0.01 && c[4] === 0);
   const nave = N.columnas.filter(c => !plat.includes(c));
   // versión completa y versión recortada a la altura de "Cortar muros" (para ver adentro)
-  const recorte = (cols) => cols.filter(c => c[4] < N.corte_muros).map(c => [c[0], c[1], c[2], c[3], c[4], Math.min(c[5], N.corte_muros)]);
-  const colCompletas = new THREE.Group(), colCortadas = new THREE.Group();
+  const recorte = (cols, hc) => cols.filter(c => c[4] < hc).map(c => [c[0], c[1], c[2], c[3], c[4], Math.min(c[5], hc)]);
+  const colCompletas = new THREE.Group(), colCortadas = {};
   colCompletas.add(malla(geoColumnas(nave), mat(C.columnaNave), true, true), malla(geoColumnas(plat), mat(C.columnaPlat), true, false));
-  colCortadas.add(malla(geoColumnas(recorte(nave)), mat(C.columnaNave), true, true), malla(geoColumnas(recorte(plat)), mat(C.columnaPlat), true, false));
-  colCortadas.visible = false;
-  capa("columnas").add(colCompletas, colCortadas);
+  capa("columnas").add(colCompletas);
+  for (const hc of [N.corte_muros, 8.9, 12.5]) {
+    colCortadas[hc] = new THREE.Group();
+    colCortadas[hc].add(malla(geoColumnas(recorte(nave, hc)), mat(C.columnaNave), true, true), malla(geoColumnas(recorte(plat, hc)), mat(C.columnaPlat), true, false));
+    colCortadas[hc].visible = false;
+    capa("columnas").add(colCortadas[hc]);
+  }
   const altosQueSeCortan = [];   // otros elementos altos que se ocultan al cortar
 
   // Techo: losas + frontones entre zona baja y alta
@@ -190,6 +200,7 @@
 
   // ---------------------------------------------------------------- exterior (estimado: satélite / foto aérea)
   const X = N.exterior;
+  let torresEscalera = null;
   if (X) {
     const ent = capa("entorno");
     const patio = losa(X.patio, 0.005, 0, mat(C.patio));
@@ -198,10 +209,12 @@
     const cajaR = ([a, b, c, d], z0, z1) => { const p = []; caja(p, [[a, b], [c, b], [c, d], [a, d]], z0, z1); return p; };
     // Torres de escalera amarillas (fachada oeste)
     const pt = []; for (const [a, b, c, d, z0, z1] of X.torres) pt.push(...cajaR([a, b, c, d], z0, z1));
-    ent.add(malla(armar(pt), mat(C.torre), true, true));
+    torresEscalera = malla(armar(pt), mat(C.torre), true, true);   // se ocultan al ver una cota alta sola (tapan la vista)
+    ent.add(torresEscalera);
     // Conexiones: túnel a Montaje y puente a Chapistería
     for (const k of X.conexiones) {
-      ent.add(malla(armar(cajaR(k.rect, k.z0, k.z1)), mat(C.conexion), true, true));
+      // galerías traslúcidas: adentro se ven los transportadores de cota 9 (ingreso desde Chapa, Cronos al túnel)
+      ent.add(malla(armar(cajaR(k.rect, k.z0, k.z1)), mat(C.conexion, { transparent: true, opacity: 0.38, depthWrite: false, side: THREE.DoubleSide }), false, true));
       const [a, b, c, d] = k.rect;
       if (k.z0 > 0) {   // pasarela elevada: pilares cada 12 m a ambos lados, fuera de la nave
         const pp = [], largoX = c - a > d - b, s = 0.6;
@@ -239,6 +252,7 @@
     construirDetalles(X, ent, cajaR);
     if (N.interior) construirInterior(N.interior, cajaR);
     if (window.DetalleCalles) window.__detalle = window.DetalleCalles({ THREE, W, N, capa, MOVIL, animar: animar_vida });
+    if (window.Cotas) window.__cotas = window.Cotas({ THREE, W, N, capa, MOVIL, animar: animar_vida });
     construirVida(X);
 
     // Flecha de norte en el piso
@@ -606,15 +620,52 @@
   document.querySelectorAll("#vistas button").forEach(b => b.addEventListener("click", () => {
     vista(b.dataset.vista === "reset" ? "iso" : b.dataset.vista);
   }));
+  // ---------------------------------------------------------------- pisos: ver una cota sola y separar las cotas
+  // "todas" = edificio completo · "0" = solo cota 0 · "5" = +3,2 y +5,4 · "9" = cota +9. Al separar, las cotas se despegan.
+  const estado = { piso: "todas", sep: 0, cortar: false };
+  const CAPAS_COTA0 = ["calles", "internos", "interior", "detalle", "procesos", "vida"];
+  const marcada = (n) => { const c = document.querySelector(`#capas input[data-capa="${n}"]`); return c ? c.checked : true; };
+  const ALTO_PISO = { todas: 0, 0: 0, 5: 5.4, 9: 9 };
+  function aplicarVista() {
+    const p = estado.piso, sep = estado.sep;
+    let hc = null;   // altura de corte de muros y columnas (null = completos)
+    if (p === "9") hc = 12.5; else if (p === "5" || estado.cortar || sep > 0) hc = N.corte_muros;
+    if (torresEscalera) torresEscalera.visible = p === "todas" || p === "0";
+    for (const t of Object.keys(tipos)) { muroCompleto[t].visible = hc === null; for (const h of ALTURAS_CORTE) muroCortado[t][h].visible = hc === h; }
+    colCompletas.visible = hc === null;
+    for (const h of Object.keys(colCortadas)) colCortadas[h].visible = hc === Number(h);
+    const c0 = p === "todas" || p === "0";
+    for (const n of CAPAS_COTA0) if (capas[n]) capas[n].visible = c0 && marcada(n);
+    // edificio entero sin techo y sin separar: la cota 0 queda debajo de la losa de cota 9 → sus carteles de proceso se ocultan
+    if (p === "todas" && sep === 0 && !marcada("techo") && capas.cota9 && marcada("cota9")) capas.procesos.visible = false;
+    if (window.__detalle) window.__detalle.alto.visible = hc !== N.corte_muros;
+    for (const o of altosQueSeCortan) o.visible = hc !== N.corte_muros;
+    if (capas.cota9) capas.cota9.visible = (p === "todas" || p === "9") && marcada("cota9");
+    if (capas.cota5) capas.cota5.visible = capas.cota3.visible = (p === "todas" || p === "5") && marcada("cota5");
+    if (capas.verticales) capas.verticales.visible = p !== "0" && marcada("verticales");
+    if (capas.flujo_cotas) capas.flujo_cotas.visible = marcada("flujo_cotas");
+    capas.techo.visible = marcada("techo") && p === "todas" && sep === 0;
+    if (window.__cotas) window.__cotas.setSep(sep);
+    document.querySelectorAll("#pisos button[data-piso]").forEach(b => b.classList.toggle("activo", b.dataset.piso === p));
+    if (window.__recorrido) window.__recorrido.alCambiarVista(estado);
+  }
+  function verPiso(p) {
+    const antes = estado.piso;
+    estado.piso = p;
+    // la cámara pivota a la altura del piso elegido
+    const dy = ((ALTO_PISO[p] || 0) + (p === "9" ? 2 : p === "5" ? 1 : 0) * estado.sep) - ((ALTO_PISO[antes] || 0) + (antes === "9" ? 2 : antes === "5" ? 1 : 0) * estado.sep);
+    controles.target.y += dy; camara.position.y += dy;
+    aplicarVista();
+  }
   document.querySelectorAll("#capas input[data-capa]").forEach(chk => chk.addEventListener("change", () => {
-    capas[chk.dataset.capa].visible = chk.checked;
+    if (capas[chk.dataset.capa]) capas[chk.dataset.capa].visible = chk.checked;
+    aplicarVista();
   }));
-  document.getElementById("cortar").addEventListener("change", (ev) => {
-    for (const t of Object.keys(tipos)) { muroCompleto[t].visible = !ev.target.checked; muroCortado[t].visible = ev.target.checked; }
-    if (window.__detalle) window.__detalle.alto.visible = !ev.target.checked;
-    colCompletas.visible = !ev.target.checked; colCortadas.visible = ev.target.checked;
-    for (const o of altosQueSeCortan) o.visible = !ev.target.checked;
-  });
+  document.getElementById("cortar").addEventListener("change", (ev) => { estado.cortar = ev.target.checked; aplicarVista(); });
+  document.querySelectorAll("#pisos button[data-piso]").forEach(b => b.addEventListener("click", () => verPiso(b.dataset.piso)));
+  const sepInput = document.getElementById("separar");
+  if (sepInput) sepInput.addEventListener("input", () => { estado.sep = Number(sepInput.value); document.getElementById("separar-v").textContent = estado.sep + " m"; aplicarVista(); });
+  aplicarVista();
   // En celular el panel de capas arranca plegado y se pliega al tocar la maqueta
   const panelCapas = document.getElementById("capas");
   if (!MOVIL) panelCapas.open = true;   // en compu arranca abierto; en celular, plegado
@@ -626,7 +677,7 @@
   const ayuda = document.getElementById("ayuda");
   controles.addEventListener("start", () => { ayuda.style.transition = "opacity .6s"; ayuda.style.opacity = "0"; }, { once: true });
   const dlg = document.getElementById("supuestos");
-  document.getElementById("lista-supuestos").innerHTML = N.supuestos.map(s => `<li>${s}</li>`).join("");
+  document.getElementById("lista-supuestos").innerHTML = N.supuestos.concat(window.COTAS && window.COTAS.supuestos || []).map(s => `<li>${s}</li>`).join("");
   document.getElementById("ver-supuestos").addEventListener("click", () => dlg.showModal());
 
   window.addEventListener("resize", () => {
@@ -635,7 +686,8 @@
     etiquetas.setSize(window.innerWidth, window.innerHeight);
   });
 
-  window.__maqueta = { scene, camara, controles, W, animar_vida };   // para inspección/depuración desde la consola
+  window.__maqueta = { scene, camara, controles, W, animar_vida, estado, verPiso, aplicarVista, capas };   // inspección y recorrido.js
+  if (window.Recorrido && window.__cotas) window.__recorrido = window.Recorrido({ THREE, W, capa, MOVIL, animar: animar_vida, camara, controles, cotas: window.__cotas, maqueta: window.__maqueta });
 
   const reloj = new THREE.Clock();
   (function animar() {

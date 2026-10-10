@@ -52,6 +52,58 @@ h1 { font-size: 17px; margin: 0; font-weight: 650; }
 #vistas button:hover { background: var(--azul-suave); }
 #vistas button.activo { background: var(--azul); color: #fff; }
 
+/* Pisos (cotas) y separación */
+#pisos {
+  position: fixed; top: 150px; left: 16px; display: flex; flex-direction: column; gap: 6px;
+  padding: 8px 10px; background: var(--panel); border: 1px solid var(--borde);
+  border-radius: var(--radio); box-shadow: var(--sombra); font-size: 12px; max-width: 330px;
+}
+#pisos .tit { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-suave); font-weight: 600; }
+#pisos .botones { display: flex; gap: 4px; flex-wrap: wrap; }
+#pisos button[data-piso] {
+  border: 1px solid var(--borde); background: #fff; padding: 6px 10px; border-radius: 8px;
+  font: inherit; font-size: 12.5px; color: var(--texto); cursor: pointer;
+}
+#pisos button[data-piso]:hover { background: var(--azul-suave); }
+#pisos button[data-piso].activo { background: var(--azul); border-color: var(--azul); color: #fff; }
+#pisos .sep { display: flex; align-items: center; gap: 8px; color: var(--texto-suave); }
+#pisos .sep input { flex: 1; accent-color: var(--azul); }
+#pisos .sep b { min-width: 34px; color: var(--texto); font-variant-numeric: tabular-nums; }
+.recorrido-btn {
+  border: 0; background: #1f2a3a; color: #fff; padding: 8px 12px; border-radius: 8px;
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.recorrido-btn:hover { background: #2c3b52; }
+
+/* Recorrido guiado de la carrocería */
+#recorrido {
+  position: fixed; left: 16px; bottom: 16px; width: 420px; max-width: calc(100vw - 32px);
+  background: var(--panel); border: 1px solid var(--borde); border-radius: var(--radio);
+  box-shadow: var(--sombra); padding: 12px 14px; font-size: 13px; backdrop-filter: blur(6px);
+}
+#recorrido[hidden] { display: none; }
+#recorrido header { display: flex; align-items: center; gap: 12px; }
+#recorrido .paso-num b { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+#recorrido .paso-num span { color: var(--texto-suave); margin-left: 3px; font-size: 12px; }
+#recorrido .paso-tit { flex: 1; min-width: 0; }
+#recorrido h2 { margin: 2px 0 0; font-size: 16px; line-height: 1.2; text-wrap: balance; }
+#recorrido .cota-chip { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; color: #fff; background: #1f2a3a; padding: 2px 8px; border-radius: 999px; }
+#rc-cerrar { border: 0; background: none; font-size: 16px; color: var(--texto-suave); cursor: pointer; padding: 4px 6px; }
+#recorrido p { margin: 8px 0 0; line-height: 1.45; }
+#recorrido p.dato { font-size: 11.5px; color: var(--texto-suave); border-left: 3px solid var(--borde); padding-left: 8px; }
+#recorrido .rc-opciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+#recorrido .seg { display: inline-flex; border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }
+#recorrido .seg button { border: 0; background: #fff; padding: 5px 10px; font: inherit; font-size: 12px; cursor: pointer; color: var(--texto); }
+#recorrido .seg button.activo { background: var(--azul); color: #fff; }
+#recorrido .rc-barra { height: 5px; background: #e3e9f0; border-radius: 99px; margin-top: 10px; overflow: hidden; }
+#rc-prog { height: 100%; width: 0; background: var(--azul); transition: width .2s; }
+#recorrido .rc-ctrl { display: flex; gap: 6px; align-items: center; margin-top: 10px; }
+#recorrido .rc-ctrl button { border: 1px solid var(--borde); background: #fff; padding: 7px 10px; border-radius: 8px; font: inherit; font-size: 12.5px; cursor: pointer; }
+#recorrido .rc-ctrl button.primario { background: var(--azul); border-color: var(--azul); color: #fff; flex: 1; }
+#recorrido .rc-ctrl label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--texto-suave); }
+body.con-recorrido #ayuda { display: none; }
+.halo-carro { width: 16px; height: 16px; border-radius: 50%; background: rgba(31, 111, 235, .25); border: 2px solid #1f6feb; box-shadow: 0 0 0 6px rgba(31,111,235,.12); pointer-events: none; }
+
 /* Capas */
 #capas {
   position: fixed; top: 96px; right: 16px; width: 230px; padding: 14px 16px;
@@ -134,6 +186,19 @@ dialog button { margin-top: 8px; border: 0; background: var(--azul); color: #fff
   #capas input { width: 18px; height: 18px; }
 
   #ayuda { bottom: calc(74px + env(safe-area-inset-bottom)); font-size: 11px; white-space: nowrap; }
+  #pisos { top: auto; bottom: calc(64px + env(safe-area-inset-bottom)); left: 8px; right: 8px; max-width: none; padding: 6px 8px; }
+  #pisos .tit { display: none; }
+  #pisos .botones { flex-wrap: nowrap; }
+  #pisos button[data-piso] { flex: 1; padding: 7px 4px; font-size: 12px; }
+  #recorrido { left: 8px; right: 8px; bottom: calc(122px + env(safe-area-inset-bottom)); width: auto; padding: 10px; max-height: 36vh; overflow: auto; font-size: 12px; }
+  #recorrido p { font-size: 12px; margin-top: 6px; }
+  #recorrido p.dato { display: none; }
+  #recorrido h2 { font-size: 14px; }
+  #recorrido .rc-opciones { margin-top: 6px; }
+  #recorrido .rc-ctrl { margin-top: 8px; }
+  body.con-recorrido #pisos .botones, body.con-recorrido #pisos .sep { display: none; }
+  #ayuda { bottom: calc(200px + env(safe-area-inset-bottom)); }
+  #recorrido .paso-num b { font-size: 22px; }
   .eje { font-size: 10px; padding: 0 5px; }
   dialog { max-width: calc(100vw - 24px); max-height: 80vh; padding: 16px; }
 }

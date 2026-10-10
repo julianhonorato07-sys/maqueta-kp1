@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f8fc">
-<title>Maqueta KP1 · Cota 0</title>
-<link rel="stylesheet" href="style.css?v=202610101318">
+<title>Maqueta KP1 · Unidad de Pintura</title>
+<link rel="stylesheet" href="style.css?v=202610101544">
 </head>
 <body>
 <div id="escena"></div>
@@ -14,7 +14,7 @@
   <div class="titulo">
     <span class="logo">KP1</span>
     <div>
-      <h1>Paint Shop KP1 · Cota 0</h1>
+      <h1>Paint Shop KP1 · Cotas 0 · 5,4 · 9</h1>
       <p>Stellantis Planta Ferreyra · Maqueta 3D</p>
     </div>
   </div>
@@ -28,6 +28,18 @@
   <button data-vista="reset" title="Volver a la vista inicial">⟲</button>
 </nav>
 
+<div id="pisos" aria-label="Pisos">
+  <span class="tit">Pisos</span>
+  <div class="botones">
+    <button data-piso="todas" class="activo">Todas</button>
+    <button data-piso="0">Cota 0</button>
+    <button data-piso="5">+3,2 · +5,4</button>
+    <button data-piso="9">Cota +9</button>
+  </div>
+  <label class="sep">Separar pisos <input type="range" id="separar" min="0" max="30" step="1" value="0"> <b id="separar-v">0 m</b></label>
+  <button id="abrir-recorrido" class="recorrido-btn">▶ Recorrido de la carrocería</button>
+</div>
+
 <details id="capas">
   <summary><h2>Capas</h2></summary>
   <label><input type="checkbox" data-capa="techo" checked> Techo</label>
@@ -40,6 +52,10 @@
   <label><input type="checkbox" data-capa="detalle" checked> Detalle calles (fotos)</label>
   <label><input type="checkbox" data-capa="procesos" checked> Procesos y flujo (cota 0)</label>
   <div class="leyenda-procesos" style="display:flex;flex-wrap:wrap;gap:3px 8px;margin:2px 0 6px 22px;font-size:11px"><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1f6feb;margin-right:3px;vertical-align:-1px"></i>Sellado</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f39c12;margin-right:3px;vertical-align:-1px"></i>Óleo</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e74c3c;margin-right:3px;vertical-align:-1px"></i>Reparación</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#2e9d4f;margin-right:3px;vertical-align:-1px"></i>Difusión</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#8e44ad;margin-right:3px;vertical-align:-1px"></i>Acumulo</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#7f8c8d;margin-right:3px;vertical-align:-1px"></i>Depósito</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#b7950b;margin-right:3px;vertical-align:-1px"></i>Servicios</span></div>
+  <label><input type="checkbox" data-capa="cota9" checked> Cota +9 (plano N9000)</label>
+  <label><input type="checkbox" data-capa="cota5" checked> Cota +5,4 y +3,2 (plano N5400)</label>
+  <label><input type="checkbox" data-capa="verticales" checked> Elevadores entre cotas</label>
+  <label><input type="checkbox" data-capa="flujo_cotas" checked> Flujo continuo (cotas 3,2 · 5,4 · 9)</label>
   <label><input type="checkbox" data-capa="ejes" checked> Ejes</label>
   <label><input type="checkbox" data-capa="entorno" checked> Entorno (estimado)</label>
   <label><input type="checkbox" data-capa="vida" checked> Gente y vehículos (animado)</label>
@@ -47,6 +63,30 @@
   <label><input type="checkbox" id="cortar"> Cortar muros a 3,5 m</label>
   <button id="ver-supuestos" class="link">ⓘ Supuestos de esta maqueta</button>
 </details>
+
+<section id="recorrido" hidden>
+  <header>
+    <div class="paso-num"><b id="rc-num">01</b><span id="rc-total">/ 30</span></div>
+    <div class="paso-tit">
+      <span id="rc-cota" class="cota-chip">COTA 9</span>
+      <h2 id="rc-tit">Paso</h2>
+    </div>
+    <button id="rc-cerrar" title="Cerrar recorrido">✕</button>
+  </header>
+  <p id="rc-txt"></p>
+  <p id="rc-dato" class="dato"></p>
+  <div class="rc-opciones">
+    <div class="seg" id="rc-modelo"><button data-v="cronos" class="activo">Cronos</button><button data-v="kp1">Titano / Dakota</button></div>
+    <div class="seg" id="rc-def"><button data-v="ok" class="activo">Sale bien</button><button data-v="def">Tiene defectos</button></div>
+  </div>
+  <div class="rc-barra"><div id="rc-prog"></div></div>
+  <div class="rc-ctrl">
+    <button id="rc-ant">◀ Anterior</button>
+    <button id="rc-play" class="primario">▶ Reproducir</button>
+    <button id="rc-sig">Siguiente ▶</button>
+    <label><input type="checkbox" id="rc-seguir" checked> Seguir</label>
+  </div>
+</section>
 
 <div id="ayuda">
   <span class="mouse">Rueda: zoom · Clic izquierdo: rotar · Clic derecho: mover</span>
@@ -63,8 +103,11 @@
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
 <script src="lib/CSS2DRenderer.js"></script>
-<script src="data/nave.js?v=202610101318"></script>
-<script src="detalle_calles.js?v=202610101318"></script>
-<script src="app.js?v=202610101318"></script>
+<script src="data/nave.js?v=202610101544"></script>
+<script src="data/cotas.js?v=202610101544"></script>
+<script src="detalle_calles.js?v=202610101544"></script>
+<script src="cotas.js?v=202610101544"></script>
+<script src="recorrido.js?v=202610101544"></script>
+<script src="app.js?v=202610101544"></script>
 </body>
 </html>
