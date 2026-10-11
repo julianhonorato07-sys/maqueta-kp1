@@ -408,9 +408,12 @@ window.Cotas = function (api) {
     }
     for (const y of [y0 + 0.1, y1 - 0.1]) L9.caja("#ffffff", x0, y - 0.04, x1, y + 0.04, z + 1.2, z + H - 0.3, { luz: 1 });
     for (let x = x0 + 1; x < x1; x += 2) L9.caja("#ffffff", x - 0.6, (y0 + y1) / 2 - 1.2, x + 0.6, (y0 + y1) / 2 + 1.2, z + H - 0.2, z + H - 0.12, { luz: 1 });
-    L9.caja("#e2e7ec", x0, y0, x1, y1, z + H, z + H + 0.25);
-    // piso pintado claro (zona de revisión) y plataformas (módulos del plano)
-    L9.pinta("#e9eef2", x0, y0, x1, y1, z + 0.005);
+    // color de la etapa (violeta = revisión final, verde = revisión de cataforesis) para que no se confunda con el piso blanco
+    // (Julian 10/10: "no se distingue revisión final con el piso"): techo del túnel traslúcido, piso teñido y borde de color
+    const col = ET[etapa] || ET.revision, tinte = (k) => "#" + new THREE.Color(col).lerp(new THREE.Color("#ffffff"), k).getHexString();
+    L9.caja(tinte(0.3), x0, y0, x1, y1, z + H, z + H + 0.25, { tr: 0.42 });
+    L9.pinta(tinte(0.7), x0, y0, x1, y1, z + 0.005);
+    for (const [a, b, c, d] of [[x0, y0, x1, y0 + 0.3], [x0, y1 - 0.3, x1, y1], [x0, y0, x0 + 0.3, y1], [x1 - 0.3, y0, x1, y1]]) L9.pinta(col, a, b, c, d, z + 0.014);
     for (const [cx, cy, a, b] of modulos || []) {
       L9.caja("#8a939d", cx - a / 2, cy - b / 2, cx + a / 2, cy + b / 2, z, z + 0.32);
       L9.caja(COL.amarillo, cx - a / 2, cy - b / 2, cx + a / 2, cy - b / 2 + 0.05, z + 0.32, z + 0.36);
