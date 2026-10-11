@@ -758,7 +758,7 @@
   const LUGARES = [
     ["Cota +9", "9", [["Ingreso desde Chapistería", 66, 118, 3], ["Preparación manual", 232, 97, 4.5], ["Pretratamiento", 112, 97, 2.2], ["Cataforesis", 36, 90.7, 3.5], ["Horno de cataforesis", 181, 90.7, 2.2],
       ["Bajo carrocería UBS & UBC", 164, 57.7, 3.2], ["Horno de fondo (pregelado)", 78, 57.6, 2.2], ["Estación I y acumulo lote colores", 55, 71, 2.6], ["Revisión de cataforesis", 190, 68, 2.4],
-      ["Línea de esmalte", 200, 46, 2.4], ["Robots de esmalte (de cerca)", 199, 46, 8], ["Hornos de esmalte", 60, 46, 2.6], ["Revisión final", 63, 20, 2.6]]],
+      ["Línea de esmalte", 200, 46, 2.4], ["Robots de esmalte (de cerca)", 199, 46, 8], ["Hornos de esmalte", 60, 46, 2.6], ["Revisión final", 63, 20, 2.6], ["Oficinas Pintura y baños", 156, 3, 4.0], ["Sala WCM, Blue Room y Capacitación", 168, 22, 4.0]]],
     ["Cotas +5,4 y +3,2", "5", [["Cambio de skid (en el medio de la banda)", 133, 90.5, 4.5], ["Salida del horno de cataforesis (baja a +5,4)", 251.5, 90.7, 4.0], ["Acumulo de skids (2 pisos)", 60, 84.7, 2.6], ["Clear zone de skids pobres", 190, 97, 2.6], ["Level +3,2 sobre el buffer", 222, 9, 3], ["Retorno de skids pobres", 262, 50, 2.2]]],
     ["Cota 0", "0", [["Cabina de sellado", 170, 76, 2.2], ["Giro en U del sellado (mesa giratoria)", 80.5, 72, 4.5], ["Elevador a línea de fondo", 245, 57.7, 4.5], ["Calesita y acumulo", 50, 27, 2.2],
       ["Bajada de revisión final", 128.3, 15.5, 4.5], ["Óleo", 155, 8.9, 3], ["Box de retoques", 162, 20, 3], ["Buffer KP1 y línea de salida", 220, 10, 2.6], ["Difusión → Montaje KP1", 257, 30, 3.5], ["Depósito de autos", 214, 26, 2.6]]],
@@ -773,10 +773,10 @@
       const destino = W(x, y, 0); destino.y = alturaPiso(piso);
       // vista un poco más desde arriba (se ve adentro de cabinas y hornos)
       esf.setFromVector3(camara.position.clone().sub(controles.target));
-      // en cota 0 las fachadas están enteras: si el lugar queda a menos de 30 m de una, la cámara gira para mirar desde
+      // en cota 0 (y en cota 9, con muros a 12,5 m) las fachadas tapan: si el lugar queda a menos de 30 m de una, la cámara gira para mirar desde
       // adentro de la nave (si no, la pared tapa todo). n = normal hacia adentro de esa fachada, en coordenadas de la escena.
       let dTheta = 0;
-      if (piso === "0") {
+      if (piso === "0" || piso === "9") {
         const [dist, nx, nz] = [[x - minX, 1, 0], [maxX - x, -1, 0], [y - minY, 0, -1], [maxY - y, 0, 1]].sort((a, b) => a[0] - b[0])[0];
         if (dist < 30) {
           const dif = (a) => Math.atan2(Math.sin(a - esf.theta), Math.cos(a - esf.theta));

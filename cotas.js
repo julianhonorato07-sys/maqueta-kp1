@@ -428,9 +428,10 @@ window.Cotas = function (api) {
     for (const [a, b, c, d] of [[x0, y0, x1, y0], [x0, y1, x1, y1], [x0, y0, x0, y1], [x1, y0, x1, y1]]) L9.barra(color || "#e3e8ee", a, b, c, d, 0.15, z, z + H);
     L9.caja("#5b7fb3", x0 - 0.09, y0 - 0.09, x1 + 0.09, y1 + 0.09, z, z + 0.5);   // zócalo azul (como en cota 0)
     L9.caja("#d9dfe6", x0, y0, x1, y1, z + H, z + H + 0.1);
-    const xm = (x0 + x1) / 2, ym = (y0 + y1) / 2;
-    if (puerta === "-y" || puerta === "+y") { const y = puerta === "-y" ? y0 : y1; L9.caja("#6c7a89", xm - 0.45, y - 0.1, xm + 0.45, y + 0.1, z, z + 2.1); cartel(G[9], nom, xm, y + (puerta === "-y" ? -0.12 : 0.12), z + 2.5, Math.min(4, x1 - x0 - 0.5), 0.45, puerta, "#ffffff", "#1d2f6b"); }
-    else { const x = puerta === "-x" ? x0 : x1; L9.caja("#6c7a89", x - 0.1, ym - 0.45, x + 0.1, ym + 0.45, z, z + 2.1); cartel(G[9], nom, x + (puerta === "-x" ? -0.12 : 0.12), ym, z + 2.5, Math.min(4, y1 - y0 - 0.5), 0.45, puerta, "#ffffff", "#1d2f6b"); }
+    // opc.pd: posición de la puerta sobre su muro (si no, al medio)
+    const xm = (opc && opc.pd && (puerta === "-y" || puerta === "+y")) ? opc.pd : (x0 + x1) / 2, ym = (opc && opc.pd && (puerta === "-x" || puerta === "+x")) ? opc.pd : (y0 + y1) / 2;
+    if (puerta === "-y" || puerta === "+y") { const y = puerta === "-y" ? y0 : y1; L9.caja("#6c7a89", xm - 0.45, y - 0.1, xm + 0.45, y + 0.1, z, z + 2.1); cartel(G[9], nom, (x0 + x1) / 2, y + (puerta === "-y" ? -0.12 : 0.12), z + 2.5, Math.min(4, x1 - x0 - 0.5), 0.45, puerta, "#ffffff", "#1d2f6b"); }
+    else { const x = puerta === "-x" ? x0 : x1; L9.caja("#6c7a89", x - 0.1, ym - 0.45, x + 0.1, ym + 0.45, z, z + 2.1); cartel(G[9], nom, x + (puerta === "-x" ? -0.12 : 0.12), (y0 + y1) / 2, z + 2.5, Math.min(4, y1 - y0 - 0.5), 0.45, puerta, "#ffffff", "#1d2f6b"); }
   }
 
   // ---- Banda de piletas (norte, y 82–104): ingreso, preparación manual, pretratamiento, cataforesis, horno ----
@@ -553,6 +554,10 @@ window.Cotas = function (api) {
     L9.caja("#6b2fa0", 89.66, 15.34, 96.66, 15.44, Z9, Z9 + 2.2);
     cartel(G[9], "DELIBERA TRAMO REVISIÓN ESMALTE", 93.2, 15.25, Z9 + 2.6, 4.2, 0.4, "-y", "#6b2fa0", "#ffffff");
   }
+  // muebles y artefactos de las oficinas de cota 9 (centros del plano 301-N9000, m): escritorio [cx, cy, giro, x e y del borde de inserción]
+  const ESCRITORIOS_9 = [[153.1,5.02,0,153.28,5.78],[153.1,3.53,180,153.28,2.77],[154.86,5.02,0,154.68,5.78],[154.86,3.53,180,154.68,2.77],[159.27,4.93,0,159.46,5.69],[159.27,3.44,180,159.46,2.68],[161.04,4.93,0,160.86,5.69],[161.04,3.44,180,160.86,2.68],[151.77,0.61,180,151.96,-0.15],[153.54,0.61,180,153.36,-0.15],[158.34,0.32,180,158.16,-0.44],[163.54,4.93,0,163.72,5.69],[163.54,3.44,180,163.72,2.68],[165.31,4.93,0,165.12,5.69],[165.31,3.44,180,165.12,2.68],[147.86,2.04,180,148.04,1.28],[166.86,0.18,90,166.1,0.36],[169.43,0.31,180,169.61,-0.45],[171.2,0.31,180,171.01,-0.45],[174.39,0.31,180,174.58,-0.45],[176.16,0.31,180,175.98,-0.45],[169.14,4.93,0,169.32,5.69],[169.14,3.44,180,169.32,2.68],[170.9,4.93,0,170.72,5.69],[174.54,4.93,0,174.72,5.69],[174.54,3.44,180,174.72,2.68],[176.31,4.93,0,176.12,5.69],[176.31,3.44,180,176.12,2.68],[178.74,0.43,180,178.56,-0.33]];
+  const SILLAS_9 = [[148.84,4.42],[147.86,5.3],[147.07,5.3],[147.91,3.68],[147.12,3.61],[145.89,4.42],[162.5,-0.12],[149.12,2.27],[149.14,1.52],[179.15,1.87],[178.79,3.97]];
+  const ARTEFACTOS_9 = {"WC":[[132.33,5.04,90],[138.63,0.29,90]],"BIDET-1":[[138.52,1.35,90]],"LAVAT-2":[[138.48,4.25,90],[140.48,4.63,90],[143.79,4.63,270]],"TURCA":[[140.55,2.87,0],[140.55,1.82,0]],"ORI":[[143.87,1.57,0],[143.87,0.97,0],[140.41,0.82,180],[140.41,0.22,180]],"LAVABO-1":[[132.17,3.53,90]]};
   // salas del plano
   sala([104.2, 72.1, 121.6, 76.3], "WC", "#e3e8ee", { puerta: "-y" });
   sala([208.6, 61.4, 214.9, 65.2], "ÁREA DE DESCANSO", "#e8e0d0", { puerta: "-y" });
@@ -562,6 +567,66 @@ window.Cotas = function (api) {
   sala([131.6, 20.6, 138.4, 25.4], "BOX UTE 3", "#e3e8ee", { puerta: "-y" });
   sala([240.25, 4.71, 252.27, 12.9], "ÁREA EXHIBIDO WCM", "#dfe9f5", { puerta: "+y" });
   sala([254.05, 2.14, 262.0, 6.64], "EHS DOJO", "#dff0e4", { puerta: "+y" });
+
+  // ---- OFICINAS Y SALAS DE LA FACHADA OESTE (plano 301-N9000 "PLANTA EXISTENTE PINTURA", SharePoint UTE23, bajado 10/10) ----
+  // Julian 10/10: "creo que son oficinas y baños". El plano tiene un bloque pegado a la fachada (x 131,6–180,6 · y −0,9–6,1):
+  // baños (depósito, WC, damas, caballeros), sala de reuniones, dirección e ingeniería pintura con sus escritorios; y adentro
+  // SALA WCM, BLUE ROOM y CAPACITACIÓN PINTURA, dentro de un recinto cerrado por un muro (y 26,6 · x 179,6 · y 13,3).
+  // Coincide con los instructivos de limpieza civil (ISCOT LC-PI-04-01/02: "Baño 3 cota 9.00 caballeros oficina", "Baño 4 damas").
+  // Altura de tabiques y muro del recinto 3 m, colores y forma de muebles y artefactos: SUPUESTOS (posiciones del plano).
+  {
+    const z = Z9, H = 3.0, TAB = "#e3e8ee";
+    const tab = (a, b, c, d) => L9.barra(TAB, a, b, c, d, 0.12, z, z + H);
+    const vidrio = (a, b, c, d) => { L9.barra(TAB, a, b, c, d, 0.1, z, z + 0.9); L9.barra(COL.vidrio, a, b, c, d, 0.05, z + 0.9, z + H - 0.35, { tr: 0.38 }); L9.barra(TAB, a, b, c, d, 0.1, z + H - 0.35, z + H); };
+    const puerta = (x, y, enX) => L9.caja("#6c7a89", enX ? x - 0.45 : x - 0.07, enX ? y - 0.07 : y - 0.45, enX ? x + 0.45 : x + 0.07, enX ? y + 0.07 : y + 0.45, z, z + 2.1);
+    // la losa general arranca en y 0,41: piso de las oficinas hasta la fachada (y −0,87)
+    L9.caja(COL.losa, 131.6, -0.87, 180.64, 0.45, z - 0.35, z);
+    // pisos: cerámica en los baños, vinílico en las oficinas
+    L9.pinta("#eef2f5", 131.7, -0.87, 144.2, 6.05, z + 0.004);
+    L9.pinta("#d6dee8", 144.2, -0.87, 180.6, 6.05, z + 0.004);
+    // muro hacia la planta (y 6,1) con zócalo azul, cabeceras y techo traslúcido (para ver adentro desde arriba)
+    tab(131.6, 6.11, 180.64, 6.11); tab(131.65, -0.87, 131.65, 6.11); tab(180.64, -0.87, 180.64, 6.11);
+    L9.caja("#5b7fb3", 131.6, 6.11, 180.64, 6.2, z, z + 0.5);
+    L9.caja("#d9dfe6", 131.6, -0.87, 180.64, 6.11, z + H, z + H + 0.08, { tr: 0.3 });
+    // baños: depósito y WC (x 131,7–138,1), damas (138,2–140,1), caballeros (140,1–144,2)
+    tab(134.46, 2.85, 134.46, 6.0); tab(131.7, 2.7, 140.07, 2.7); tab(140.07, 3.34, 144.15, 3.34);
+    tab(138.15, -0.87, 138.15, 6.0); tab(140.07, -0.87, 140.07, 6.0); tab(144.15, -0.87, 144.15, 6.11);
+    for (const x of [137.23, 139.4, 142.4]) puerta(x, 6.11, true);
+    puerta(133.73, 2.7, true); puerta(137.15, 2.7, true); puerta(139.37, 2.7, true); puerta(143.09, 3.34, true);
+    const A = { "WC": [0.7, 0.45, 0.42], "BIDET-1": [0.5, 0.38, 0.4], "LAVABO-1": [0.45, 0.5, 0.85], "LAVAT-2": [0.5, 1.2, 0.85], "TURCA": [0.6, 0.5, 0.05], "ORI": [0.28, 0.35, 1.1] };
+    for (const [n, lista] of Object.entries(ARTEFACTOS_9)) for (const [x, y, r] of lista) {
+      const [a, b, h] = A[n], gira = r === 90 || r === 270, lx = gira ? a : b, ly = gira ? b : a;
+      L9.bloque("#ffffff", x, y, lx, ly, n === "ORI" ? z + 0.5 : z, z + h);
+    }
+    // sala de reuniones y dirección (mamparas vidriadas del plano, en amarillo)
+    vidrio(150.7, -0.87, 150.7, 6.11); vidrio(146.3, -0.87, 146.3, 2.9); vidrio(146.3, 2.9, 150.7, 2.9); vidrio(144.2, 2.9, 145.3, 2.9);
+    puerta(150.7, 5.2, false); puerta(148.5, 2.9, true);
+    L9.bloque("#8d6e4f", 147.45, 4.45, 2.1, 0.85, z + 0.7, z + 0.76); L9.bloque("#4a525c", 147.45, 4.45, 0.3, 0.3, z, z + 0.7);   // mesa de reuniones
+    // escritorios (bloque "escritorio individ" del plano) con monitor y silla del lado de su borde de inserción
+    for (const [cx, cy, r, px, py] of ESCRITORIOS_9) {
+      const enY = r === 90 || r === 270, lx = enY ? 0.75 : 1.5, ly = enY ? 1.5 : 0.75;
+      L9.bloque("#f4f6f8", cx, cy, lx, ly, z + 0.71, z + 0.75); L9.bloque("#9aa5b1", cx, cy, lx - 0.1, ly - 0.1, z, z + 0.71);
+      const sx = enY ? Math.sign(px - cx) : 0, sy = enY ? 0 : Math.sign(py - cy);
+      L9.bloque("#1f2328", cx - sx * 0.25, cy - sy * 0.25, enY ? 0.06 : 0.55, enY ? 0.55 : 0.06, z + 0.75, z + 1.1);   // monitor
+      L9.bloque("#2c3e66", cx + sx * 0.7, cy + sy * 0.7, 0.5, 0.5, z, z + 0.5);
+      L9.bloque("#2c3e66", cx + sx * 0.92, cy + sy * 0.92, enY ? 0.08 : 0.5, enY ? 0.5 : 0.08, z + 0.5, z + 1.05);   // silla
+    }
+    for (const [x, y] of SILLAS_9) L9.bloque("#2c3e66", x, y, 0.5, 0.5, z, z + 0.5);
+    // archivos (ARMADIO ARCHIVO) e impresora / plotter del plano
+    for (const [x, y] of [[156.0, 5.6], [156.7, 5.6], [155.5, 0.8], [156.6, 0.8], [159.9, -0.3], [162.6, -0.6], [178.5, 5.7]]) L9.bloque("#b9c2ca", x, y, 0.6, 0.45, z, z + 1.9);
+    L9.bloque("#dfe4e8", 160.8, -0.4, 0.6, 0.5, z, z + 1.0); L9.bloque("#dfe4e8", 170.7, 3.9, 1.3, 0.6, z, z + 1.1);
+    // carteles hacia la planta
+    for (const [txt, x, w] of [["BAÑOS · DAMAS Y CABALLEROS", 140.0, 4.0], ["SALA DE REUNIONES\nDIRECCIÓN PINTURA", 147.5, 3.2], ["INGENIERÍA PINTURA", 165.5, 4.0]])
+      cartel(G[9], txt, x, 6.26, z + 2.45, w, 0.5, "+y", "#ffffff", "#1d2f6b");
+    etiqueta(G[9], 156, 3.0, 16.5, "OFICINAS PINTURA", "dirección, ingeniería, sala de reuniones y baños · plano 301-N9000", ET.sala);
+    // salas del recinto
+    sala([157.4, 20.0, 167.4, 26.0], "SALA WCM", "#dfe9f5", { puerta: "-y", pd: 162.88 });
+    sala([169.06, 22.5, 175.82, 26.5], "BLUE ROOM", "#dbe7f7", { puerta: "-y", pd: 171.69 });
+    sala([176.0, 11.23, 179.53, 23.77], "CAPACITACIÓN PINTURA", "#e3e8ee", { puerta: "-x", pd: 11.9 });
+    etiqueta(G[9], 167, 23, 16.5, "SALA WCM · BLUE ROOM · CAPACITACIÓN", "salas del recinto de oficinas (plano 301-N9000)", ET.sala, 2);
+    // muro del recinto de oficinas y salas
+    tab(96.32, 26.59, 179.62, 26.59); tab(179.62, 13.31, 179.62, 26.59); tab(180.19, 13.31, 251.61, 13.31);
+  }
   // recinto del elevador de bajada de revisión final (A08: x 120,5–128,4 / 128,4–144,3; y 10–19,2)
   for (const [a, b, c, d] of [[120.5, 10.0, 144.3, 10.0], [120.5, 19.2, 144.3, 19.2], [120.5, 4.9, 120.5, 19.2]]) L9.barra("#cfd8e2", a, b, c, d, 0.15, Z9, Z9 + 3.2);
   // Vallas de seguridad del plano (capa B14) alrededor de los transportadores: malla amarilla de 2 m
