@@ -135,7 +135,7 @@ window.Cotas = function (api) {
   function etiqueta(dest, x, y, z, titulo, sub, color, nivel) {
     const div = document.createElement("div");
     const n2 = nivel === 2;
-    div.className = "cota-et";
+    div.className = "cota-et"; div.dataset.prio = n2 ? 2 : 3;
     div.style.cssText = `background:${color};color:#fff;padding:${n2 ? "2px 6px" : "3px 9px"};border-radius:6px;font:600 ${n2 ? 10.5 : 12.5}px Segoe UI,Arial,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.35);text-align:center;line-height:1.25;max-width:240px;pointer-events:none;white-space:nowrap`;
     div.innerHTML = `<div>${titulo}</div>` + (sub ? `<div class="sub" style="font-weight:400;font-size:10px;opacity:.95;white-space:normal;display:none">${sub}</div>` : "");
     const o = new THREE.CSS2DObject(div); o.position.copy(W(x, y, z)); dest.add(o);

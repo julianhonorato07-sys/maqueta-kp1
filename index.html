@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f8fc">
 <title>Maqueta KP1 · Unidad de Pintura</title>
-<link rel="stylesheet" href="style.css?v=202610101620">
+<link rel="stylesheet" href="style.css?v=202610102103">
 </head>
 <body>
 <div id="escena"></div>
@@ -14,8 +14,8 @@
   <div class="titulo">
     <span class="logo">KP1</span>
     <div>
-      <h1>Paint Shop KP1 · Cotas 0 · 5,4 · 9</h1>
-      <p>Stellantis Planta Ferreyra · Maqueta 3D</p>
+      <h1>Paint Shop KP1</h1>
+      <p>Stellantis Planta Ferreyra · Maqueta 3D del proceso · cotas 0, +5,4 y +9</p>
     </div>
   </div>
   <span class="confidencial"><span class="largo">Uso interno · </span>Confidencial</span>
@@ -53,27 +53,31 @@
 </div>
 
 <details id="capas">
-  <summary><h2>Capas</h2></summary>
+  <summary><h2>Qué mostrar</h2></summary>
   <label><input type="checkbox" data-capa="techo" checked> Techo</label>
-  <label><input type="checkbox" data-capa="envolvente" checked> Cerramiento nave</label>
-  <label><input type="checkbox" data-capa="anexos" checked> Anexos</label>
-  <label><input type="checkbox" data-capa="internos" checked> Locales y tabiques</label>
-  <label><input type="checkbox" data-capa="columnas" checked> Columnas</label>
-  <label><input type="checkbox" data-capa="calles" checked> Calles peatonales</label>
-  <label><input type="checkbox" data-capa="interior" checked> Interior (fotos)</label>
-  <label><input type="checkbox" data-capa="detalle" checked> Detalle calles (fotos)</label>
-  <label><input type="checkbox" data-capa="procesos" checked> Procesos y flujo (cota 0)</label>
+  <label><input type="checkbox" data-capa="procesos" checked> Zonas y flechas del proceso</label>
   <div class="leyenda-procesos" style="display:flex;flex-wrap:wrap;gap:3px 8px;margin:2px 0 6px 22px;font-size:11px"><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#1f6feb;margin-right:3px;vertical-align:-1px"></i>Sellado</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f39c12;margin-right:3px;vertical-align:-1px"></i>Óleo</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#e74c3c;margin-right:3px;vertical-align:-1px"></i>Reparación</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#2e9d4f;margin-right:3px;vertical-align:-1px"></i>Difusión</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#8e44ad;margin-right:3px;vertical-align:-1px"></i>Acumulo</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#7f8c8d;margin-right:3px;vertical-align:-1px"></i>Depósito</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#b7950b;margin-right:3px;vertical-align:-1px"></i>Servicios</span></div>
-  <label><input type="checkbox" data-capa="cota9" checked> Cota +9 (plano N9000)</label>
-  <label><input type="checkbox" data-capa="cota5" checked> Cota +5,4 y +3,2 (plano N5400)</label>
-  <label><input type="checkbox" data-capa="verticales" checked> Elevadores entre cotas</label>
-  <label><input type="checkbox" data-capa="flujo_cotas" checked> Flujo continuo (cotas 3,2 · 5,4 · 9)</label>
-  <label><input type="checkbox" data-capa="ejes" checked> Ejes</label>
-  <label><input type="checkbox" data-capa="entorno" checked> Entorno (estimado)</label>
-  <label><input type="checkbox" data-capa="vida" checked> Gente y vehículos (animado)</label>
-  <hr>
-  <label><input type="checkbox" id="cortar"> Cortar muros a 3,5 m</label>
-  <button id="ver-supuestos" class="link">ⓘ Supuestos de esta maqueta</button>
+  <label><input type="checkbox" data-capa="pasos" checked> Pasos numerados (tocá uno para verlo)</label>
+  <p class="nota-pasos">1 a 16: todas las carrocerías · después de Óleo: <b>C</b> Cronos, <b>K</b> Titano / Dakota</p>
+  <label><input type="checkbox" data-capa="flujo_cotas" checked> Carrocerías y skids en movimiento</label>
+  <label><input type="checkbox" data-capa="vida" checked> Gente y vehículos</label>
+  <label><input type="checkbox" data-capa="entorno" checked> Alrededores de la planta</label>
+  <label><input type="checkbox" id="cortar"> Cortar paredes a 3,5 m (ver adentro)</label>
+  <details class="mas">
+    <summary>Más capas</summary>
+    <label><input type="checkbox" data-capa="envolvente" checked> Paredes exteriores</label>
+    <label><input type="checkbox" data-capa="anexos" checked> Edificios anexos</label>
+    <label><input type="checkbox" data-capa="internos" checked> Locales y tabiques</label>
+    <label><input type="checkbox" data-capa="columnas" checked> Columnas</label>
+    <label><input type="checkbox" data-capa="calles" checked> Sendas peatonales</label>
+    <label><input type="checkbox" data-capa="interior" checked> Equipos de cota 0 (fotos)</label>
+    <label><input type="checkbox" data-capa="detalle" checked> Detalle de las calles (fotos)</label>
+    <label><input type="checkbox" data-capa="cota9" checked> Cota +9 (plano N9000)</label>
+    <label><input type="checkbox" data-capa="cota5" checked> Cotas +3,2 y +5,4 (plano N5400)</label>
+    <label><input type="checkbox" data-capa="verticales" checked> Elevadores entre cotas</label>
+    <label><input type="checkbox" data-capa="ejes"> Ejes de la grilla (1–23 · A–E)</label>
+    <button id="ver-supuestos" class="link">ⓘ Supuestos de esta maqueta</button>
+  </details>
 </details>
 
 <section id="recorrido" hidden>
@@ -102,7 +106,7 @@
 </section>
 
 <div id="ayuda">
-  <span class="mouse">Arrastrá para mover · Clic derecho (o Shift) + arrastrar: girar · Rueda: zoom donde apuntás · Doble clic: acercar ahí · Teclas: flechas, Q/E, +/−</span>
+  <span class="mouse">Arrastrá para mover · Clic derecho para girar · Rueda para acercar · Doble clic para ir ahí</span>
   <span class="tactil">1 dedo: mover · 2 dedos: zoom y girar · Doble toque: acercar ahí</span>
 </div>
 
@@ -116,11 +120,11 @@
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
 <script src="lib/CSS2DRenderer.js"></script>
-<script src="data/nave.js?v=202610101620"></script>
-<script src="data/cotas.js?v=202610101620"></script>
-<script src="detalle_calles.js?v=202610101620"></script>
-<script src="cotas.js?v=202610101620"></script>
-<script src="recorrido.js?v=202610101620"></script>
-<script src="app.js?v=202610101620"></script>
+<script src="data/nave.js?v=202610102103"></script>
+<script src="data/cotas.js?v=202610102103"></script>
+<script src="detalle_calles.js?v=202610102103"></script>
+<script src="cotas.js?v=202610102103"></script>
+<script src="recorrido.js?v=202610102103"></script>
+<script src="app.js?v=202610102103"></script>
 </body>
 </html>

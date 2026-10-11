@@ -1214,8 +1214,9 @@ window.DetalleCalles = function (api) {
   escalera(253.2, 65.5, +1, 5.4, "#2e8b57");   // escalera del plano (B23, x 253–258)
   // SALÓN DE ACOPIO de W sur (plano: recinto x 191,5–252 · y 13,3–37,2; pared alta a lo largo de y 37,3 desde x 100)
   galvanizado(100, 252, 37.3, true, 7.5, -1); galvanizado(100, 252, 37.3, true, 7.5, +1);
-  galvanizado(13.3, 32.0, 191.5, false, 7.5, +1); galvanizado(36.0, 37.2, 191.5, false, 7.5, +1);
-  galvanizado(13.3, 37.2, 252.0, false, 7.5, -1);
+  // (la línea de salida entra y sale del acopio por las esquinas sur: las chapas arrancan en y 15,6 · paso a confirmar)
+  galvanizado(15.6, 32.0, 191.5, false, 7.5, +1); galvanizado(36.0, 37.2, 191.5, false, 7.5, +1);
+  galvanizado(15.6, 37.2, 252.0, false, 7.5, -1);
   // (Julian 10/10: el lado y 13,3, entre el buffer y el acopio, va abierto: sin chapa ni baranda)
   for (const [x, txt, fondo] of [[194, "CARROCERÍAS\nDELIBERADAS\nUTE 3", "#2f7fd1"], [214, "CARROCERÍAS\nLISTAS PARA MACRO", "#2f7fd1"],
     [228, "CARROCERÍAS LUEGO\nDE MACRO PARA REPARAR", "#e23a77"], [240, "CARROCERÍAS\nLISTAS PARA MONTAJE", "#7cc242"]])
@@ -1557,13 +1558,13 @@ window.DetalleCalles = function (api) {
     // CALESITA: lazo TRP-13 → 14 → 16 → 15 (y 30,9 hacia −x; y 22,9 hacia +x)
     { r: recorrido([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], 0.48), n: 22, v: 0.7, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
     // TRP-22 (Óleo) → BUFFER KP1 (actualización del layout KP1, Julian 10/10): cabinas y cajas avanzan hasta la mitad del
-    // buffer y se anclan con su pareja (mismo color); la mesa transferidora de la entrada las pasa a la LÍNEA DE SALIDA (y 14,3),
+    // buffer y se anclan con su pareja (mismo color); la mesa transferidora de la entrada las pasa a la LÍNEA DE SALIDA (y 14,9),
     // que corre junto al buffer, dobla hacia +y y llega a la zona de difusión (x ≈ 252–262, y ≈ 30,5). Ahí la mula las carga.
     // El CRONOS ya no pasa por el buffer: sube a +3,2 m a la salida de Óleo (lo animan cotas.js / recorrido.js).
     { r: recorrido([[121, 8.9], [186.5, 8.9], [188.6, 8.5], [221.5, 8.5]], 0.48), n: 12, v: 0.6, abierta: true, tipos: ["cabina", "caja"], colores: PINTADO },
     { r: recorrido([[188.6, 6.0], [221.5, 6.0]], 0.48), n: 6, v: 0.04, abierta: true, tipos: ["cabina", "caja"], colores: PINTADO },
     { r: recorrido([[188.6, 11.4], [221.5, 11.4]], 0.48), n: 6, v: 0.04, abierta: true, tipos: ["caja", "cabina"], colores: PINTADO },
-    { r: recorrido([[190.5, 14.3], [252.0, 14.3], [252.0, 30.5], [257.5, 30.5]], 0.48), n: 10, v: 0.45, abierta: true, salida: "kp1", tipos: ["cabina", "caja"], colores: PINTADO },
+    { r: recorrido([[188.6, 14.9], [253.0, 14.9], [253.0, 30.5], [257.5, 30.5]], 0.48), n: 10, v: 0.45, abierta: true, salida: "kp1", tipos: ["cabina", "caja"], colores: PINTADO },
     // TRP-17 (entrada a macro, y 17,4)
     { r: recorrido([[100.3, 17.4], [125.5, 17.4]], 0.48), n: 4, v: 0.5, abierta: true, tipos: ["sedan"], colores: PINTADO },
     // TRP-11 / 10 / 12 dentro de las máquinas sin nombre (túneles)
@@ -1757,6 +1758,7 @@ window.DetalleCalles = function (api) {
   function etiqueta(x, y, z, titulo, sub, color, nivel) {
     const div = document.createElement("div");
     const n2 = nivel === 2;
+    div.dataset.prio = n2 ? 2 : 3;
     div.style.cssText = `background:${color};color:#fff;padding:${n2 ? "2px 6px" : "3px 9px"};border-radius:6px;font:600 ${n2 ? 10.5 : 12.5}px Segoe UI,Arial,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.35);text-align:center;line-height:1.25;max-width:230px;pointer-events:none;white-space:nowrap`;
     div.innerHTML = `<div>${titulo}</div>` + (sub ? `<div class="sub" style="font-weight:400;font-size:10px;opacity:.95;white-space:normal;display:none">${sub}</div>` : "");
     const o = new THREE.CSS2DObject(div); o.position.copy(W(x, y, z)); procesos.add(o);
@@ -1774,7 +1776,7 @@ window.DetalleCalles = function (api) {
   etiqueta(113, 10, 5.5, "ÁREA MACRO C.P.A.", "inspección con túnel de luces · TRP-17", DOM.reparacion, 2);
   etiqueta(162, 21, 5.5, "REPARACIÓN · ESTACIÓN R", "Box de retoques, atrás de Óleo = \"cabinas de trabajo\" (plano 2020) · CPU12 fuera de línea", DOM.reparacion);
   etiqueta(220, 8.5, 7.0, "BUFFER KP1 · ESTACIÓN D", "cabinas y cajas sueltas avanzan hasta la mitad del buffer y se anclan de a pares (mismo color) · salen por la línea de salida · el Cronos pasa por arriba a +3,2 m", DOM.difusion);
-  etiqueta(221, 14.3, 5.2, "LÍNEA DE SALIDA KP1", "la mesa transferidora corre la pieza del buffer a esta línea, que lleva cabina y caja a difusión", DOM.difusion, 2);
+  etiqueta(221, 14.9, 5.2, "LÍNEA DE SALIDA KP1", "la mesa transferidora corre la pieza del buffer a esta línea, que lleva cabina y caja a difusión", DOM.difusion, 2);
   etiqueta(257, 30.5, 5.6, "DIFUSIÓN · LA MULA CARGA", "primero la cabina, después la caja (mismo color) · sale por la abertura de la fachada hacia PS2 (a confirmar)", DOM.difusion);
   etiqueta(266, 31, 4.6, "KP1 → MONTAJE KP1", "mula con carro (actualización del layout KP1)", DOM.difusion, 2);
   etiqueta(258, 11.6, 11.0, "CRONOS → TÚNEL A MONTAJE", "sube a +3,2 m después de Óleo, pasa sobre el buffer y el elevador Montaje lo sube al túnel", "#5d6d7e");
@@ -1815,7 +1817,7 @@ window.DetalleCalles = function (api) {
   flujoCinta([[128.3, 15.5], [128.3, 8.9], [186.5, 8.9]], DOM.oleo);
   flujoCinta([[186.5, 8.9], [188.6, 8.5], [221.5, 8.5]], DOM.difusion);                                            // KP1 al buffer (hasta la mitad)
   flujoCinta([[188.6, 8.5], [188.6, 6.0], [221.5, 6.0]], DOM.difusion, 4.62, 0.6);                                 // carril 1 del buffer
-  flujoCinta([[190.5, 14.3], [252.0, 14.3], [252.0, 30.5], [264.5, 31.0], [280, 31.0]], DOM.difusion, 4.62, 0.9);  // línea de salida → difusión → Montaje KP1
+  flujoCinta([[188.6, 14.9], [253.0, 14.9], [253.0, 30.5], [264.5, 31.0], [280, 31.0]], DOM.difusion, 4.62, 0.9);  // línea de salida → difusión → Montaje KP1
   flujoCinta([[188.6, 8.5], [188.6, 11.4], [250.7, 11.4], [253.5, 9.4], [256.2, 9.4]], "#5d6d7e", 4.64, 0.6);      // Cronos carril 3 → elevador
   flujoCinta([[256.2, 8.9], [262, 8.9], [300, 8.9]], "#5d6d7e", 15.6, 0.9);                                         // Cronos por el túnel
   // Fuera de línea (CPU12): Óleo → Box de retoques (R) → vuelve a la línea; Macro (TRP-17) → elevador
@@ -1898,13 +1900,17 @@ window.DetalleCalles = function (api) {
 
   // 25e. DIFUSIÓN mejorada (plano "Zona difusión"): carril de acumulo junto al depósito (y ≈ 14,3), identificación de carriles,
   //      semáforos de fin de carril, numeración de posiciones, cruces peatonales hacia la fachada y portón de salida a Montaje
-  for (let x = 192; x < 245.5; x += 4.45) { bloque("#f2c94c", x, 14.3, 0.3, 1.4, 0.15, 0.3); for (const s of [-1, 1]) caja("#dfe3e7", x - 2.0, 14.3 + s * 0.6 - 0.05, x + 2.0, 14.3 + s * 0.6 + 0.05, 0.15, 0.45); }
-  for (let x = 192.5; x < 245; x += 0.9) cil("#c9ced3", x, 14.3, 0.38, 1.1, 0.05, "y");
-  // (la línea y 14,3 es la LÍNEA DE SALIDA KP1: sin piezas quietas, las mueve el flujo animado)
-  for (const [y, n] of [[6.0, 1], [8.5, 2], [11.4, 3], [14.3, 4]]) {
+  // línea de salida KP1 alineada con el DWG actualizado (303-N00 _ACTUALIZADO-2026-10): eje y 14,9 (dentro del acopio, del otro
+  // lado del lado y 13,3), sube a difusión por x 253 (esquiva el pilar PIL-70 en 252 · 26 y la escalera de la esquina). Trazado esquemático.
+  for (let x = 192; x < 245.5; x += 4.45) { bloque("#f2c94c", x, 14.9, 0.3, 1.4, 0.15, 0.3); for (const s of [-1, 1]) caja("#dfe3e7", x - 2.0, 14.9 + s * 0.6 - 0.05, x + 2.0, 14.9 + s * 0.6 + 0.05, 0.15, 0.45); }
+  for (let x = 191.6; x < 245; x += 0.9) cil("#c9ced3", x, 14.9, 0.38, 1.1, 0.05, "y");
+  // (la línea y 14,9 es la LÍNEA DE SALIDA KP1: sin piezas quietas, las mueve el flujo animado)
+  for (const [y, n] of [[6.0, 1], [8.5, 2], [11.4, 3], [14.9, 4]]) {
     cartel(n === 4 ? "LÍNEA DE SALIDA KP1" : "BUFFER KP1 · CARRIL " + n, 189.4, y, 1.5, 1.6, 0.4, "-x", "#2e9d4f", "#ffffff");
-    bloque("#2b2f33", 251.6, y + 0.85, 0.15, 0.15, 0, 2.2); bloque("#1f2328", 251.6, y + 0.85, 0.22, 0.22, 2.2, 2.75);
-    cil(n === 2 ? "#2ecc71" : "#e74c3c", 251.48, y + 0.85, 2.48, 0.04, 0.08, "x");
+    if (n < 4) {   // semáforo de fin de carril (solo en los 3 carriles del buffer)
+      bloque("#2b2f33", 251.6, y + 0.85, 0.15, 0.15, 0, 2.2); bloque("#1f2328", 251.6, y + 0.85, 0.22, 0.22, 2.2, 2.75);
+      cil(n === 2 ? "#2ecc71" : "#e74c3c", 251.48, y + 0.85, 2.48, 0.04, 0.08, "x");
+    }
     for (let x = 194, p = 1; x < 250; x += 4.45, p++) pinta("#ffffff", x - 0.3, y - 0.95, x + 0.3, y - 0.75, 0.07);
   }
   for (const x of [186.5, 210.5, 233.5, 250.5]) for (let k = 0; k < 4; k++) pinta("#ffffff", x - 1.2 + k * 0.7, 0.45, x - 0.85 + k * 0.7, 3.55, 0.065);
@@ -1930,9 +1936,11 @@ window.DetalleCalles = function (api) {
 
   // visibilidad de las etiquetas HTML con la capa y animación de las flechas
   if (animar) animar.push((dt) => {
-    const v = procesos.visible, cam = window.__maqueta && window.__maqueta.camara, zm = cam ? cam.zoom : 1;
+    const M = window.__maqueta, v = procesos.visible, cam = M && M.camara, zm = cam ? cam.zoom : 1;
+    // con el edificio entero y el techo puesto los nombres de cota 0 quedan adentro: no se muestran (igual que los de cotas.js)
+    const tapadas = M && M.estado && M.estado.piso === "todas" && M.estado.sep === 0 && M.capas.techo.visible;
     for (const e of etiquetas) {
-      e.o.visible = v && (e.nivel === 1 || zm > 2.6);
+      e.o.visible = v && !tapadas && (e.nivel === 1 || zm > 2.6);
       if (e.sub) e.sub.style.display = zm > 4.5 ? "block" : "none";
     }
     if (v) for (const t of cintas) t.offset.x -= dt * 0.9;

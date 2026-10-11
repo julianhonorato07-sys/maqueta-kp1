@@ -113,7 +113,7 @@ window.Recorrido = function (api) {
   const T_L32 = [[188.6, 8.9, 0.48, 0], [188.6, 8.9, 0.45, 3.2], [188.6, 11.4, 0.45, 3.2], [250.7, 11.4, 0.45, 3.2], [252.5, 9.4, 0.45, 3.2], [256.2, 9.4, 0.45, 3.2]];
   const T_TUNEL = [[256.2, 8.9, 0.45, 3.2], [256.2, 8.9, 0.3, 9], [262.0, 8.9, 0.3, 9], [300.0, 8.9, 0.3, 9]];
   const T_BUFFER = [[188.6, 8.5, 0.48, 0], [221.5, 8.5, 0.48, 0]];
-  const T_LINEA = [[190.5, 8.5, 0.48, 0], [190.5, 14.3, 0.48, 0], [252.0, 14.3, 0.48, 0], [252.0, 30.5, 0.48, 0]];
+  const T_LINEA = [[188.6, 8.5, 0.48, 0], [188.6, 14.9, 0.48, 0], [253.0, 14.9, 0.48, 0], [253.0, 30.5, 0.48, 0]];   // = DWG 303-N00 _ACTUALIZADO-2026-10
   const T_DIFUSION = [[257.5, 30.5, 0.48, 0]];
   const T_MONTAJEKP1 = [[257.5, 30.5, 1.0, 0], [264.5, 31.0, 1.0, 0], [285.0, 31.0, 1.0, 0]];
 
@@ -224,21 +224,22 @@ window.Recorrido = function (api) {
   {
     const mRod = new THREE.MeshLambertMaterial({ color: "#c9ced3" }), mMarco = new THREE.MeshLambertMaterial({ color: "#4a525c" });
     const rod = [];
-    for (let x = 245.5; x <= 252.0; x += 0.9) rod.push([x, 14.3, 0]);
-    for (let y = 14.3; y <= 30.5; y += 0.9) rod.push([252.0, y, 90]);
-    for (let x = 252.0; x <= 257.5; x += 0.9) rod.push([x, 30.5, 0]);
+    for (let x = 245.5; x <= 253.0; x += 0.9) rod.push([x, 14.9, 0]);
+    for (let y = 14.9; y <= 30.5; y += 0.9) rod.push([253.0, y, 90]);
+    for (let x = 253.0; x <= 257.5; x += 0.9) rod.push([x, 30.5, 0]);
     const geoR = new THREE.CylinderGeometry(0.05, 0.05, 1.1, 8); geoR.rotateX(Math.PI / 2);
     const im = new THREE.InstancedMesh(geoR, mRod, rod.length);
     rod.forEach(([x, y, a], i) => { q.setFromAxisAngle(up, a * Math.PI / 180); const p = W(x, y, 0.38); m4.compose(p, q, uno); im.setMatrixAt(i, m4); });
     c0.add(im);
-    for (const [a, b, c, d] of [[245.5, 13.7, 252.6, 14.9], [251.4, 14.3, 252.6, 30.5], [252.0, 29.9, 257.5, 31.1]]) {
+    for (const [a, b, c, d] of [[245.5, 14.3, 253.6, 15.5], [252.4, 14.9, 253.6, 30.5], [253.0, 29.9, 257.5, 31.1]]) {
       const g = new THREE.Mesh(new THREE.BoxGeometry(c - a, 0.3, d - b), mMarco); g.position.copy(W((a + c) / 2, (b + d) / 2, 0.15)); c0.add(g);
     }
   }
-  // mesa transferidora (se mueve de costado) en la entrada del buffer: lleva la pieza del carril y 8,5 a la línea de salida y 14,3
-  const mesaTr = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.22, 2.4), new THREE.MeshLambertMaterial({ color: "#f2c230" }));
+  // mesa transferidora (se mueve de costado) en la entrada del buffer: lleva la pieza del carril y 8,5 a la línea de salida y 14,9
+  // (plano: bastidores x 185,9–191,1, eje x 188,6; se alarga hasta la línea, a confirmar)
+  const mesaTr = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.22, 1.6), new THREE.MeshLambertMaterial({ color: "#f2c230" }));
   c0.add(mesaTr);
-  for (const s of [-1.3, 1.3]) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.08, 7.8), new THREE.MeshLambertMaterial({ color: "#8d97a3" })); r.position.copy(W(190.5 + s, 11.4, 0.04)); c0.add(r); }
+  for (const s of [-1.3, 1.3]) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.08, 7.8), new THREE.MeshLambertMaterial({ color: "#8d97a3" })); r.position.copy(W(188.6 + s, 11.7, 0.04)); c0.add(r); }
   // mula con carrito en difusión: carga cabina + caja del mismo color y sale por la abertura hacia PS2 (a confirmar)
   const mula = new THREE.Group();
   {
@@ -253,9 +254,9 @@ window.Recorrido = function (api) {
   const RUTA_MULA = ruta([[255.0, 31.2, 0, 0], [264.5, 31.2, 0, 0], [290.0, 31.2, 0, 0]]);
   let tMula = 0;
   function actualizarCota0(dt) {
-    // mesa transferidora: ida y vuelta entre y 8,5 y 14,3 (ciclo 16 s)
+    // mesa transferidora: ida y vuelta entre y 8,5 y 14,9 (ciclo 16 s)
     const k = 0.5 - 0.5 * Math.cos(((performance.now() / 1000) % 16) / 16 * Math.PI * 2);
-    mesaTr.position.copy(W(190.5, 8.5 + (14.3 - 8.5) * k, 0.3));
+    mesaTr.position.copy(W(188.6, 8.5 + (14.9 - 8.5) * k, 0.3));
     // mula: espera cargando (8 s), sale (ida) y vuelve vacía
     tMula = (tMula + dt) % 40;
     const ida = tMula < 8 ? 0 : tMula < 24 ? (tMula - 8) / 16 : 1 - (tMula - 24) / 16;
@@ -380,7 +381,7 @@ window.Recorrido = function (api) {
   const colgT = new THREE.Mesh(G_COLG, new THREE.MeshLambertMaterial({ color: "#3b434c" })); colgT.position.y = 1.35; carro.add(colgT);
   const halo = new THREE.Mesh(new THREE.RingGeometry(3.2, 3.7, 40), new THREE.MeshBasicMaterial({ color: 0x1f6feb, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }));
   halo.rotation.x = -Math.PI / 2; halo.position.y = 0.05; carro.add(halo);
-  const marca = document.createElement("div"); marca.className = "cota-et"; marca.style.cssText = "background:#1f6feb;color:#fff;font:700 12px Segoe UI,Arial,sans-serif;padding:3px 9px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.35);white-space:nowrap;pointer-events:none";
+  const marca = document.createElement("div"); marca.className = "cota-et"; marca.dataset.prio = 9; marca.style.cssText = "background:#1f6feb;color:#fff;font:700 12px Segoe UI,Arial,sans-serif;padding:3px 9px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.35);white-space:nowrap;pointer-events:none";
   const marcaO = new THREE.CSS2DObject(marca); marcaO.position.set(0, 4.6, 0); carro.add(marcaO);
   // mula del recorrido (para los pasos con mula)
   const mulaT = new THREE.Group();
@@ -504,8 +505,61 @@ window.Recorrido = function (api) {
     halo.material.opacity = 0.35 + 0.25 * Math.sin(performance.now() / 300);
   }
 
+  // ---------------------------------------------------------------- (c) PASOS NUMERADOS en la maqueta
+  // Un número por paso del recorrido de la carrocería (mismos pasos y textos que el recorrido guiado): 1–16 son comunes,
+  // después se abren el Cronos (17–18) y las pickups Titano / Dakota (17–20). Tocar un número abre el recorrido en ese paso.
+  const capaPasos = capa("pasos");
+  const marcadores = [];
+  const pisoDeCota = (c) => (c === 9 ? "9" : c === 0 ? "0" : "5");
+  {
+    const guarda = { tipo: tourEstado.tipo, modelo: tourEstado.modelo, def: tourEstado.def };
+    Object.assign(tourEstado, { tipo: "carroceria", modelo: "cronos", def: false }); const SC = pasos();
+    tourEstado.modelo = "kp1"; const SK = pasos();
+    Object.assign(tourEstado, guarda);
+    const iC = SC.findIndex(p => p.tit.startsWith("Sube a +3,2")), iK = SK.findIndex(p => p.tit.startsWith("Buffer KP1"));
+    const lista = SC.map((p, i) => ({ p, i, modelo: "cronos", rama: i >= iC ? "Cronos" : "" }))
+      .concat(SK.slice(iK).map((p, k) => ({ p, i: iK + k, modelo: "kp1", rama: "Titano / Dakota" })));
+    for (const it of lista) {
+      // ubicación: mitad del tramo en planta (en los elevadores, el elevador)
+      const P = it.p.pts; let L = 0; const tr = [];
+      for (let j = 1; j < P.length; j++) { const l = Math.hypot(P[j][0] - P[j - 1][0], P[j][1] - P[j - 1][1]); tr.push([P[j - 1], P[j], l]); L += l; }
+      let x = P[0][0], y = P[0][1];
+      if (L > 0.5) { let r = L / 2; for (const [a, b, l] of tr) { if (r <= l) { x = a[0] + (b[0] - a[0]) * r / l; y = a[1] + (b[1] - a[1]) * r / l; break; } r -= l; } }
+      const cota = it.p.cota, col = COTA_COL[cota];
+      const el = document.createElement("div"); el.className = "paso-mk"; el.dataset.prio = 3.5;   // por encima de los nombres: la secuencia no puede tener huecos
+      const suf = it.rama === "Cronos" ? "C" : it.rama ? "K" : "";   // después de Óleo se abren dos caminos: C = Cronos, K = KP1 (pickups)
+      el.innerHTML = `<b style="background:${col}">${it.i + 1}${suf ? `<small>${suf}</small>` : ""}</b><span>${it.rama ? it.rama + " · " : ""}${it.p.tit}</span>`;
+      el.title = "Ver este paso en el recorrido";
+      el.addEventListener("click", (ev) => { ev.stopPropagation(); abrirEnPaso(it); });
+      const o = new THREE.CSS2DObject(el); capaPasos.add(o);
+      marcadores.push({ o, el, x, y, cota, it, hz: 0.6 });   // al ras de la línea: los nombres flotan más arriba
+    }
+  }
+  function abrirEnPaso(it) {
+    tourEstado.tipo = "carroceria"; tourEstado.def = false; tourEstado.modelo = it.modelo; tourEstado.play = false; $("rc-play").textContent = "▶ Reproducir";
+    document.querySelectorAll("#rc-tipo button").forEach(x => x.classList.toggle("activo", x.dataset.v === "carroceria"));
+    document.querySelectorAll("#rc-modelo button").forEach(x => x.classList.toggle("activo", x.dataset.v === it.modelo));
+    document.querySelectorAll("#rc-def button").forEach(x => x.classList.toggle("activo", x.dataset.v === "ok"));
+    if (!tourEstado.activo) abrir();
+    setModelo(true); irAPaso(it.i);
+  }
+  function actualizarMarcadores() {
+    const E = maqueta.estado, techo = maqueta.capas.techo.visible;
+    const tapados = E.piso === "todas" && E.sep === 0 && techo;
+    for (const m of marcadores) {
+      // con los pisos juntos y sin techo, la losa de cota 9 tapa lo de abajo: solo se numera la cota 9
+      const piso = pisoDeCota(m.cota);
+      m.o.visible = capaPasos.visible && !tapados && (E.piso === piso || (E.piso === "todas" && (E.sep > 0 || piso === "9")));
+      if (!m.o.visible) continue;
+      m.o.position.copy(W(m.x, m.y, alto(m.cota, m.hz)));
+      m.el.classList.toggle("actual", tourEstado.activo && tourEstado.tipo === "carroceria" && !tourEstado.def && tourEstado.paso === m.it.i &&
+        (m.it.modelo === tourEstado.modelo || (m.it.rama === "" && m.it.i < 16)));
+    }
+  }
+
   if (animar) animar.push((dt) => {
     marcaO.visible = tourEstado.activo;
+    actualizarMarcadores();
     if (flujo.visible) actualizarFlujo(dt);
     actualizarElevadores(dt);
     actualizarCota0(dt);

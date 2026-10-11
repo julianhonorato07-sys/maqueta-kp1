@@ -637,7 +637,7 @@
     const p = estado.piso, sep = estado.sep;
     let hc = null;   // altura de corte de muros y columnas (null = completos)
     if (p === "9") hc = 12.5; else if (p === "5" || estado.cortar || sep > 0 || (estado.recorrido && p === "0")) hc = N.corte_muros;
-    if (torresEscalera) torresEscalera.visible = !estado.recorrido && (p === "todas" || p === "0");
+    if (torresEscalera) torresEscalera.visible = !estado.recorrido && p === "todas" && sep === 0;   // con una cota sola o separada, las torres tapan la vista
     for (const t of Object.keys(tipos)) { muroCompleto[t].visible = hc === null; for (const h of ALTURAS_CORTE) muroCortado[t][h].visible = hc === h; }
     colCompletas.visible = hc === null;
     for (const h of Object.keys(colCortadas)) colCortadas[h].visible = hc === Number(h);
@@ -664,6 +664,8 @@
     controles.target.y += dy; camara.position.y += dy; pisoY = alturaPiso(p);
     aplicarVista();
   }
+  // estado inicial de cada capa según su casilla (los ejes arrancan apagados: para el que mira por primera vez son ruido)
+  document.querySelectorAll("#capas input[data-capa]").forEach(chk => { if (capas[chk.dataset.capa]) capas[chk.dataset.capa].visible = chk.checked; });
   document.querySelectorAll("#capas input[data-capa]").forEach(chk => chk.addEventListener("change", () => {
     if (capas[chk.dataset.capa]) capas[chk.dataset.capa].visible = chk.checked;
     aplicarVista();
@@ -757,7 +759,7 @@
     ["Cota +9", "9", [["Ingreso desde Chapistería", 66, 118, 3], ["Preparación manual", 232, 97, 4.5], ["Pretratamiento", 112, 97, 2.2], ["Cataforesis", 36, 90.7, 3.5], ["Horno de cataforesis", 181, 90.7, 2.2],
       ["Bajo carrocería UBS & UBC", 164, 57.7, 3.2], ["Horno de fondo (pregelado)", 78, 57.6, 2.2], ["Estación I y acumulo lote colores", 55, 71, 2.6], ["Revisión de cataforesis", 190, 68, 2.4],
       ["Línea de esmalte", 200, 46, 2.4], ["Robots de esmalte (de cerca)", 199, 46, 8], ["Hornos de esmalte", 60, 46, 2.6], ["Revisión final", 63, 20, 2.6]]],
-    ["Cotas +5,4 y +3,2", "5", [["Cambio de skid", 257, 84, 4.5], ["Acumulo de skids (2 pisos)", 60, 84.7, 2.6], ["Clear zone de skids pobres", 190, 97, 2.6], ["Level +3,2 sobre el buffer", 222, 9, 3], ["Retorno de skids pobres", 262, 50, 2.2]]],
+    ["Cotas +5,4 y +3,2", "5", [["Cambio de skid (en el medio de la banda)", 133, 90.5, 4.5], ["Salida del horno de cataforesis (baja a +5,4)", 251.5, 90.7, 4.0], ["Acumulo de skids (2 pisos)", 60, 84.7, 2.6], ["Clear zone de skids pobres", 190, 97, 2.6], ["Level +3,2 sobre el buffer", 222, 9, 3], ["Retorno de skids pobres", 262, 50, 2.2]]],
     ["Cota 0", "0", [["Cabina de sellado", 170, 76, 2.2], ["Giro en U del sellado (mesa giratoria)", 80.5, 72, 4.5], ["Elevador a línea de fondo", 245, 57.7, 4.5], ["Calesita y acumulo", 50, 27, 2.2],
       ["Bajada de revisión final", 128.3, 15.5, 4.5], ["Óleo", 155, 8.9, 3], ["Box de retoques", 162, 20, 3], ["Buffer KP1 y línea de salida", 220, 10, 2.6], ["Difusión → Montaje KP1", 257, 30, 3.5], ["Depósito de autos", 214, 26, 2.6]]],
   ];
@@ -771,7 +773,18 @@
       const destino = W(x, y, 0); destino.y = alturaPiso(piso);
       // vista un poco más desde arriba (se ve adentro de cabinas y hornos)
       esf.setFromVector3(camara.position.clone().sub(controles.target));
-      volar(destino, z * (MOVIL ? 0.75 : 1), 0, esf.phi > 0.85 ? 0.85 - esf.phi : 0);
+      // en cota 0 las fachadas están enteras: si el lugar queda a menos de 30 m de una, la cámara gira para mirar desde
+      // adentro de la nave (si no, la pared tapa todo). n = normal hacia adentro de esa fachada, en coordenadas de la escena.
+      let dTheta = 0;
+      if (piso === "0") {
+        const [dist, nx, nz] = [[x - minX, 1, 0], [maxX - x, -1, 0], [y - minY, 0, -1], [maxY - y, 0, 1]].sort((a, b) => a[0] - b[0])[0];
+        if (dist < 30) {
+          const dif = (a) => Math.atan2(Math.sin(a - esf.theta), Math.cos(a - esf.theta));
+          const cand = [0.75, -0.75].map(k => Math.atan2(nx + k * nz, nz - k * nx)).sort((a, b) => Math.abs(dif(a)) - Math.abs(dif(b)));
+          dTheta = dif(cand[0]);
+        }
+      }
+      volar(destino, z * (MOVIL ? 0.75 : 1), dTheta, esf.phi > 0.85 ? 0.85 - esf.phi : 0);
       sel.value = ""; sel.blur();
     });
   }
@@ -797,11 +810,10 @@
   const soltar = (ev) => { if (arrastre && ev.pointerId === arrastre.id) { arrastre = null; lienzo.style.cursor = "grab"; } };
   lienzo.addEventListener("pointerup", soltar); lienzo.addEventListener("pointercancel", soltar);
   lienzo.addEventListener("contextmenu", (ev) => ev.preventDefault());
-  // En celular el panel de capas arranca plegado y se pliega al tocar la maqueta
+  // El panel "Qué mostrar" arranca plegado (en compu y en celular); en celular se pliega al tocar la maqueta
   const panelCapas = document.getElementById("capas");
-  if (!MOVIL) panelCapas.open = true;   // en compu arranca abierto; en celular, plegado
+  panelCapas.open = false;
   if (MOVIL) {
-    panelCapas.open = false;
     renderer.domElement.addEventListener("pointerdown", () => { panelCapas.open = false; });
   }
   // La ayuda desaparece después de la primera interacción
@@ -810,6 +822,7 @@
   let tAyuda = null;
   const ocultarAyuda = (ms) => { clearTimeout(tAyuda); tAyuda = setTimeout(() => { ayuda.style.transition = "opacity .6s"; ayuda.style.opacity = "0"; }, ms); };
   controles.addEventListener("start", () => ocultarAyuda(9000), { once: true });
+  ocultarAyuda(12000);   // aunque nadie toque nada, la ayuda se va sola
   const botonAyuda = document.getElementById("ver-ayuda");
   if (botonAyuda) botonAyuda.addEventListener("click", () => { ayuda.style.transition = "opacity .2s"; ayuda.style.opacity = "1"; ocultarAyuda(9000); });
   const dlg = document.getElementById("supuestos");
@@ -824,6 +837,44 @@
 
   window.__maqueta = { scene, camara, controles, W, animar_vida, estado, verPiso, aplicarVista, capas };   // inspección y recorrido.js
   if (window.Recorrido && window.__cotas) window.__recorrido = window.Recorrido({ THREE, W, capa, MOVIL, animar: animar_vida, camara, controles, cotas: window.__cotas, maqueta: window.__maqueta });
+
+  // ---------------------------------------------------------------- carteles que se pisan
+  // Cada 150 ms: los carteles visibles se ordenan por prioridad (data-prio: 3 = zona/proceso, 2 = equipo, 1 = entorno) y se
+  // esconden los que tapan a uno más importante. Así nunca se leen dos nombres encimados.
+  function desencimar() {
+    const lista = [];
+    for (const el of etiquetas.domElement.children) {
+      if (el.style.display === "none") continue;
+      const r = el.getBoundingClientRect();
+      if (r.width === 0) continue;
+      const prio = Number(el.dataset.prio || (el.classList.contains("destino") ? 2 : el.classList.contains("norte") ? 4 : el.classList.contains("sitio") ? 1 : 0.5));
+      lista.push({ el, r, prio });
+    }
+    lista.sort((a, b) => b.prio - a.prio);
+    // si un cartel choca con otro ya puesto, primero se prueba correrlo un poco arriba o abajo; si no entra, se esconde
+    const puestos = [], m = 3;
+    const choca = (t, b2, l, r2) => puestos.some(q => l < q.right + m && r2 > q.left - m && t < q.bottom + m && b2 > q.top - m);
+    for (const { el, r } of lista) {
+      const dy0 = Number(el.dataset.dy || 0), h = r.height;
+      const top = r.top - dy0;   // posición sin el corrimiento anterior
+      let dy = null;
+      for (const d of [0, -(h + 2), h + 2]) if (!choca(top + d, top + d + h, r.left, r.right)) { dy = d; break; }
+      if (dy === null) { el.style.visibility = "hidden"; continue; }
+      el.style.visibility = "";
+      if (dy !== dy0) { el.dataset.dy = dy; el.style.translate = dy ? `0 ${dy}px` : ""; }
+      puestos.push({ left: r.left, right: r.right, top: top + dy, bottom: top + dy + h });
+    }
+  }
+  let tDes = 1;
+  // los carteles HTML no heredan la visibilidad de su capa: si alguna capa que los contiene está apagada, se esconden
+  const css2d = [];
+  scene.traverse(o => { if (o.isCSS2DObject) css2d.push(o); });
+  function ocultarSinCapa() {
+    for (const o of css2d) {
+      if (o.element.style.display === "none") continue;
+      for (let p = o.parent; p; p = p.parent) if (!p.visible) { o.element.style.display = "none"; break; }
+    }
+  }
 
   const reloj = new THREE.Clock();
   (function animar() {
@@ -842,5 +893,7 @@
     document.body.classList.toggle("cerca", camara.zoom > 1.6);
     renderer.render(scene, camara);
     etiquetas.render(scene, camara);
+    ocultarSinCapa();
+    tDes += dt; if (tDes > 0.15) { tDes = 0; desencimar(); }
   })();
 })();
