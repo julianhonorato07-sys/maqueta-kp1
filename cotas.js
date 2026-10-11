@@ -842,9 +842,10 @@ window.Cotas = function (api) {
   // 6) ROBOTS (cabinas con robots: posiciones R1–R7 del plano; brazo cubierto con funda, ilustrativo)
   // ================================================================================================
   const robots = [];
-  function robot(dest, x, y, z, mira, escala) {
-    const s = escala || 1, g = new THREE.Group();
-    const mF = new THREE.MeshLambertMaterial({ color: COL.robot }), mJ = new THREE.MeshLambertMaterial({ color: COL.robotJ });
+  // opc: cF / cJ = color de la funda y de las articulaciones; colgado = montado arriba, boca abajo (abridores)
+  function robot(dest, x, y, z, mira, escala, opc) {
+    const s = escala || 1, g = new THREE.Group(), o = opc || {};
+    const mF = new THREE.MeshLambertMaterial({ color: o.cF || COL.robot }), mJ = new THREE.MeshLambertMaterial({ color: o.cJ || COL.robotJ });
     const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42 * s, 0.5 * s, 0.7 * s, 16), mJ); base.position.y = 0.35 * s; g.add(base);
     const giro = new THREE.Group(); giro.position.y = 0.7 * s; g.add(giro);
     const cuerpo = new THREE.Mesh(new THREE.BoxGeometry(0.7 * s, 0.6 * s, 0.6 * s), mF); cuerpo.position.y = 0.3 * s; giro.add(cuerpo);
@@ -854,7 +855,7 @@ window.Cotas = function (api) {
     const brazo2 = new THREE.Mesh(new THREE.BoxGeometry(1.5 * s, 0.26 * s, 0.26 * s), mF); brazo2.position.x = 0.75 * s; codo.add(brazo2);
     const muneca = new THREE.Mesh(new THREE.CylinderGeometry(0.11 * s, 0.16 * s, 0.35 * s, 12), mJ); muneca.rotation.z = Math.PI / 2; muneca.position.x = 1.6 * s; codo.add(muneca);
     const campana = new THREE.Mesh(new THREE.ConeGeometry(0.14 * s, 0.22 * s, 16), new THREE.MeshLambertMaterial({ color: "#c9d1da" })); campana.rotation.z = -Math.PI / 2; campana.position.x = 1.86 * s; codo.add(campana);
-    g.position.copy(W(x, y, z)); g.rotation.y = mira;
+    g.position.copy(W(x, y, z)); g.rotation.y = mira; if (o.colgado) g.rotation.x = Math.PI;
     dest.add(g);
     robots.push({ giro, hombro, codo, fase: azar() * 6, vel: 0.5 + azar() * 0.4 });
   }
@@ -862,7 +863,18 @@ window.Cotas = function (api) {
   for (const [x, y] of [[129.9, 44.6], [133.0, 44.6], [136.3, 44.6], [129.0, 47.7], [132.4, 47.7], [135.5, 47.5], [194.1, 44.6], [197.3, 44.6], [201.6, 44.6], [204.8, 44.6], [194.6, 47.7], [199.4, 47.7], [204.3, 47.7]])
     robot(G[9], x, y < 46 ? 43.85 : 48.15, Z9, y < 46 ? Math.PI / 2 : -Math.PI / 2, 0.9);
   // CABINA DE FONDO (UBS & UBC): robots sobre los rieles del plano, 3 por lado (símbolos del plano; cantidad a confirmar)
-  for (const x of [167.5, 171.3, 175.1]) { robot(G[9], x, 54.9, Z9 + 0.5, Math.PI / 2, 0.85); robot(G[9], x, 60.55, Z9 + 0.5, -Math.PI / 2, 0.85); }
+  // (fotos "Presentación AM 2026", UTE23 / AM CLEAR: los robots de PVC y sellado del bajo carrocería son naranjas y sin funda)
+  const NARANJA = { cF: "#e8611c", cJ: "#3b434c" };
+  for (const x of [167.5, 171.3, 175.1]) { robot(G[9], x, 54.9, Z9 + 0.5, Math.PI / 2, 0.85, NARANJA); robot(G[9], x, 60.55, Z9 + 0.5, -Math.PI / 2, 0.85, NARANJA); }
+  // ROBOTS ABRIDORES amarillos colgados sobre la carrocería (abren capó y puertas para que pinten el interior; fotos AM 2026):
+  // 2 por celda robotizada de base y de clear (cantidad y posición: SUPUESTAS)
+  for (const x of [196.6, 202.6, 129.4, 135.2]) robot(G[9], x, 46.0, Z9 + 4.3, x % 2 ? Math.PI : 0, 0.75, { cF: "#f2c230", cJ: "#3b434c", colgado: true });
+  // BASE 0: 2 robots con funda azul entre la EMU y la celda de base color (diapositiva "Base 0 · 2 robots", AM 2026; posición aproximada)
+  for (const y of [43.85, 48.15]) robot(G[9], 232.0, y, Z9, y < 46 ? Math.PI / 2 : -Math.PI / 2, 0.9, { cF: "#3a6a9a", cJ: "#2b2f33" });
+  cartel(G[9], "BASE 0\n2 ROBOTS", 232.0, 46.0, Z9 + 3.25, 1.5, 0.6, "+x", "#ffffff", "#3a6a9a", true);
+  // EMU (plumeros de avestruz): columnas oscuras a los dos lados y un rodillo arriba, en la cabina BLOWER + EMU (foto AM 2026; cantidad supuesta)
+  for (const x of [241.6, 243.8]) for (const y of [44.45, 47.55]) { L9.cil("#3a302a", x, y, Z9 + 0.15, 2.5, 0.42); L9.cil("#8a939d", x, y, Z9 + 2.65, 0.6, 0.06); }
+  L9.cil("#3a302a", 246.2, 46.0, Z9 + 2.3, 3.0, 0.42, "y");
 
   // ================================================================================================
   // 7) ETIQUETAS DE PROCESO (HTML) – mismos nombres que el recorrido
@@ -909,9 +921,19 @@ window.Cotas = function (api) {
   for (let x = 224; x < 242; x += 4.5) { operario(L9, x, 95.1, Z9); operario(L9, x + 1.5, 98.8, Z9); }                  // preparación manual
   for (let x = 208; x < 242; x += 6) { operario(L9, x, 55.4, Z9, "lija"); operario(L9, x + 2.5, 59.8, Z9); }             // prep. bajo carrocería
   for (let x = 140.4, k = 0; x < 222.0; x += 3.05, k++) if (k % 3 === 0) { operario(L9, x, 66.4, Z9 + 0.32, "lija"); operario(L9, x + 1.2, 69.6, Z9 + 0.32, "lija"); }   // revisión de cataforesis
-  for (let x = 209; x < 234; x += 6) { operario(L9, x, 43.9, Z9, "pistola"); operario(L9, x + 3, 48.1, Z9, "pistola"); }  // manual base
-  for (const x of [185.5, 190.5]) { operario(L9, x, 43.9, Z9, "pistola"); operario(L9, x, 48.1, Z9, "pistola"); }       // completación
-  for (const x of [145, 149, 153]) { operario(L9, x, 43.9, Z9, "pistola"); operario(L9, x + 1, 48.1, Z9, "pistola"); }  // clear interno manual
+  // Puestos de las cabinas de esmalte según "Lay out ESMALTE.pptx" (SharePoint UTE23 / General): base color PDT 85 (1ª mano SX),
+  // PDT 86 (1ª mano DX), PDT 87 (2ª mano SX/DX) → celda robotizada base → PDT 91 (control); clear PDT 97 (SX), PDT 98 (DX), PDT 99
+  // → celda robotizada clear → PDT 102 (control). La línea va hacia −x: el lado SX (izquierdo de la carrocería) es y 43,9 y el DX y 48,1.
+  // Orden y lado: del layout; posición exacta dentro de cada cabina: ILUSTRATIVA.
+  const SX = 43.9, DX = 48.1;
+  for (const [x, lados, txt, herr] of [
+    [226.0, [SX], "PDT 85\n1ª MANO SX", "pistola"], [219.5, [DX], "PDT 86\n1ª MANO DX", "pistola"], [212.5, [SX, DX], "PDT 87\n2ª MANO SX/DX", "pistola"],
+    [188.3, [SX, DX], "PDT 91\nCONTROL BASE", "linterna"],
+    [153.0, [SX], "PDT 97\nCLEAR SX", "pistola"], [149.2, [DX], "PDT 98\nCLEAR DX", "pistola"], [145.4, [SX, DX], "PDT 99\nCLEAR", "pistola"],
+    [121.0, [SX, DX], "PDT 102\nCONTROL CLEAR", "linterna"]]) {
+    for (const y of lados) operario(L9, x, y, Z9, herr);
+    cartel(G[9], txt, x, lados.length > 1 ? 46.0 : lados[0] < 46 ? 43.4 : 48.6, Z9 + 3.25, 1.5, 0.6, "+x", "#ffffff", "#d6336c", true);
+  }
   for (let x = 31.0, k = 0; x < 88.5; x += 3.0, k++) if (k % 4 === 1) for (const y of [15.4, 24.4]) operario(L9, x, y, Z9 + 0.32, "linterna");   // revisión final
   operario(L9, 21.6, 64.1, Z9); operario(L9, 225.7, 64.8, Z9); operario(L9, 221.0, 72.4, Z9, "lija");                   // estación I, delibera, box revisión
 
