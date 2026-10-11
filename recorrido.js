@@ -109,9 +109,10 @@ window.Recorrido = function (api) {
   const T_HESM = [[105.41, 47.74, 0.45, 9], [9.25, 47.74, 0.45, 9], [7.31, 47.74, 0.45, 9], [7.31, 44.24, 0.45, 9]];
   const T_REVFIN = [[12.81, 44.24, 0.45, 9], [12.81, 29.22, 0.45, 9], [18.32, 29.22, 0.45, 9], [18.32, 22.71, 0.45, 9], [23.83, 22.71, 0.45, 9], [106.66, 22.71, 0.45, 9], [106.66, 17.21, 0.45, 9], [128.3, 17.21, 0.45, 9], [128.3, 15.5, 0.45, 9]];
   const T_BAJAFIN = [[128.3, 15.5, 0.48, 0], [128.33, 8.91, 0.48, 0]];
-  const T_BAJADEF = [[128.3, 15.5, 0.48, 0], [128.33, 13.2, 0.48, 0]];
-  const T_MULABOX = [[134.0, 13.2, 0.9, 0], [134.0, 20.5, 0.9, 0], [160.0, 20.5, 0.9, 0]];
-  const T_VUELVE = [[142.0, 20.5, 0.9, 0], [142.0, 9.4, 0.9, 0], [142.0, 8.91, 0.48, 0]];
+  // (11/10) con defectos: del elevador sale por los rodillos de y 14,5 (x 130,2–137,3) y se carga en la mula, que la espera en x 143
+  const T_BAJADEF = [[128.3, 15.5, 0.48, 0], [128.3, 14.5, 0.48, 0], [137.3, 14.5, 0.48, 0], [143.0, 15.2, 0.9, 0]];
+  const T_MULABOX = [[143.1, 15.2, 0.9, 0], [158.0, 15.2, 0.9, 0]];   // por el pasillo interior del box (y 15,2)
+  const T_VUELVE = [[143.0, 15.2, 0.9, 0], [137.3, 14.5, 0.48, 0], [128.3, 14.5, 0.48, 0], [128.33, 8.91, 0.48, 0]];
   const T_OLEO = [[185.48, 8.91, 0.48, 0]];
   const T_L32 = [[188.6, 8.9, 0.48, 0], [188.6, 8.9, 0.45, 3.2], [188.6, 11.4, 0.45, 3.2], [250.7, 11.4, 0.45, 3.2], [252.5, 9.4, 0.45, 3.2], [256.2, 9.4, 0.45, 3.2]];
   const T_TUNEL = [[256.2, 8.9, 0.45, 3.2], [256.2, 8.9, 1.25, 9], [262.0, 8.9, 1.25, 9], [300.0, 8.9, 1.25, 9]];   // colgado: la carrocería va 1,25 m sobre el piso
@@ -347,9 +348,9 @@ window.Recorrido = function (api) {
     a({ cota: 9, tit: "Revisión final", pts: T_REVFIN, txt: "Mesas giratorias la llevan a la <b>revisión final</b>: inspectores revisan la pintura bajo luz fuerte. Acá se decide si está bien o si tiene algún defecto para retocar.", dato: "Revisión final esmalte · collaudo delibera · 28 lugares" });
     if (!D) a({ cota: 0, tit: "Baja a la cota 0", pts: T_BAJAFIN, txt: "El elevador CPU11 GR08 la baja a planta baja. Como está bien, sigue directo por rodillos de fricción hacia Óleo.", dato: "CPU11 GR08 · elevador" });
     else {
-      a({ cota: 0, tit: "Baja a la cota 0", pts: T_BAJADEF, txt: "El elevador CPU11 GR08 la baja a planta baja. Como tiene defectos, no sigue por la línea.", dato: "CPU11 GR08 · elevador" });
+      a({ cota: 0, tit: "Baja a la cota 0", pts: T_BAJADEF, txt: "El elevador CPU11 GR08 la baja a planta baja. Como tiene defectos, no sigue por la línea: sale por los rodillos que van hacia el box y ahí la carga la mula.", dato: "CPU11 GR08 · elevador · rodillos de salida al box: a confirmar" });
       a({ cota: 0, tit: "La mula la lleva al box de retoques", pts: T_MULABOX, mula: true, txt: "Una <b>mula</b> (tractor eléctrico chico) la saca de la línea y la lleva al <b>box de retoques</b>, que está justo atrás de Óleo. Ahí se corrige el defecto a mano. Si el box está lleno, la deja en el acumulo para box.", dato: "Box de retoques · estación R" });
-      a({ cota: 0, tit: "Reparada, vuelve a la línea", pts: T_VUELVE, mula: true, txt: "Una vez retocada, la mula la vuelve a cargar en la línea (transporte \"fuera de línea\") para seguir hacia Óleo.", dato: "CPU12 transporte fuera de línea · mesa GR2 · camino a confirmar" });
+      a({ cota: 0, tit: "Reparada, vuelve a la línea", pts: T_VUELVE, mula: true, bajaDeMula: true, txt: "Una vez retocada, la mula la trae de vuelta hasta los rodillos (transporte \"fuera de línea\"), que la devuelven a la línea para seguir hacia Óleo.", dato: "CPU12 transporte fuera de línea · mesa GR2 · camino a confirmar" });
     }
     a({ cota: 0, tit: "Óleo", pts: T_OLEO, txt: "En Óleo se le sacan los <b>distanciales</b> (los separadores que la sostienen sobre el skid) y una máquina le rola el friso del techo. Justo atrás está el box de retoques.", dato: "Línea extracción distanciales · estación C · 16 lugares" });
     if (!K) {
@@ -430,8 +431,9 @@ window.Recorrido = function (api) {
     const cargado = T === "carroceria" || p.carga === true || (p.carga === "fin" && fr > 0.75) || (p.carga === "inicio" && fr < 0.35);
     cuerpo.visible = cargado; vid.visible = cargado && cuerpo.geometry === G_SEDAN;
     mCuerpo.color.set(tourPt.e === "pint" ? (tourEstado.modelo === "kp1" || T === "pobre" ? "#eef1f4" : "#c21f37") : EST[tourPt.e] || EST.chapa);
-    mulaT.visible = !!p.mula;
-    cuerpo.position.y = p.mula ? 0.25 : 0; cSkid.visible = (!p.mula || i < PASOS.length - 1) && !tourPt.percha;
+    const enMula = !!p.mula && !(p.bajaDeMula && tourPt.z < 0.85);   // bajaDeMula: al final del paso pasa de la mula a los rodillos
+    mulaT.visible = enMula;
+    cuerpo.position.y = enMula ? 0.25 : 0; cSkid.visible = (!enMula || i < PASOS.length - 1) && !tourPt.percha;
     // pareja KP1: aparece cuando la cabina llega a la mitad del buffer; después va 5,5 m detrás (en la mula, sobre el carro)
     const iBuf = PASOS.findIndex(x => x.tit.startsWith("Buffer KP1"));
     const verPar = T === "carroceria" && tourEstado.modelo === "kp1" && iBuf >= 0 && (i > iBuf || (i === iBuf && tourEstado.s > PASOS[iBuf].s1 - 0.6));

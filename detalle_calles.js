@@ -1136,7 +1136,10 @@ window.DetalleCalles = function (api) {
   for (const x of [100.5, 102.5, 104.5]) { bloque("#f2c94c", x, 4.0, 1.2, 0.08, 0.9, 1.0); for (const dx of [-0.5, 0.5]) diag("#f2c94c", x + dx, 3.7, 0, x + dx, 4.3, 0.9, 0.06); }
   // TRP-17 (y 17,4, x 100–130): rodillos rojos con Cronos; TRP-19/20/18: elevador en jaula amarilla (pt 83.4)
   rodillosRojos(100.3, 125.5, 17.4, 0.45);
-  for (const [a, b, y, enX] of [[125.2, 132.6, 11.2, true], [125.2, 132.6, 19.6, true], [11.2, 19.6, 125.2, false], [11.2, 19.6, 132.6, false]]) cercoMalla(a, b, y, enX, "#e3a800", 2.6);
+  // (11/10) la jaula se abre donde la cruzan los transportadores: transferencia hacia Óleo (sur, x 126,4–130,2), rodillos TRP-17
+  // (oeste, y 17,4) y rodillos de salida hacia el box (este, y 14,5; el plano trae ese hueco en las vallas: y 13,7–15,3)
+  for (const [a, b, y, enX] of [[125.2, 126.3, 11.2, true], [130.3, 132.6, 11.2, true], [125.2, 132.6, 19.6, true], [11.2, 16.6, 125.2, false], [18.2, 19.6, 125.2, false],
+    [11.2, 13.6, 132.6, false], [15.4, 19.6, 132.6, false]]) cercoMalla(a, b, y, enX, "#e3a800", 2.6);
   transferencia(126.4, 130.2, 6.8, 19.4, [12.3, 14.5, 17.4]);
   rodillosRojos(130.2, 137.3, 14.5, 0.45);
   cartel("PRECAUCIÓN\nINGRESO A ZONA TÉCNICA\nVERIFICAR AUSENCIA DE\nENERGÍAS PELIGROSAS", 132.65, 16.0, 1.4, 1.0, 0.9, "+x", "#f2c94c", "#111111");
@@ -1170,11 +1173,11 @@ window.DetalleCalles = function (api) {
   for (let y = 23.2; y < 25.3; y += 0.55) bloque("#e9c23a", 147.4, y, 0.5, 0.52, 0, 1.9);
   bloque("#f4f6f8", 147.5, 17.6, 0.35, 0.35, 0, 1.05); cil("#3b8fd8", 147.5, 17.6, 1.05, 0.45, 0.14);
   for (let k = 0; k < 6; k++) cil("#3b8fd8", 146.4 + (k % 3) * 0.32, 17.2 + Math.floor(k / 3) * 0.32, 0, 0.45, 0.14);
-  bloque("#ffffff", 143.5, 16.0, 1.6, 1.0, 0.85, 0.9); for (const dx of [-0.7, 0.7]) bloque("#e0e3e6", 143.5 + dx, 16.0, 0.05, 0.9, 0, 0.85);
-  bloque("#eef1f4", 143.5, 16.0, 1.5, 0.9, 0.9, 1.05);   // capó apoyado
+  bloque("#ffffff", 143.5, 18.3, 1.6, 1.0, 0.85, 0.9); for (const dx of [-0.7, 0.7]) bloque("#e0e3e6", 143.5 + dx, 18.3, 0.05, 0.9, 0, 0.85);
+  bloque("#eef1f4", 143.5, 18.3, 1.5, 0.9, 0.9, 1.05);   // capó apoyado
   // pasillo interior del recinto (y 12,9–19,2) con carros y operario (pt 67.3)
-  for (const x of [152, 158]) { bloque("#e3b420", x, 16.0, 1.0, 0.6, 0.2, 1.0); for (const dx of [-0.4, 0.4]) cil("#2b2f33", x + dx, 16.0, 0, 0.2, 0.08); }
-  persona(164, 15.6, 0, false);
+  for (const x of [152, 158]) { bloque("#e3b420", x, 18.2, 1.0, 0.6, 0.2, 1.0); for (const dx of [-0.4, 0.4]) cil("#2b2f33", x + dx, 18.2, 0, 0.2, 0.08); }
+  persona(164, 18.0, 0, false);
   // zona delimitada del plano (verde, x 139–184 · y 4,8–32): borde verde/amarillo en el piso
   for (const [a, b, c, d] of [[139.3, 4.9, 184.4, 5.05], [139.3, 31.9, 184.4, 32.05], [139.3, 4.9, 139.45, 32.05], [184.25, 4.9, 184.4, 32.05]]) pinta("#2e9d6a", a, b, c, d, 0.05);
 
@@ -1215,7 +1218,9 @@ window.DetalleCalles = function (api) {
   // SALÓN DE ACOPIO de W sur (plano: recinto x 191,5–252 · y 13,3–37,2; pared alta a lo largo de y 37,3 desde x 100)
   galvanizado(100, 252, 37.3, true, 7.5, -1); galvanizado(100, 252, 37.3, true, 7.5, +1);
   // (la línea de salida entra y sale del acopio por las esquinas sur: las chapas arrancan en y 15,6 · paso a confirmar)
-  galvanizado(15.6, 32.0, 191.5, false, 7.5, +1); galvanizado(36.0, 37.2, 191.5, false, 7.5, +1);
+  // (Julian 11/10: la mula atravesaba la chapa) abertura de y 26,6 a 36 donde cruza el pasillo gris; se une con la puerta del plano (y 32–36)
+  galvanizado(15.6, 26.6, 191.5, false, 7.5, +1); galvanizado(36.0, 37.2, 191.5, false, 7.5, +1);
+  for (const y of [26.45, 36.15]) { bloque("#f2c94c", 191.5, y, 0.3, 0.3, 0, 1.2); for (let z = 0.15; z < 1.2; z += 0.3) bloque("#1f2328", 191.5, y, 0.32, 0.32, z, z + 0.12); }
   galvanizado(15.6, 37.2, 252.0, false, 7.5, -1);
   // (Julian 10/10: el lado y 13,3, entre el buffer y el acopio, va abierto: sin chapa ni baranda)
   for (const [x, txt, fondo] of [[194, "CARROCERÍAS\nDELIBERADAS\nUTE 3", "#2f7fd1"], [214, "CARROCERÍAS\nLISTAS PARA MACRO", "#2f7fd1"],
@@ -1827,8 +1832,10 @@ window.DetalleCalles = function (api) {
   flujoCinta([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], DOM.acumulo, 4.2, 0.7);
   // MULA (Julian 10/10): carrocería con defectos al bajar de revisión final → la mula la lleva al Box de retoques;
   // si el box está lleno, la deja en el acumulo del depósito (carteles "Luego de macro para reparar", fotos W sur)
-  const RUTA_BOX = [[128.3, 13.2], [134, 13.2], [134, 20.5], [160, 20.5]];
-  const RUTA_ACUM = [[160, 20.5], [186, 20.5], [186, 28.5], [212, 28.5]];
+  // (11/10) por el pasillo interior del recinto del box (y 15,2: aberturas del plano en x 148 y x 175,5, y 13,8–16,5) y al acopio
+  // por el pasillo gris (y 29) hasta antes del autoelevador del acumulo: ya no atraviesa paredes ni el frente de los boxes
+  const RUTA_BOX = [[128.3, 14.5], [137.3, 14.5], [143.5, 15.2], [158, 15.2]];   // sale del elevador por los rodillos (y 14,5) y la carga la mula
+  const RUTA_ACUM = [[158, 15.2], [184.5, 15.2], [184.5, 29.0], [197, 29.0]];   // dobla antes de la mesa de transferencia (x 186,3)
   flujoCinta(RUTA_BOX, DOM.reparacion, 4.35, 0.5);
   flujoCinta(RUTA_ACUM, DOM.reparacion, 4.35, 0.35);
   etiqueta(140, 22.5, 4.8, "MULA → BOX DE RETOQUES", "carrocerías con defectos al bajar de revisión final", DOM.reparacion, 2);
@@ -1836,28 +1843,40 @@ window.DetalleCalles = function (api) {
   etiqueta(133.0, 90.5, 9.8, "COTA 5,4 · CAMBIO DE SKID (arriba)", "en el medio de la banda: deep skid → paint skid · el deep skid vuelve vacío por +3,2", DOM.sellado, 2);
   {
     // mula (tractor eléctrico verde) + carro con una carrocería, va y vuelve por la ruta box → acumulo
-    const mula = new THREE.Group();
-    const caja3 = (c, lx, ly, lz, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(lx, lz, ly), new THREE.MeshLambertMaterial({ color: c })); m.position.set(x, z + lz / 2, -y); m.castShadow = true; mula.add(m); };
-    caja3(0x2ea84f, 1.6, 1.0, 0.9, 0, 0, 0.15);   caja3(0x1d2a33, 0.7, 0.9, 0.7, -0.3, 0, 1.05);   // tractor + asiento/cabina
-    caja3(0xf2c94c, 4.8, 1.8, 0.12, -3.6, 0, 0.45);                                                    // plataforma del carro
-    caja3(0xb8ad8f, 4.2, 1.7, 0.75, -3.6, 0, 0.6); caja3(0xb8ad8f, 2.0, 1.55, 0.5, -3.8, 0, 1.35);    // carrocería con defecto
-    caja3(0xc0392b, 0.3, 0.3, 0.3, -1.6, 0.9, 1.9);                                                    // marca roja de "a reparar"
-    procesos.add(mula);
-    const ruta = RUTA_BOX.concat(RUTA_ACUM.slice(1));
+    // (11/10) tractor y carro van por separado y cada uno se apoya sobre la ruta (cuerda entre su frente y su cola):
+    // en las curvas el carro sigue al tractor en vez de barrer de costado lo que hay al lado del camino
+    const tractor = new THREE.Group(), carro = new THREE.Group();
+    const caja3 = (g, c, lx, ly, lz, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(lx, lz, ly), new THREE.MeshLambertMaterial({ color: c })); m.position.set(x, z + lz / 2, -y); m.castShadow = true; g.add(m); };
+    caja3(tractor, 0x2ea84f, 1.6, 1.0, 0.9, 0, 0, 0.15);   caja3(tractor, 0x1d2a33, 0.7, 0.9, 0.7, -0.3, 0, 1.05);   // tractor + asiento/cabina
+    caja3(carro, 0xf2c94c, 4.8, 1.8, 0.12, 0, 0, 0.45);                                                          // plataforma del carro
+    caja3(carro, 0xb8ad8f, 4.2, 1.7, 0.75, 0, 0, 0.6); caja3(carro, 0xb8ad8f, 2.0, 1.55, 0.5, -0.2, 0, 1.35);    // carrocería con defecto
+    caja3(carro, 0xc0392b, 0.3, 0.3, 0.3, 2.0, 0.9, 1.9);                                                        // marca roja de "a reparar"
+    procesos.add(tractor, carro);
+    // espera al final de los rodillos que salen del elevador CPU11 GR08 (terminan en x 137,3): el carro queda de x 137,5 a 142,3
+    const ruta = [[143.5, 15.2], ...RUTA_ACUM];
     const tramos = []; let L = 0;
     for (let i = 1; i < ruta.length; i++) { const [a, b] = [ruta[i - 1], ruta[i]], l = Math.hypot(b[0] - a[0], b[1] - a[1]); tramos.push({ a, b, l, s0: L }); L += l; }
-    let s = 0, sentido = 1;
+    const punto = (u) => {   // punto de la ruta a la distancia u (fuera de los extremos sigue derecho por el primer / último tramo)
+      const t = u <= 0 ? tramos[0] : u >= L ? tramos[tramos.length - 1] : tramos.find(tr => u <= tr.s0 + tr.l);
+      const f = (u - t.s0) / t.l;
+      return [t.a[0] + (t.b[0] - t.a[0]) * f, t.a[1] + (t.b[1] - t.a[1]) * f];
+    };
+    const apoyar = (g, uFrente, uCola) => {
+      const [x1, y1] = punto(uFrente), [x0, y0] = punto(uCola);
+      g.position.copy(W((x0 + x1) / 2, (y0 + y1) / 2, 0));
+      g.rotation.y = Math.atan2(-(y1 - y0), x1 - x0);
+    };
+    let s = 0, sentido = 1, pausa = 0;
     const ubicarMula = () => {
-      const t = tramos.find(tr => s >= tr.s0 && s <= tr.s0 + tr.l) || tramos[tramos.length - 1];
-      const f = (s - t.s0) / t.l, x = t.a[0] + (t.b[0] - t.a[0]) * f, y = t.a[1] + (t.b[1] - t.a[1]) * f;
-      mula.position.copy(W(x, y, 0));
-      mula.rotation.y = Math.atan2(-(t.b[1] - t.a[1]) * sentido, (t.b[0] - t.a[0]) * sentido);
+      apoyar(tractor, s + 0.8 * sentido, s - 0.8 * sentido);
+      apoyar(carro, s - 1.2 * sentido, s - 6.0 * sentido);   // lanza de 0,4 m entre tractor y carro
     };
     ubicarMula();
     if (animar) animar.push((dt) => {
       if (!procesos.visible) return;
+      if (pausa > 0) { pausa -= dt; return; }   // carga / descarga en cada punta
       s += 3.0 * dt * sentido;   // ≈ 11 km/h (ilustrativo)
-      if (s > L) { s = L; sentido = -1; } else if (s < 0) { s = 0; sentido = 1; }
+      if (s > L) { s = L; sentido = -1; pausa = 2; } else if (s < 0) { s = 0; sentido = 1; pausa = 2; }
       ubicarMula();
     });
   }
