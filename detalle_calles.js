@@ -1221,7 +1221,7 @@ window.DetalleCalles = function (api) {
   // (Julian 11/10: la mula atravesaba la chapa) abertura de y 26,6 a 36 donde cruza el pasillo gris; se une con la puerta del plano (y 32–36)
   galvanizado(15.6, 26.6, 191.5, false, 7.5, +1); galvanizado(36.0, 37.2, 191.5, false, 7.5, +1);
   for (const y of [26.45, 36.15]) { bloque("#f2c94c", 191.5, y, 0.3, 0.3, 0, 1.2); for (let z = 0.15; z < 1.2; z += 0.3) bloque("#1f2328", 191.5, y, 0.32, 0.32, z, z + 0.12); }
-  galvanizado(15.6, 37.2, 252.0, false, 7.5, -1);
+  // (Julian 11/10: la chapa del lado este, x 252, entre el depósito y difusión, "no va, no está": el depósito queda abierto hacia difusión)
   // (Julian 10/10: el lado y 13,3, entre el buffer y el acopio, va abierto: sin chapa ni baranda)
   for (const [x, txt, fondo] of [[194, "CARROCERÍAS\nDELIBERADAS\nUTE 3", "#2f7fd1"], [214, "CARROCERÍAS\nLISTAS PARA MACRO", "#2f7fd1"],
     [228, "CARROCERÍAS LUEGO\nDE MACRO PARA REPARAR", "#e23a77"], [240, "CARROCERÍAS\nLISTAS PARA MONTAJE", "#7cc242"]])
