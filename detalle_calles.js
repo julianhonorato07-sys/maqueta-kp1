@@ -1327,11 +1327,14 @@ window.DetalleCalles = function (api) {
   pinta("#ffffff", 262.45, 1.0, 262.55, 103.0, 0.045);
   pinta("#f2c94c", 262.6, 1.0, 263.6, 103.0, 0.04); pinta("#2e9d6a", 262.65, 1.0, 263.55, 103.0, 0.05);
   // baranda amarilla entre senda y calle, con topes amarillo/negro (pts 85.1, 85.3, 86.3)
-  for (let y = 1.0; y <= 103; y += 2) caja("#f2c94c", 262.5, y, 262.56, y + 0.06, 0, 1.1);
-  caja("#f2c94c", 262.5, 1.0, 262.56, 103, 1.04, 1.1); caja("#f2c94c", 262.5, 1.0, 262.56, 103, 0.55, 0.6);
+  // (11/10) frente al portón P (y 28,9–32,9) la baranda se corta: por ahí sale el carrito de difusión; cebra del plano 303 (B01)
+  for (let y = 1.0; y <= 103; y += 2) if (y < 28.6 || y > 33.1) caja("#f2c94c", 262.5, y, 262.56, y + 0.06, 0, 1.1);
+  for (let y = 29.0; y < 32.8; y += 0.5) pinta("#ffffff", 262.86, y, 263.66, y + 0.25, 0.06);
+  for (const [a, b] of [[1.0, 28.6], [33.1, 103]]) { caja("#f2c94c", 262.5, a, 262.56, b, 1.04, 1.1); caja("#f2c94c", 262.5, a, 262.56, b, 0.55, 0.6); }
   for (let y = 4; y < 103; y += 6) for (let z = 0, k = 0; z < 0.4; z += 0.1, k++) caja(k % 2 ? "#1f2328" : "#f2c94c", 262.45, y, 262.61, y + 0.4, z, z + 0.1);
   // pared de fachada (cara interior x ≈ 264,4): zócalo azul alto, franja blanca, caños rojos de incendio arriba
-  caja("#5b7fb3", 264.84, 1.0, 264.88, 103, 0, 2.6); caja("#f3f5f7", 264.84, 1.0, 264.88, 103, 2.6, 4.8);
+  for (const [a, b] of [[1.0, 28.88], [32.87, 103]]) { caja("#5b7fb3", 264.84, a, 264.88, b, 0, 2.6); caja("#f3f5f7", 264.84, a, 264.88, b, 2.6, 4.8); }
+  caja("#f3f5f7", 264.84, 28.88, 264.88, 32.87, 3.2, 4.8);   // arriba del portón P
   for (const z of [5.2, 5.6]) cil("#c0392b", 264.6, 52.0, z, 102, 0.12, "y");
   for (let y = 3; y < 103; y += 6) caja("#7d858d", 264.45, y, 264.84, y + 0.06, 5.0, 5.8);
   // columnas del eje 23 con código (C23, B23…), aerotermo, espejo convexo y forro amarillo
@@ -1354,12 +1357,14 @@ window.DetalleCalles = function (api) {
   caja("#c0392b", 264.73, 56.2, 264.75, 58.2, 1.0, 1.05);
   bloque("#cfd3d7", 264.7, 59.2, 0.3, 0.7, 1.0, 1.9);
   // tablero de gestión (LPP) con fotos en la pared (pt 85.3) y cuadro eléctrico en columna (pt 85.4)
-  caja("#ffffff", 264.8, 30.0, 264.86, 32.4, 1.0, 2.6); for (let k = 0; k < 8; k++) caja("#8a1f2b", 264.78, 30.2 + (k % 4) * 0.55, 264.79, 30.5 + (k % 4) * 0.55, 1.3 + Math.floor(k / 4) * 0.7, 1.7 + Math.floor(k / 4) * 0.7);
+  // (11/10: en y 28,9–32,9 está el portón P de salida de KP1: el tablero va al lado, ubicación supuesta)
+  caja("#ffffff", 264.8, 34.0, 264.86, 36.4, 1.0, 2.6); for (let k = 0; k < 8; k++) caja("#8a1f2b", 264.78, 34.2 + (k % 4) * 0.55, 264.79, 34.5 + (k % 4) * 0.55, 1.3 + Math.floor(k / 4) * 0.7, 1.7 + Math.floor(k / 4) * 0.7);
   bloque("#d5d9dd", 263.5, 52.6, 0.25, 0.6, 1.6, 2.4);
   // tractores eléctricos verdes 900/901, carros azules y contenedor naranja "KP1 03" (pt 85.1); autoelevadores y cajones (pts 85.3, 86.3)
   tractor(260.8, 36.0, 901); tractor(260.8, 39.5, 900);
-  carro(260.8, 32.6, "#2f5fb8", 1.2); carro(260.8, 30.0, "#2f5fb8", 1.2);
-  bloque("#e8611c", 260.8, 27.0, 2.6, 1.4, 0.3, 2.3); cartel("KP1 03", 260.8, 26.29, 1.9, 0.9, 0.35, "-y", "#e8611c", "#ffffff");
+  // (11/10: corridos al norte para dejar libre el paso del carrito de difusión hacia el portón P; posiciones supuestas)
+  carro(260.8, 41.6, "#2f5fb8", 1.2); carro(260.8, 43.2, "#2f5fb8", 1.2);
+  bloque("#e8611c", 260.8, 34.2, 2.6, 1.4, 0.3, 2.3); cartel("KP1 03", 260.8, 33.49, 1.9, 0.9, 0.35, "-y", "#e8611c", "#ffffff");
   autoelevadorFijo(260.6, 16.0); autoelevadorFijo(260.6, 12.0);
   for (const y of [6, 8.2]) { bloque("#c8a774", 260.6, y, 1.6, 2.0, 0, 0.14); bloque("#d4b483", 260.6, y, 1.5, 1.9, 0.14, 0.9, { clave: "film", transparente: 0.85 }); for (let k = 0; k < 3; k++) bloque("#a07a48", 260.6, y - 0.8 + k * 0.8, 1.55, 0.1, 0.14, 0.9); }
   persona(261.0, 48.0, 0, true);
@@ -1564,12 +1569,12 @@ window.DetalleCalles = function (api) {
     { r: recorrido([[92.8, 30.9], [7.2, 30.9], [7.2, 22.9], [92.8, 22.9], [92.8, 30.9]], 0.48), n: 22, v: 0.7, abierta: false, tipos: ["sedan", "cabina", "caja"], colores: PINTADO },
     // TRP-22 (Óleo) → BUFFER KP1 (actualización del layout KP1, Julian 10/10): cabinas y cajas avanzan hasta la mitad del
     // buffer y se anclan con su pareja (mismo color); la mesa transferidora de la entrada las pasa a la LÍNEA DE SALIDA (y 14,9),
-    // que corre junto al buffer, dobla hacia +y y llega a la zona de difusión (x ≈ 252–262, y ≈ 30,5). Ahí la mula las carga.
+    // que corre junto al buffer y termina en difusión (última mesa x 239,3–245, DWG de Julian 11/10): ahí pasan a la mesa elevadora.
     // El CRONOS ya no pasa por el buffer: sube a +3,2 m a la salida de Óleo (lo animan cotas.js / recorrido.js).
     { r: recorrido([[121, 8.9], [186.5, 8.9], [188.6, 8.5], [221.5, 8.5]], 0.48), n: 12, v: 0.6, abierta: true, tipos: ["cabina", "caja"], colores: PINTADO },
     { r: recorrido([[188.6, 6.0], [221.5, 6.0]], 0.48), n: 6, v: 0.04, abierta: true, tipos: ["cabina", "caja"], colores: PINTADO },
     { r: recorrido([[188.6, 11.4], [221.5, 11.4]], 0.48), n: 6, v: 0.04, abierta: true, tipos: ["caja", "cabina"], colores: PINTADO },
-    { r: recorrido([[188.6, 14.9], [253.0, 14.9], [253.0, 30.5], [257.5, 30.5]], 0.48), n: 10, v: 0.45, abierta: true, salida: "kp1", tipos: ["cabina", "caja"], colores: PINTADO },
+    { r: recorrido([[188.6, 14.9], [242.15, 14.9]], 0.48), n: 9, v: 0.45, abierta: true, salida: "kp1", tipos: ["cabina", "caja"], colores: PINTADO },
     // TRP-17 (entrada a macro, y 17,4)
     { r: recorrido([[100.3, 17.4], [125.5, 17.4]], 0.48), n: 4, v: 0.5, abierta: true, tipos: ["sedan"], colores: PINTADO },
     // TRP-11 / 10 / 12 dentro de las máquinas sin nombre (túneles)
@@ -1753,7 +1758,7 @@ window.DetalleCalles = function (api) {
   zonaDominio(DOM.oleo, 121, 4.0, 186, 13.0);
   zonaDominio(DOM.reparacion, 139.3, 13.0, 184.4, 26.0); zonaDominio(DOM.reparacion, 97.1, 1.1, 121, 19.0);
   zonaDominio(DOM.difusion, 186, 3.8, 264.5, 13.3);
-  zonaDominio(DOM.deposito, 191.5, 13.3, 252, 37.2);
+  zonaDominio(DOM.deposito, 191.5, 13.3, 238.5, 37.2); zonaDominio(DOM.deposito, 238.5, 27.7, 252, 37.2);
   zonaDominio(DOM.acumulo, 3.8, 12.9, 96, 32.9); zonaDominio(DOM.acumulo, 2, 36.2, 62, 42.7); zonaDominio(DOM.acumulo, 2, 45.7, 62, 61.8);
   zonaDominio(DOM.servicio, 71.5, 42.9, 86.4, 51.0); zonaDominio(DOM.servicio, 225.3, 43.3, 233.3, 49.0);
 
@@ -1782,8 +1787,10 @@ window.DetalleCalles = function (api) {
   etiqueta(162, 21, 5.5, "REPARACIÓN · ESTACIÓN R", "Box de retoques, atrás de Óleo = \"cabinas de trabajo\" (plano 2020) · CPU12 fuera de línea", DOM.reparacion);
   etiqueta(220, 8.5, 7.0, "BUFFER KP1 · ESTACIÓN D", "cabinas y cajas sueltas avanzan hasta la mitad del buffer y se anclan de a pares (mismo color) · salen por la línea de salida · el Cronos pasa por arriba a +3,2 m", DOM.difusion);
   etiqueta(221, 14.9, 5.2, "LÍNEA DE SALIDA KP1", "la mesa transferidora corre la pieza del buffer a esta línea, que lleva cabina y caja a difusión", DOM.difusion, 2);
-  etiqueta(257, 30.5, 5.6, "DIFUSIÓN · LA MULA CARGA", "primero la cabina, después la caja (mismo color) · sale por la abertura de la fachada hacia PS2 (a confirmar)", DOM.difusion);
-  etiqueta(266, 31, 4.6, "KP1 → MONTAJE KP1", "mula con carro (actualización del layout KP1)", DOM.difusion, 2);
+  etiqueta(242.2, 20.5, 4.8, "DIFUSIÓN · MESA ELEVADORA Y MULA", "la última mesa pasa la cabina o la caja a la mesa de la izquierda, que la levanta · una mula se mete debajo y la lleva al carrito · primero la cabina, después la caja (mismo color)", DOM.difusion);
+  etiqueta(251.6, 22.5, 4.0, "CARRITO A MONTAJE KP1", "con cabina y caja sale por el portón P de la fachada · forma del carrito: a confirmar (foto pendiente)", DOM.difusion, 2);
+  etiqueta(248.5, 16.8, 3.6, "OFICINAS DE LOGÍSTICA", "DWG actualizado por Julian (oct. 2026) · alto supuesto", "#5d6d7e", 2);
+  etiqueta(268, 30.9, 4.6, "KP1 → MONTAJE KP1", "el carrito sale por el portón P (PORTON-4 del plano, y 28,9–32,9) hacia PS2", DOM.difusion, 2);
   etiqueta(258, 11.6, 11.0, "CRONOS → TÚNEL A MONTAJE", "sube a +3,2 m después de Óleo, pasa sobre el buffer y el elevador Montaje lo sube al túnel", "#5d6d7e");
   etiqueta(214, 31, 6.0, "DEPÓSITO DE AUTOS", "plano 2020 · acopio de carrocerías y cajas (deliberadas, macro, montaje)", DOM.deposito);
   etiqueta(50, 23, 5.0, "ACUMULO · CALESITA", "zona C · 160 skids (cap. geométrica)", DOM.acumulo);
@@ -1822,7 +1829,9 @@ window.DetalleCalles = function (api) {
   flujoCinta([[128.3, 15.5], [128.3, 8.9], [186.5, 8.9]], DOM.oleo);
   flujoCinta([[186.5, 8.9], [188.6, 8.5], [221.5, 8.5]], DOM.difusion);                                            // KP1 al buffer (hasta la mitad)
   flujoCinta([[188.6, 8.5], [188.6, 6.0], [221.5, 6.0]], DOM.difusion, 4.62, 0.6);                                 // carril 1 del buffer
-  flujoCinta([[188.6, 14.9], [253.0, 14.9], [253.0, 30.5], [264.5, 31.0], [280, 31.0]], DOM.difusion, 4.62, 0.9);  // línea de salida → difusión → Montaje KP1
+  flujoCinta([[188.6, 14.9], [242.15, 14.9]], DOM.difusion, 4.62, 0.9);                                         // línea de salida → difusión
+  flujoCinta([[242.15, 15.2], [242.15, 16.4], [242.13, 24.55], [248.7, 24.55], [250.4, 23.0]], DOM.difusion, 4.5, 0.6);   // mula (recorrido rojo del DWG)
+  flujoCinta([[251.61, 21.95], [251.61, 18.9], [256.33, 19.46], [257.21, 20.16], [257.68, 24.41], [257.68, 29.79], [262.3, 30.9], [280, 30.9]], DOM.difusion, 4.62, 0.9);   // carrito → portón P → Montaje KP1
   flujoCinta([[188.6, 8.5], [188.6, 11.4], [250.7, 11.4], [253.5, 9.4], [256.2, 9.4]], "#5d6d7e", 4.64, 0.6);      // Cronos carril 3 → elevador
   flujoCinta([[256.2, 8.9], [262, 8.9], [300, 8.9]], "#5d6d7e", 15.6, 0.9);                                         // Cronos por el túnel
   // Fuera de línea (CPU12): Óleo → Box de retoques (R) → vuelve a la línea; Macro (TRP-17) → elevador
@@ -1880,6 +1889,86 @@ window.DetalleCalles = function (api) {
       ubicarMula();
     });
   }
+  // DIFUSIÓN KP1 (Julian 11/10: DWG 303-N00 _ACTUALIZADO-2026-10 editado por él + foto de la mesa). La cabina o la caja llega a la
+  // última mesa de la línea de salida (x 239,3–245 · y 14,9) y pasa a la MESA DE LA IZQUIERDA (y 15,9–16,9), que la levanta.
+  // Una MULA BAJA se mete debajo, la toma y por el recorrido rojo (x 242,1 → y 24,55 → x 249) la lleva al CARRITO (rectángulo
+  // azul); vuelve y hace lo mismo con la caja. Con las dos cargadas, el carrito sale por el recorrido azul y el PORTÓN P (y 28,9–32,9).
+  // El carrito se corrió 1,8 m al sur del dibujo (y 18,45–25,45) para no pisar la columna del eje D (x 252 · y 26).
+  // Tiempos, forma de la mula y del carrito y mecanismo de la mesa: ILUSTRATIVOS (a confirmar; foto del carrito pendiente).
+  {
+    const XL = 242.15, YL = 14.9, YM = 16.7;                                      // final de la línea · pieza en la mesa elevadora
+    const RUTA_M = [[242.13, 17.74], [242.13, 24.55], [248.7, 24.55]];             // centro de la mula (la pieza va 1,04 m atrás)
+    const SLOT = [[251.61, 20.2], [251.61, 23.6]];                                // en el carrito: cabina adelante (sur) y caja atrás
+    const RUTA_C = [[251.61, 25.45], [251.61, 18.45], [256.33, 19.46], [257.21, 20.16], [257.68, 24.41], [257.68, 29.79], [262.3, 30.9], [280, 30.9]];
+    const LC = 7.0, CYC = 76;
+    const camino = (pts) => {
+      const tr = []; let L = 0;
+      for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], b = pts[i], l = Math.hypot(b[0] - a[0], b[1] - a[1]); tr.push({ a, b, l, s0: L }); L += l; }
+      const punto = (u) => { const t = u <= 0 ? tr[0] : u >= L ? tr[tr.length - 1] : tr.find(q => u <= q.s0 + q.l); const f = (u - t.s0) / t.l; return [t.a[0] + (t.b[0] - t.a[0]) * f, t.a[1] + (t.b[1] - t.a[1]) * f]; };
+      return { L, punto };
+    };
+    const CM = camino(RUTA_M), CC = camino(RUTA_C);
+    const apoyar = (g, C, uF, uR, z) => { const [x1, y1] = C.punto(uF), [x0, y0] = C.punto(uR); g.position.copy(W((x0 + x1) / 2, (y0 + y1) / 2, z || 0)); g.rotation.y = Math.atan2(y1 - y0, x1 - x0); };
+    const grupoDe = (...m) => { const g = new THREE.Group(); for (const x of m) g.add(x); procesos.add(g); return g; };
+    const caja3 = (g, c, lx, ly, lz, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(lx, lz, ly), new THREE.MeshLambertMaterial({ color: c })); m.position.set(x, z + lz / 2, -y); m.castShadow = true; g.add(m); };
+    // mula baja (se mete debajo de la pieza levantada)
+    const mulaD = grupoDe();
+    caja3(mulaD, "#2ea84f", 3.0, 1.3, 0.45, 0, 0, 0.05); caja3(mulaD, "#f2c94c", 2.6, 1.1, 0.05, 0, 0, 0.5); caja3(mulaD, "#1d2a33", 0.3, 1.0, 0.5, 1.55, 0, 0.25);
+    // carrito (camioncito): plataforma de 7,0 × 2,46 m con puesto de manejo adelante
+    const carD = grupoDe();
+    caja3(carD, "#2b2f33", 6.6, 2.2, 0.3, 0, 0, 0.2); caja3(carD, "#5d6672", 7.0, 2.46, 0.25, 0, 0, 0.55);
+    for (const s of [-1, 1]) caja3(carD, "#f2c94c", 7.0, 0.08, 0.08, 0, s * 1.2, 0.8);
+    caja3(carD, "#2e7dd1", 0.4, 2.3, 1.3, 3.3, 0, 0.8); caja3(carD, "#1f2328", 0.12, 0.12, 1.1, 3.0, 0.9, 0.8);
+    for (const [dx, s] of [[-2.6, -1], [-2.6, 1], [2.4, -1], [2.4, 1]]) caja3(carD, "#16181c", 0.55, 0.25, 0.4, dx, s * 1.1, 0);
+    // piezas del ciclo: cabina y caja del mismo color
+    const mPieza = new THREE.MeshLambertMaterial({ color: "#f2f2f2" });
+    const piezas = [new THREE.Mesh(G_CABINA, mPieza), new THREE.Mesh(G_CAJA, mPieza)].map(m => { m.castShadow = !MOVIL; return grupoDe(m); });
+    // brazos naranjas de la mesa elevadora (los postes son fijos): suben y bajan con la pieza
+    const brazos = grupoDe();
+    caja3(brazos, "#e8701a", 1.85, 0.5, 0.1, 240.175 - XL, 0, -0.1); caja3(brazos, "#e8701a", 1.85, 0.5, 0.1, 244.125 - XL, 0, -0.1);   // entre ellos pasa la mula
+    const suave = (f) => { f = Math.max(0, Math.min(1, f)); return f * f * (3 - 2 * f); };
+    const ubicarPieza = (g, x, y, z, rot) => { g.position.copy(W(x, y, z)); g.rotation.y = rot; };
+    let t = 0, ciclo = -1;
+    const paso = (dt) => {
+      t += dt;
+      const tc = t % CYC, c = Math.floor(t / CYC);
+      if (c !== ciclo) { ciclo = c; mPieza.color.set(elegir(PINTADO)); }
+      // mula: vuelve (marcha atrás) a la mesa, espera que le bajen la pieza, la lleva al carrito y espera ahí
+      let u = CM.L;
+      for (const t0 of [0, 26]) {
+        const r = tc - t0;
+        if (r >= 0 && r < 10) u = CM.L * (1 - suave(r / 10));
+        else if (r >= 10 && r < 12) u = 0;
+        else if (r >= 12 && r < 22) u = CM.L * suave((r - 12) / 10);
+      }
+      apoyar(mulaD, CM, u + 1.5, u - 1.5);
+      // carrito: parado; a los 52 s sale con las dos piezas, afuera desaparece y vuelve vacío marcha atrás
+      const ida = tc < 52 ? 0 : tc < 63 ? suave((tc - 52) / 11) : tc < 65 ? 1 : 1 - suave((tc - 65) / 11);
+      const uC = LC + (CC.L - LC) * ida;
+      apoyar(carD, CC, uC, uC - LC);
+      carD.visible = ida < 0.97;
+      const dir = carD.rotation.y, enCarrito = (k) => { const off = k === 0 ? 1.75 : -1.65; return [carD.position.x + Math.cos(dir) * off, carD.position.z - Math.sin(dir) * off]; };
+      // brazos de la mesa: a la altura de la pieza que está levantando
+      let zb = 1.17;
+      piezas.forEach((g, k) => {
+        const t0 = 26 * k, r = tc - t0;
+        g.visible = r >= 0 && tc < 63 && (tc < 52 || carD.visible);
+        if (!g.visible) return;
+        if (r < 3) { ubicarPieza(g, XL, YL + (YM - YL) * suave(r / 3), 0.48, 0); zb = 1.17; }
+        else if (r < 6) { const z = 0.48 + 0.72 * suave((r - 3) / 3); ubicarPieza(g, XL, YM, z, 0); zb = z + 0.69; }
+        else if (r < 10) { ubicarPieza(g, XL, YM, 1.2, 0); zb = 1.89; }
+        else if (r < 12) { const z = 1.2 - 1.4 * suave((r - 10) / 2); ubicarPieza(g, XL, YM, z, 0); zb = Math.max(0.45, z + 0.69); }
+        else if (r < 22) { const [x, y] = CM.punto(u - 1.04); ubicarPieza(g, x, y, -0.2, 0); }
+        else if (r < 25) { const [x0, y0] = CM.punto(CM.L - 1.04), [x1, y1] = SLOT[k], f = suave((r - 22) / 3); ubicarPieza(g, x0 + (x1 - x0) * f, y0 + (y1 - y0) * f, -0.2 + 0.25 * f, -Math.PI / 2 * f); }
+        else if (tc < 52) ubicarPieza(g, SLOT[k][0], SLOT[k][1], 0.05, -Math.PI / 2);
+        else { const [wx, wz] = enCarrito(k); g.position.set(wx, W(0, 0, 0.05).y, wz); g.rotation.y = dir; }
+      });
+      if (!(tc < 12 || (tc >= 26 && tc < 38))) zb = 1.17;
+      brazos.position.copy(W(XL, YM, zb));
+    };
+    paso(0);
+    if (animar) animar.push((dt) => { if (procesos.visible) paso(dt); });
+  }
   // flechas verticales de los elevadores (subida / bajada entre cotas)
   function flechaVertical(x, y, sube, color) {
     const m = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.4, 16), new THREE.MeshBasicMaterial({ color }));
@@ -1920,7 +2009,20 @@ window.DetalleCalles = function (api) {
   // 25e. DIFUSIÓN mejorada (plano "Zona difusión"): carril de acumulo junto al depósito (y ≈ 14,3), identificación de carriles,
   //      semáforos de fin de carril, numeración de posiciones, cruces peatonales hacia la fachada y portón de salida a Montaje
   // línea de salida KP1 alineada con el DWG actualizado (303-N00 _ACTUALIZADO-2026-10): eje y 14,9 (dentro del acopio, del otro
-  // lado del lado y 13,3), sube a difusión por x 253 (esquiva el pilar PIL-70 en 252 · 26 y la escalera de la esquina). Trazado esquemático.
+  // lado del lado y 13,3) y termina en x 245, en difusión (Julian 11/10). Trazado esquemático.
+  // DIFUSIÓN (Julian 11/10, DWG actualizado por él): la línea de salida termina en x 245; mesa elevadora a la izquierda de la última
+  // mesa (x 239,3–245 · y 15,9–16,9, foto: brazos naranjas, piso con franjas y malla azul), OFICINAS DE LOGÍSTICA (x 245,4–251,6 ·
+  // y 15,4–18,2, alto 2,8 m supuesto) y lugar del carrito. La mula, el carrito y las piezas se mueven más abajo ("DIFUSIÓN KP1").
+  for (let x = 238.9, k = 0; x < 245.3; x += 0.5, k++) for (const y of [15.5, 17.05]) pinta(k % 2 ? "#1f2328" : "#f2c94c", x, y, x + 0.5, y + 0.15, 0.07);
+  for (const x of [238.9, 245.25]) for (let y = 15.5, k = 0; y < 17.2; y += 0.5, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", x, y, x + 0.15, Math.min(17.2, y + 0.5), 0.07);
+  for (const x of [239.1, 245.2]) { caja("#e8701a", x - 0.15, 16.06, x + 0.15, 16.66, 0, 2.6); caja("#3a3f45", x - 0.3, 15.86, x + 0.3, 16.86, 0, 0.1); }
+  cercoMalla(16.0, 18.4, 238.75, false, "#2f5fb8", 2.0);
+  caja("#eef1f4", 245.44, 15.4, 251.63, 18.19, 0, 2.8); caja("#5b7fb3", 245.4, 15.36, 251.67, 18.23, 0, 0.35);
+  caja("#c9d1d9", 245.38, 15.34, 251.69, 18.25, 2.8, 2.9);
+  for (let x = 246.0; x < 250.0; x += 1.6) caja("#3b4f66", x, 18.19, x + 1.1, 18.24, 1.0, 2.2);
+  caja("#3b4f66", 245.39, 15.9, 245.44, 17.7, 1.0, 2.2); caja("#7d858d", 250.95, 18.19, 251.45, 18.25, 0, 2.1);
+  cartel("OFICINAS DE LOGÍSTICA", 248.5, 18.26, 2.45, 3.6, 0.5, "+y", "#ffffff", "#1f2a3a");
+  for (const [x0, y0, x1, y1] of [[250.3, 18.35, 252.9, 18.45], [250.3, 25.45, 252.9, 25.55], [250.3, 18.35, 250.4, 25.55], [252.8, 18.35, 252.9, 25.55]]) pinta("#ffffff", x0, y0, x1, y1, 0.07);
   for (let x = 192; x < 245.5; x += 4.45) { bloque("#f2c94c", x, 14.9, 0.3, 1.4, 0.15, 0.3); for (const s of [-1, 1]) caja("#dfe3e7", x - 2.0, 14.9 + s * 0.6 - 0.05, x + 2.0, 14.9 + s * 0.6 + 0.05, 0.15, 0.45); }
   for (let x = 191.6; x < 245; x += 0.9) cil("#c9ced3", x, 14.9, 0.38, 1.1, 0.05, "y");
   // (la línea y 14,9 es la LÍNEA DE SALIDA KP1: sin piezas quietas, las mueve el flujo animado)
@@ -1940,11 +2042,11 @@ window.DetalleCalles = function (api) {
   caja("#1f2328", 264.8, 7.15, 264.85, 10.65, 0, 3.6);
   for (let y = 7.0, k = 0; y < 10.8; y += 0.4, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", 263.6, y, 264.5, y + 0.4, 0.07);
   cartel("PORTÓN · FACHADA SUR", 263.4, 8.9, 4.6, 2.4, 0.5, "+x", "#e9b10a", "#111111", true);
-  // abertura de salida de KP1 hacia PS2 (fachada sur, y 29,5–32,5; alto 3,2 m asumido): marco amarillo, franjas y cartel
-  caja("#e9b10a", 264.55, 29.3, 264.85, 29.55, 0, 3.4); caja("#e9b10a", 264.55, 32.45, 264.85, 32.7, 0, 3.4); caja("#e9b10a", 264.5, 29.3, 264.9, 32.7, 3.2, 3.45);
-  for (let y = 29.6, k = 0; y < 32.4; y += 0.4, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", 263.4, y, 264.5, y + 0.4, 0.07);
-  cartel("KP1 → MONTAJE KP1", 263.4, 31.0, 3.9, 2.6, 0.5, "+x", "#2e9d4f", "#ffffff", true);
-  zonaDominio(DOM.difusion, 252.0, 24.0, 264.5, 36.0);
+  // PORTÓN P de salida de KP1 hacia PS2 (bloque PORTON-4 del plano 301: y 28,9–32,9; alto 3,2 m asumido): marco, franjas y cartel
+  caja("#e9b10a", 264.55, 28.63, 264.85, 28.88, 0, 3.4); caja("#e9b10a", 264.55, 32.87, 264.85, 33.12, 0, 3.4); caja("#e9b10a", 264.5, 28.63, 264.9, 33.12, 3.2, 3.45);
+  for (let y = 28.9, k = 0; y < 32.85; y += 0.4, k++) pinta(k % 2 ? "#1f2328" : "#f2c94c", 263.4, y, 264.5, Math.min(32.87, y + 0.4), 0.07);
+  cartel("PORTÓN P\nKP1 → MONTAJE KP1", 263.4, 30.9, 3.9, 3.0, 0.7, "+x", "#2e9d4f", "#ffffff", true);
+  zonaDominio(DOM.difusion, 238.6, 15.5, 259.2, 27.6);
   // elevador de CRONOS sobre la TRP-23 (mesa elevadora del plano, x 254–258): torre hasta la galería a +9 m
   for (const [x, y] of [[254.0, 7.5], [258.4, 7.5], [254.0, 10.3], [258.4, 10.3]]) caja("#aeb6be", x - 0.15, y - 0.15, x + 0.15, y + 0.15, 0, 9.6);
   for (const z of [3.0, 6.0, 9.1]) { caja("#22346a", 253.85, 7.35, 258.55, 7.5, z, z + 0.2); caja("#22346a", 253.85, 10.3, 258.55, 10.45, z, z + 0.2); }

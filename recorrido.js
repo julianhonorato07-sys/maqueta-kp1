@@ -117,9 +117,17 @@ window.Recorrido = function (api) {
   const T_L32 = [[188.6, 8.9, 0.48, 0], [188.6, 8.9, 0.45, 3.2], [188.6, 11.4, 0.45, 3.2], [250.7, 11.4, 0.45, 3.2], [252.5, 9.4, 0.45, 3.2], [256.2, 9.4, 0.45, 3.2]];
   const T_TUNEL = [[256.2, 8.9, 0.45, 3.2], [256.2, 8.9, 1.25, 9], [262.0, 8.9, 1.25, 9], [300.0, 8.9, 1.25, 9]];   // colgado: la carrocería va 1,25 m sobre el piso
   const T_BUFFER = [[188.6, 8.5, 0.48, 0], [221.5, 8.5, 0.48, 0]];
-  const T_LINEA = [[188.6, 8.5, 0.48, 0], [188.6, 14.9, 0.48, 0], [253.0, 14.9, 0.48, 0], [253.0, 30.5, 0.48, 0]];   // = DWG 303-N00 _ACTUALIZADO-2026-10
-  const T_DIFUSION = [[257.5, 30.5, 0.48, 0]];
-  const T_MONTAJEKP1 = [[257.5, 30.5, 1.0, 0], [264.5, 31.0, 1.0, 0], [285.0, 31.0, 1.0, 0]];
+  // (Julian 11/10, DWG 303-N00 _ACTUALIZADO-2026-10 editado por él) la línea de salida termina en x 245 (última mesa x 239,3–245);
+  // la pieza pasa a la mesa de la izquierda (x 239,3–245 · y 15,9–16,9), que la levanta; una mula baja se mete debajo, la lleva
+  // por el recorrido rojo (x 242,1 hasta y 24,55 → x 249,1) y la carga en el carrito (rectángulo azul), que sale por el portón P
+  const T_LINEA = [[188.6, 8.5, 0.48, 0], [188.6, 14.9, 0.48, 0], [242.15, 14.9, 0.48, 0]];
+  const T_DIFUSION = [[242.15, 14.9, 0.48, 0]];   // skid pobre: ahí deja la pieza
+  // carrocería KP1: pasa a la mesa elevadora → sube → baja sobre la mula → mula hasta el carrito → al carrito (adelante, y 20,2)
+  const T_DIF_MULA = [[242.15, 16.7, 0.48, 0], [242.15, 16.7, 1.2, 0], [242.15, 16.7, -0.2, 0], [242.13, 17.3, -0.2, 0], [242.13, 24.55, -0.2, 0],
+    [247.66, 24.55, -0.2, 0], [251.61, 20.2, 0.05, 0]];
+  // carrito (camioncito) con cabina y caja: recorrido azul del DWG hasta el portón P (PORTON-4, y 28,9–32,9) y afuera hacia PS2
+  const T_CARRITO = [[251.61, 19.9, 0.05, 0], [255.0, 19.3, 0.05, 0], [257.21, 20.9, 0.05, 0], [257.68, 24.41, 0.05, 0], [257.68, 29.79, 0.05, 0],
+    [262.3, 30.9, 0.05, 0], [285.0, 30.9, 0.05, 0]];
 
   // ---------------------------------------------------------------- (a) FLUJO CONTINUO en las cotas superiores (instanciado)
   // F1: Chapa → piletas → horno cata → cota 5,4 (cambio de skid) → hasta el elevador GR1 (de ahí sigue el flujo de cota 0)
@@ -224,50 +232,18 @@ window.Recorrido = function (api) {
     }
   }
 
-  // ---------------------------------------------------------------- cota 0: línea de salida KP1, mesa transferidora, mula de difusión
+  // ---------------------------------------------------------------- cota 0: mesa transferidora de la entrada del buffer
+  // (la línea de salida termina en x 245, en difusión: sus rodillos, la mesa elevadora, la mula y el carrito están en detalle_calles.js)
   const c0 = capa("procesos");
-  {
-    const mRod = new THREE.MeshLambertMaterial({ color: "#c9ced3" }), mMarco = new THREE.MeshLambertMaterial({ color: "#4a525c" });
-    const rod = [];
-    for (let x = 245.5; x <= 253.0; x += 0.9) rod.push([x, 14.9, 0]);
-    for (let y = 14.9; y <= 30.5; y += 0.9) rod.push([253.0, y, 90]);
-    for (let x = 253.0; x <= 257.5; x += 0.9) rod.push([x, 30.5, 0]);
-    const geoR = new THREE.CylinderGeometry(0.05, 0.05, 1.1, 8); geoR.rotateX(Math.PI / 2);
-    const im = new THREE.InstancedMesh(geoR, mRod, rod.length);
-    rod.forEach(([x, y, a], i) => { q.setFromAxisAngle(up, a * Math.PI / 180); const p = W(x, y, 0.38); m4.compose(p, q, uno); im.setMatrixAt(i, m4); });
-    c0.add(im);
-    for (const [a, b, c, d] of [[245.5, 14.3, 253.6, 15.5], [252.4, 14.9, 253.6, 30.5], [253.0, 29.9, 257.5, 31.1]]) {
-      const g = new THREE.Mesh(new THREE.BoxGeometry(c - a, 0.3, d - b), mMarco); g.position.copy(W((a + c) / 2, (b + d) / 2, 0.15)); c0.add(g);
-    }
-  }
   // mesa transferidora (se mueve de costado) en la entrada del buffer: lleva la pieza del carril y 8,5 a la línea de salida y 14,9
   // (plano: bastidores x 185,9–191,1, eje x 188,6; se alarga hasta la línea, a confirmar)
   const mesaTr = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.22, 1.6), new THREE.MeshLambertMaterial({ color: "#f2c230" }));
   c0.add(mesaTr);
   for (const s of [-1.3, 1.3]) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.08, 7.8), new THREE.MeshLambertMaterial({ color: "#8d97a3" })); r.position.copy(W(188.6 + s, 11.7, 0.04)); c0.add(r); }
-  // mula con carrito en difusión: carga cabina + caja del mismo color y sale por la abertura hacia PS2 (a confirmar)
-  const mula = new THREE.Group();
-  {
-    const add = (g, c, x, z) => { const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: c })); m.position.set(x, z, 0); m.castShadow = true; mula.add(m); return m; };
-    add(new THREE.BoxGeometry(1.6, 0.9, 1.0), "#2ea84f", 2.6, 0.6); add(new THREE.BoxGeometry(0.7, 0.7, 0.9), "#1d2a33", 2.3, 1.4);
-    add(new THREE.BoxGeometry(7.6, 0.12, 1.9), "#f2c94c", -2.2, 0.55);
-    const cp = PINTURAS[2];
-    const cab = new THREE.Mesh(G_CABINA, new THREE.MeshLambertMaterial({ color: cp })); cab.position.set(-0.4, 0.3, 0); mula.add(cab);
-    const cj = new THREE.Mesh(G_CAJA, new THREE.MeshLambertMaterial({ color: cp })); cj.position.set(-4.0, 0.3, 0); mula.add(cj);
-    c0.add(mula);
-  }
-  const RUTA_MULA = ruta([[255.0, 31.2, 0, 0], [264.5, 31.2, 0, 0], [290.0, 31.2, 0, 0]]);
-  let tMula = 0;
   function actualizarCota0(dt) {
     // mesa transferidora: ida y vuelta entre y 8,5 y 14,9 (ciclo 16 s)
     const k = 0.5 - 0.5 * Math.cos(((performance.now() / 1000) % 16) / 16 * Math.PI * 2);
     mesaTr.position.copy(W(188.6, 8.5 + (14.9 - 8.5) * k, 0.3));
-    // mula: espera cargando (8 s), sale (ida) y vuelve vacía
-    tMula = (tMula + dt) % 40;
-    const ida = tMula < 8 ? 0 : tMula < 24 ? (tMula - 8) / 16 : 1 - (tMula - 24) / 16;
-    RUTA_MULA.punto(ida * RUTA_MULA.L, pt);
-    mula.position.copy(W(pt.x, pt.y, 0)); mula.rotation.y = tMula < 24 ? 0 : Math.PI;
-    mula.children.slice(3).forEach(c => { c.visible = tMula < 24; });
   }
 
   // ---------------------------------------------------------------- (b) RECORRIDO GUIADO
@@ -316,9 +292,9 @@ window.Recorrido = function (api) {
     a({ cota: 0, tit: "Baja y pasa por Óleo", carga: true, pts: T_BAJAFIN.concat(T_OLEO), txt: "El elevador CPU11 GR08 lo baja a cota 0 y en Óleo le sacan los distanciales a la carrocería.", dato: "CPU12 · línea extracción distanciales" });
     a({ cota: 0, tit: "Buffer y línea de salida (KP1)", carga: true, pts: T_BUFFER.concat(T_LINEA),
       txt: "Con una cabina o caja de pickup pasa por el buffer y la línea de salida hasta difusión. (Con el Cronos: a confirmar si el skid sube con la carrocería al túnel o se lo sacan antes.)", dato: "Transporte buffer CIEM (CPU13)" });
-    a({ cota: 0, tit: "En difusión queda vacío", carga: "inicio", pts: T_DIFUSION, txt: "La mula se lleva la cabina y la caja: el skid pobre queda vacío en la línea.", dato: "SOP de difusión" });
-    a({ cota: 0, tit: "Va al elevador de retorno", carga: false, pts: [[261.2, 30.5, 0.48, 0], [261.2, 4.6, 0.48, 0], [262.05, 4.6, 0.48, 0]],
-      txt: "Vacío, va hasta el <b>elevador de retorno de skid pobre</b>, en la zona del elevador Montaje.", dato: "Camino entre difusión y el elevador: a confirmar" });
+    a({ cota: 0, tit: "En difusión queda vacío", carga: "inicio", pts: T_DIFUSION, txt: "Al final de la línea de salida la cabina o la caja pasa a la mesa elevadora y de ahí a la mula: el skid pobre queda vacío.", dato: "Difusión (DWG actualizado por Julian, oct. 2026)" });
+    a({ cota: 0, tit: "Va al elevador de retorno", carga: false, pts: [[248.0, 14.9, 0.48, 0], [248.0, 4.6, 0.48, 0], [262.05, 4.6, 0.48, 0]],
+      txt: "Vacío, va hasta el <b>elevador de retorno de skid pobre</b>, en la zona del elevador Montaje.", dato: "Camino entre difusión y el elevador: A CONFIRMAR (dibujado por la transferencia del final del buffer, x 245–250,7)" });
     a({ cota: 3.2, tit: "Sube a +3,2 y va por la pared", carga: false, pts: [[262.05, 4.6, 0.45, 3.2], [262.05, 93.01, 0.45, 3.2]],
       txt: "El elevador lo sube a +3,2 m y un transportador largo lo lleva junto a la pared del fondo de la nave.", dato: "CPU4 GR8–GR13 (cota 3,2) · transportador x 262 del plano N5400" });
     a({ cota: 5.4, tit: "Sube a +5,4 y vuelve al cambio", carga: false, pts: [[262.05, 93.01, 0.45, 5.4], [178.0, 93.01, 0.5, 5.4]],
@@ -358,9 +334,9 @@ window.Recorrido = function (api) {
       a({ cota: 9, tit: "El elevador Montaje lo sube y cruza el túnel", pts: T_TUNEL, txt: "Al final, el <b>elevador Montaje</b> lo sube a la cota 9. Ahí la carrocería deja el skid y se <b>cuelga de una percha</b> del transportador aéreo (el <i>convogliatore</i>), que la lleva por el túnel elevado hasta la nave de Montaje del Cronos. Acá termina su paso por Pintura.", dato: "CPU12 GR8 · elevador Montaje · plano 301-N9000: Elevador-Cargador y perchas del convogliatore Verniciatura/Montaggio · el skid vacío vuelve por el retorno de skid pobre (CPU4)" });
     } else {
       a({ cota: 0, tit: "Buffer KP1: se juntan cabina y caja", pts: T_BUFFER, txt: "Al salir de Óleo va al <b>buffer</b>: carriles de rodillos donde cabinas y cajas se acumulan, cada una en su skid pobre. Se lee el código QR de cada pieza. Avanza hasta la <b>mitad del buffer</b> y ahí <b>se ancla</b> con su pareja: una cabina con una caja del mismo color.", dato: "Transporte buffer CIEM (CPU13) · unos 30 skids ≈ 3,5 h" });
-      a({ cota: 0, tit: "Las dos van por la línea de salida", pts: T_LINEA, txt: "Ya ancladas, salen del buffer por la <b>mesa transferidora</b>, que se mueve de costado y las pasa a la <b>línea de salida</b>: un transportador de rodillos junto al buffer que dobla y llega a la zona de difusión.", dato: "Actualización del layout KP1 (dibujo de Julian, oct. 2026) · posición de la mesa: a confirmar" });
-      a({ cota: 0, tit: "En difusión, la mula las carga", pts: T_DIFUSION, mula: true, txt: "En la zona de difusión viene una <b>mula</b> con un carrito y las carga: <b>primero la cabina y después la caja</b>, del mismo color. Los skids pobres quedan vacíos y vuelven a la cota 5,4 por el retorno de skids pobres (CPU4).", dato: "SOP en difusión para hermanar cabina y caja" });
-      a({ cota: 0, tit: "La mula sale para Montaje KP1", pts: T_MONTAJEKP1, mula: true, txt: "Con la cabina y la caja arriba del carrito, la mula sale por la abertura de la fachada (hacia PS2) para la nave de Montaje de las pickups. Acá termina su paso por Pintura.", dato: "Traslado manual difusión → Montaje · salida exacta: a confirmar" });
+      a({ cota: 0, tit: "Las dos van por la línea de salida", pts: T_LINEA, txt: "Ya ancladas, salen del buffer por la <b>mesa transferidora</b>, que se mueve de costado y las pasa a la <b>línea de salida</b>: un transportador de rodillos junto al buffer que termina en <b>difusión</b>, al lado de las Oficinas de Logística.", dato: "Actualización del layout KP1 (DWG de Julian, oct. 2026) · posición de la mesa transferidora: a confirmar" });
+      a({ cota: 0, tit: "Difusión: mesa elevadora y mula", pts: T_DIF_MULA, mulaBaja: true, txt: "Al llegar a la última mesa pasa a la <b>mesa de la izquierda</b>, que la <b>levanta</b>. Viene una <b>mula</b>, se mete debajo, la toma y por el pasillo la lleva hasta el <b>carrito</b>, donde la carga. Después vuelve y hace lo mismo con la caja. El skid pobre queda vacío y vuelve a la cota 5,4 (CPU4).", dato: "Primero la cabina, después la caja (mismo color) · tipo de mesa y de mula: a confirmar" });
+      a({ cota: 0, tit: "El carrito sale para Montaje KP1", pts: T_CARRITO, carrito: true, txt: "Con la cabina y la caja cargadas, el <b>carrito</b> sale por el <b>portón P</b> de la fachada hacia la nave de Montaje de las pickups (PS2). Acá termina su paso por Pintura.", dato: "Recorrido del DWG de Julian (oct. 2026) · forma del carrito: a confirmar (foto pendiente)" });
     }
     return S;
   }
@@ -392,6 +368,17 @@ window.Recorrido = function (api) {
   const mulaT = new THREE.Group();
   { const m1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 1.0), new THREE.MeshLambertMaterial({ color: "#2ea84f" })); m1.position.set(4.0, 0.6, 0); mulaT.add(m1); const m2 = new THREE.Mesh(new THREE.BoxGeometry(8.4, 0.12, 2.0), new THREE.MeshLambertMaterial({ color: "#f2c94c" })); m2.position.set(-1.3, 0.5, 0); mulaT.add(m2); }
   carro.add(mulaT);
+  // difusión: mula baja que se mete debajo de la pieza levantada, y carrito (camioncito) que lleva cabina + caja a Montaje
+  // (alturas desde el piso: en ubicarCarro el grupo se baja a la altura del piso)
+  const mulaBaja = new THREE.Group(), carritoT = new THREE.Group();
+  {
+    const add = (g, c, lx, lz, ly, x, z, y) => { const m = new THREE.Mesh(new THREE.BoxGeometry(lx, lz, ly), new THREE.MeshLambertMaterial({ color: c })); m.position.set(x, z, y || 0); m.castShadow = true; g.add(m); };
+    add(mulaBaja, "#2ea84f", 3.0, 0.45, 1.3, 0, 0.27); add(mulaBaja, "#f2c94c", 2.6, 0.06, 1.1, 0, 0.52); add(mulaBaja, "#1d2a33", 0.3, 0.5, 1.0, 1.55, 0.5);
+    add(carritoT, "#5d6672", 7.0, 0.25, 2.46, -1.75, 0.68); add(carritoT, "#2b2f33", 6.6, 0.3, 2.2, -1.75, 0.35);
+    for (const s of [-1, 1]) add(carritoT, "#f2c94c", 7.0, 0.08, 0.08, -1.75, 0.84, s * 1.2);
+    add(carritoT, "#2e7dd1", 0.4, 1.3, 2.3, 1.55, 1.45); add(carritoT, "#1f2328", 0.12, 1.1, 0.12, 1.25, 1.35, 0.9);
+    carro.add(mulaBaja, carritoT); mulaBaja.visible = carritoT.visible = false;
+  }
   tour.add(carro); tour.visible = false;
   // pareja de la cabina (KP1): la caja del mismo color se ancla con ella en la mitad del buffer y la sigue hasta la mula
   const pareja = new THREE.Group();
@@ -433,13 +420,19 @@ window.Recorrido = function (api) {
     mCuerpo.color.set(tourPt.e === "pint" ? (tourEstado.modelo === "kp1" || T === "pobre" ? "#eef1f4" : "#c21f37") : EST[tourPt.e] || EST.chapa);
     const enMula = !!p.mula && !(p.bajaDeMula && tourPt.z < 0.85);   // bajaDeMula: al final del paso pasa de la mula a los rodillos
     mulaT.visible = enMula;
-    cuerpo.position.y = enMula ? 0.25 : 0; cSkid.visible = (!enMula || i < PASOS.length - 1) && !tourPt.percha;
+    // difusión: la mula baja aparece debajo de la pieza levantada y la acompaña hasta el carrito; el skid queda en la línea
+    mulaBaja.visible = !!p.mulaBaja && fr > 0.1 && tourPt.x < 247.7; carritoT.visible = !!p.carrito;
+    mulaBaja.position.y = carritoT.position.y = -carro.position.y;
+    const sinSkid = (p.mulaBaja && fr > 0.05) || p.carrito;
+    cuerpo.position.y = enMula ? 0.25 : 0; cSkid.visible = (!enMula || i < PASOS.length - 1) && !tourPt.percha && !sinSkid;
     // pareja KP1: aparece cuando la cabina llega a la mitad del buffer; después va 5,5 m detrás (en la mula, sobre el carro)
     const iBuf = PASOS.findIndex(x => x.tit.startsWith("Buffer KP1"));
     const verPar = T === "carroceria" && tourEstado.modelo === "kp1" && iBuf >= 0 && (i > iBuf || (i === iBuf && tourEstado.s > PASOS[iBuf].s1 - 0.6));
     pareja.visible = verPar;
     if (verPar) {
       if (p.mula) { pareja.position.copy(carro.position); pareja.rotation.y = carro.rotation.y; pareja.translateX(-3.4); pareja.position.y = carro.position.y + 0.25; pSkid.visible = false; }
+      else if (p.carrito) { pareja.position.copy(carro.position); pareja.rotation.y = carro.rotation.y; pareja.translateX(-3.4); pSkid.visible = false; }   // detrás de la cabina, en el carrito
+      else if (p.mulaBaja) { pareja.position.copy(W(236.6, 14.9, 0)); pareja.position.y = 0.48; pareja.rotation.y = 0; pSkid.visible = true; }   // la caja espera en la línea su turno
       else {
         const sAnc = PASOS[iBuf].s1, sp = i === iBuf ? sAnc : Math.max(sAnc, tourEstado.s - 5.5);
         RT.punto(sp, ptPar);

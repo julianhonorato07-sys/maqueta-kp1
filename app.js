@@ -336,7 +336,7 @@
     }
     // Zócalo azul + franja blanca (envolvente y locales); un poco más grueso que el muro para que se vea de ambos lados
     const e = N.espesor_muro + 0.06, Z = I.zocalo;
-    const bandas = (segs, z0, z1) => segs.map(([x1, y1, x2, y2, h]) => [x1, y1, x2, y2, z0, Math.min(z1, h)]).filter(s => s[5] > s[4]);
+    const bandas = (segs, z0, z1) => segs.map(s => s.length > 5 ? [s[0], s[1], s[2], s[3], Math.max(z0, s[4]), Math.min(z1, s[5])] : [s[0], s[1], s[2], s[3], z0, Math.min(z1, s[4])]).filter(s => s[5] > s[4]);
     for (const t of ["envolvente", "internos"]) {
       const azul = malla(geoMuros(bandas(N.muros[t], 0, Z.azul_hasta), e), mat(0x5b7fb3), false, false);
       const blanco = malla(geoMuros(bandas(N.muros[t], Z.azul_hasta, Z.blanco_hasta), e), mat(0xf3f5f7), false, false);
@@ -764,7 +764,7 @@
       ["Línea de esmalte", 200, 46, 2.4], ["Robots de esmalte (de cerca)", 199, 46, 8], ["Hornos de esmalte", 60, 46, 2.6], ["Revisión final", 63, 20, 2.6], ["Oficinas Pintura y baños", 156, 3, 4.0], ["Sala WCM, Blue Room y Capacitación", 168, 22, 4.0]]],
     ["Cotas +5,4 y +3,2", "5", [["Cambio de skid (en el medio de la banda)", 133, 90.5, 4.5], ["Salida del horno de cataforesis (baja a +5,4)", 251.5, 90.7, 4.0], ["Acumulo de skids (2 pisos)", 60, 84.7, 2.6], ["Clear zone de skids pobres", 190, 97, 2.6], ["Level +3,2 sobre el buffer", 222, 9, 3], ["Retorno de skids pobres", 262, 50, 2.2]]],
     ["Cota 0", "0", [["Cabina de sellado", 170, 76, 2.2], ["Giro en U del sellado (mesa giratoria)", 80.5, 72, 4.5], ["Elevador a línea de fondo", 245, 57.7, 4.5], ["Calesita y acumulo", 50, 27, 2.2],
-      ["Bajada de revisión final", 128.3, 15.5, 4.5], ["Óleo", 155, 8.9, 3], ["Box de retoques", 162, 20, 3], ["Buffer KP1 y línea de salida", 220, 10, 2.6], ["Difusión → Montaje KP1", 257, 30, 3.5], ["Depósito de autos", 214, 26, 2.6]]],
+      ["Bajada de revisión final", 128.3, 15.5, 4.5], ["Óleo", 155, 8.9, 3], ["Box de retoques", 162, 20, 3], ["Buffer KP1 y línea de salida", 220, 10, 2.6], ["Difusión → Montaje KP1", 248, 21, 3.5], ["Depósito de autos", 214, 26, 2.6]]],
   ];
   const sel = document.getElementById("ir-a");
   if (sel) {
