@@ -342,6 +342,7 @@ window.Cotas = function (api) {
   // 3) EQUIPOS DE PROCESO DE LA COTA 9 (huellas del plano N9000; alturas estimadas)
   // ================================================================================================
   const Z9 = 9.0;
+  const RIEL_PERCHA_9 = 4.6;   // riel del transportador aéreo de perchas a Montaje (igual que RIEL_PERCHA en recorrido.js)
   const nombres9 = [];   // para el panel del recorrido: { nom, r, etapa }
 
   /** Cabina de pintura / proceso: paredes de paneles con ventanas, columnas, plenum superior, luminarias, puertas y cartel */
@@ -631,6 +632,80 @@ window.Cotas = function (api) {
     sala([176.0, 11.23, 179.53, 23.77], "CAPACITACIÓN PINTURA", "#e3e8ee", { puerta: "-x", pd: 11.9 });
     etiqueta(G[9], 167, 23, 16.5, "SALA WCM · BLUE ROOM · CAPACITACIÓN", "junto a las oficinas, al borde de la doble altura (plano 301-N9000)", ET.sala, 2);
     // (el muro doble del plano en y 26,6 / x 179,6 / y 13,3 es el borde de la doble altura: baranda, en la sección de losas)
+  }
+
+  // ---- TRANSPORTADOR AÉREO DE PERCHAS A MONTAJE ("CONVOGLIATORE VERNICIATURA/MONTAGGIO", plano 301-N9000) ----
+  // Lazo de dos líneas: ida por y 9,0 (el Cronos colgado, bloques "CRONOS - TOP2" del plano) y vuelta por y 13,25 (perchas vacías),
+  // con curva en U (centro 258,16 · 11,12, r 2,12) arriba del elevador Montaje, y el ELEVADOR-CARGADOR (x 267–269,6) ya en el túnel.
+  // Altura del riel (+4,6 sobre la cota 9), forma de las perchas y soportes: SUPUESTOS. El flujo y el recorrido cuelgan la carrocería acá.
+  {
+    const zr = Z9 + RIEL_PERCHA_9;
+    const riel = (x1, y1, x2, y2) => { L9.barra("#3b434c", x1, y1, x2, y2, 0.16, zr - 0.3, zr); L9.barra("#5d6672", x1, y1, x2, y2, 0.32, zr - 0.06, zr); };
+    for (const y of [9.0, 13.25]) riel(258.16, y, 300.0, y);
+    for (let k = 0; k < 12; k++) {
+      const a1 = Math.PI / 2 + Math.PI * k / 12, a2 = Math.PI / 2 + Math.PI * (k + 1) / 12;
+      riel(258.16 + 2.12 * Math.cos(a1), 11.12 + 2.12 * Math.sin(a1), 258.16 + 2.12 * Math.cos(a2), 11.12 + 2.12 * Math.sin(a2));
+    }
+    // péndolas que cuelgan el riel del techo del túnel (+6 m) cada 3 m
+    for (let x = 259; x <= 299; x += 3) for (const y of [9.0, 13.25]) L9.bloque("#7d858d", x, y, 0.08, 0.08, zr, Z9 + 6.0);
+    L9.bloque("#7d858d", 256.04, 11.12, 0.08, 0.08, zr, Z9 + 6.0);
+    // perchas vacías volviendo por y 13,25 (posiciones del plano y siguientes cada 6 m): carro, barra superior y dos brazos
+    const percha = (x, y) => {
+      L9.bloque("#2b2f33", x, y, 0.6, 0.4, zr - 0.55, zr - 0.3);
+      L9.bloque("#3b434c", x, y, 3.4, 0.3, zr - 0.7, zr - 0.6);
+      for (const s of [-1.5, 1.5]) L9.bloque("#3b434c", x + s, y, 0.08, 0.08, Z9 + 2.4, zr - 0.6);
+      for (const s of [-1.5, 1.5]) L9.bloque("#3b434c", x + s, y, 0.08, 1.5, Z9 + 2.32, Z9 + 2.4);   // ganchos abajo
+    };
+    for (const x of [259.09, 265.18, 271.1, 277.1, 283.1, 289.1, 295.1]) percha(x, 13.25);
+    // ELEVADOR-CARGADOR: dos bastidores laterales (x 267,05 y 269,53 · y 8,44–11,79) y viga superior con motores
+    for (const x of [267.05, 269.53]) { L9.caja("#aeb6be", x - 0.08, 8.44, x + 0.08, 11.79, Z9, zr + 0.5); L9.caja("#22346a", x - 0.1, 8.44, x + 0.1, 8.6, Z9 + 2.0, Z9 + 2.2); }
+    L9.caja("#22346a", 265.79, 10.61, 270.79, 11.61, zr + 0.5, zr + 1.0);
+    for (const x of [265.48, 271.09]) L9.caja("#4a525c", x - 0.15, 10.96, x + 0.15, 11.27, zr + 0.5, zr + 0.95);
+    cartel(G[9], "ELEVADOR-CARGADOR", 268.29, 8.38, Z9 + 2.6, 2.6, 0.45, "-y", "#f2c94c", "#111111");
+    cartel(G[9], "TRANSPORTADOR AÉREO DE PERCHAS\nA MONTAJE (CONVOGLIATORE)", 259.65, 15.84, Z9 + 2.5, 4.6, 0.8, "+y", "#5d6d7e", "#ffffff");
+    etiqueta(G[9], 262, 11.1, 16.5, "PERCHAS A MONTAJE · CONVOGLIATORE", "el Cronos deja el skid arriba del elevador Montaje, se cuelga de una percha y cruza el túnel · plano 301-N9000 (Elevador-Cargador y perchas)", ET.elev, 2);
+  }
+
+  // ---- POSTCOMBUSTORES sobre el anexo norte: plano 301-N00 "PLATEA POST-COMBUSTORI" (x −1–47 · y 105–119) y equipos del bloque del
+  //      plano 301-N9000: 3 cámaras Ø 4,5 m, 7 equipos Ø 1,8 m, 2 conductos Ø 0,9 m y una casilla de 4 × 5 m. Van arriba del techo del
+  //      anexo (+6 m), por eso aparecen en el plano de +9 y no en el de cota 0. Alturas de los equipos y baranda: SUPUESTOS.
+  {
+    const A = lote(capa("anexos")), z = 6.35;
+    for (const x of [34.19, 39.19, 44.2]) { A.cil("#c3c9cf", x, 115.76, z, 6.0, 2.25); A.cil("#9aa3ab", x, 115.76, z + 6.0, 0.35, 2.35); A.cil("#8a939d", x, 115.76, z + 6.35, 3.0, 0.45); }
+    for (const [x, y] of [[26.68, 107.75], [33.19, 107.75], [38.19, 107.75], [43.2, 107.75], [35.19, 110.26], [40.19, 110.26], [45.2, 110.26]]) A.cil("#aeb6be", x, y, z, 2.6, 0.9);
+    for (const x of [33.19, 38.19]) A.cil("#8a939d", x, 112.26, z, 4.5, 0.45);
+    A.caja("#d5dbe1", 27.63, 113.05, 31.63, 118.05, z, z + 3.0); A.caja("#9aa3ab", 27.53, 112.95, 31.73, 118.15, z + 3.0, z + 3.15);
+    A.caja("#8a939d", 25.43, 109.6, 27.93, 112.71, z, z + 2.0);
+    baranda(A, [[-1.0, 105.0], [47.0, 105.0], [47.0, 119.0], [-1.0, 119.0], [-1.0, 105.0]], z, 1.1);
+    A.cerrar();
+    etiqueta(capa("anexos"), 35.4, 112.5, 17.5, "POSTCOMBUSTORES", "platea post-combustori (planos 301-N00 y 301-N9000) · tratan los humos de los hornos · alturas supuestas", ET.horno, 2);
+    etiquetas[etiquetas.length - 1].exterior = true;
+  }
+
+  // ---- NOMBRES DE LOS ANEXOS (rótulos del plano 301-N00 PLANTA EXISTENTE; nombres originales en italiano entre paréntesis) ----
+  // Son edificios de afuera: se ven también con el techo de la nave puesto. Nivel 1 = los dos más importantes; nivel 2 = de cerca.
+  {
+    const A = capa("anexos");
+    for (const [x, y, t, s, n] of [
+      [273.1, 78.0, "CENTRAL DE PINTURAS", "CENTRALE VERNICI · prepara la pintura y la manda a las cabinas", 1],
+      [285.9, 76.8, "PREPARACIÓN / DILUCIÓN", "PREPARAZIONE/DILUZIONE", 2],
+      [299.1, 75.1, "84 CONTENEDORES DE PINTURA", "N.84 CONTENITORI VERNICI", 2],
+      [293.3, 80.7, "ALMACÉN", "MAGAZZINO", 2],
+      [300.0, 54.8, "LOCAL DE SOLVENTES", "LOCALE SOLVENTI", 2],
+      [268.5, 95.5, "TABLEROS ELÉCTRICOS", "ELECTRICI · QUADRI", 2],
+      [277.3, 92.8, "HIDRÁULICA", "", 2],
+      [280.5, 98.0, "BAÑOS", "WC/U hombres · WC/D mujeres", 2],
+      [267.7, 111.7, "CALDERAS", "", 2],
+      [299.6, 106.3, "CALDERA", "", 2],
+      [205.0, 107.9, "CENTRAL TÉRMICA", "CENTRALE TERMICA", 1],
+      [186.6, 109.8, "CENTRAL DE COMPRESORES", "CENTRALE COMPRESSORI · aire comprimido", 2],
+      [145.0, 111.4, "CABINA ELÉCTRICA", "CABINA ELETTRICA", 2],
+      [98.6, 108.6, "FOSFATANTE", "tanques del fosfato del pretratamiento", 2],
+      [73.2, 110.1, "DEPÓSITO DE PRODUCTOS QUÍMICOS", "AREA STOCCAGGIO PRODOTTI CHIMICI", 2],
+    ]) {
+      etiqueta(A, x, y, 8.5, t, (s ? s + " · " : "") + "plano 301-N00", ET.servicio, n);
+      etiquetas[etiquetas.length - 1].exterior = true;
+    }
   }
   // recinto del elevador de bajada de revisión final (A08: x 120,5–128,4 / 128,4–144,3; y 10–19,2)
   for (const [a, b, c, d] of [[120.5, 10.0, 144.3, 10.0], [120.5, 19.2, 144.3, 19.2], [120.5, 4.9, 120.5, 19.2]]) L9.barra("#cfd8e2", a, b, c, d, 0.15, Z9, Z9 + 3.2);
@@ -946,7 +1021,7 @@ window.Cotas = function (api) {
     const M = window.__maqueta, cam = M && M.camara, zm = cam ? cam.zoom : 1;
     const tapadas = M && M.estado && M.estado.piso === "todas" && M.estado.sep === 0 && M.capas.techo.visible;
     for (const e of etiquetas) {
-      const v = !tapadas && visibleDe(e.o.parent);
+      const v = (e.exterior || !tapadas) && visibleDe(e.o.parent);   // los anexos se ven aunque el techo de la nave esté puesto
       e.o.visible = v && (e.nivel === 1 || zm > (MOVIL ? 4.5 : 2.2));
       if (e.sub) e.sub.style.display = zm > 4 ? "block" : "none";
     }

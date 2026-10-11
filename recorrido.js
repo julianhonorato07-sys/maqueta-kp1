@@ -31,6 +31,7 @@ window.Recorrido = function (api) {
   const G_VIDRIO = unir([geoCaja(1.3, 1.7, 0.4, 0.2, 0, 1.5)]);
   const G_COLG = unir([geoCaja(0.08, 0.08, 1, -1.5, 0, 0.5), geoCaja(0.08, 0.08, 1, 1.5, 0, 0.5), geoCaja(3.4, 0.3, 0.1, 0, 0, 1.0), geoCaja(0.6, 0.4, 0.25, 0, 0, 1.12)]);
   const RIEL_PENDULAR = 4.0;   // m sobre el piso de cota 9 (dentro del túnel de piletas)
+  const RIEL_PERCHA = 4.6;     // transportador aéreo de perchas a Montaje (cota 9, plano 301-N9000; igual que en cotas.js)
   const GEO = { sedan: G_SEDAN, cabina: G_CABINA, caja: G_CAJA };
 
   // colores por estado de la carrocería (como en el artefacto) y pintura final
@@ -81,6 +82,8 @@ window.Recorrido = function (api) {
       out.z = alto(g.a.n, g.a.h) + (alto(g.b.n, g.b.h) - alto(g.a.n, g.a.h)) * t;
       out.ang = g.ang; out.e = g.a.e; out.vert = g.vert; out.n = t < 0.5 ? g.a.n : g.b.n; out.seg = lo; out.m = g.a.m;
       out.dip = g.vert ? 0 : inmersion(out.x, out.y, out.n);
+      // arriba del elevador Montaje el Cronos deja el skid y sigue colgado de una percha (convogliatore a Montaje)
+      out.percha = !g.vert && out.n === 9 && out.x > 256.3 && Math.abs(out.y - 8.9) < 0.35;
       out.z += out.dip;
       return out;
     }
@@ -111,7 +114,7 @@ window.Recorrido = function (api) {
   const T_VUELVE = [[142.0, 20.5, 0.9, 0], [142.0, 9.4, 0.9, 0], [142.0, 8.91, 0.48, 0]];
   const T_OLEO = [[185.48, 8.91, 0.48, 0]];
   const T_L32 = [[188.6, 8.9, 0.48, 0], [188.6, 8.9, 0.45, 3.2], [188.6, 11.4, 0.45, 3.2], [250.7, 11.4, 0.45, 3.2], [252.5, 9.4, 0.45, 3.2], [256.2, 9.4, 0.45, 3.2]];
-  const T_TUNEL = [[256.2, 8.9, 0.45, 3.2], [256.2, 8.9, 0.3, 9], [262.0, 8.9, 0.3, 9], [300.0, 8.9, 0.3, 9]];
+  const T_TUNEL = [[256.2, 8.9, 0.45, 3.2], [256.2, 8.9, 1.25, 9], [262.0, 8.9, 1.25, 9], [300.0, 8.9, 1.25, 9]];   // colgado: la carrocería va 1,25 m sobre el piso
   const T_BUFFER = [[188.6, 8.5, 0.48, 0], [221.5, 8.5, 0.48, 0]];
   const T_LINEA = [[188.6, 8.5, 0.48, 0], [188.6, 14.9, 0.48, 0], [253.0, 14.9, 0.48, 0], [253.0, 30.5, 0.48, 0]];   // = DWG 303-N00 _ACTUALIZADO-2026-10
   const T_DIFUSION = [[257.5, 30.5, 0.48, 0]];
@@ -178,10 +181,11 @@ window.Recorrido = function (api) {
       v3.copy(W(pt.x, pt.y, 0)); v3.y = pt.z;
       q.setFromAxisAngle(up, pt.ang);
       const ver = nivelVisible(pt.n);
-      if (pt.dip && ver) { const y0 = pt.z + 1.35, L = alto(9, RIEL_PENDULAR) - y0; v3.y = y0; m4.compose(v3, q, escCol.set(1, Math.max(0.05, L), 1)); IM.colg.setMatrixAt(m.idx.colg, m4); v3.y = pt.z; }
+      if ((pt.dip || pt.percha) && ver) { const y0 = pt.z + 1.35, L = alto(9, pt.percha ? RIEL_PERCHA : RIEL_PENDULAR) - y0; v3.y = y0; m4.compose(v3, q, escCol.set(1, Math.max(0.05, L), 1)); IM.colg.setMatrixAt(m.idx.colg, m4); v3.y = pt.z; }
       else { m4.compose(v3, q, cero); IM.colg.setMatrixAt(m.idx.colg, m4); }
-      m4.compose(v3, q, ver ? uno : cero);
+      m4.compose(v3, q, ver && !pt.percha ? uno : cero);   // en la percha el skid ya no va
       IM.skid.setMatrixAt(m.idx.skid, m4);
+      m4.compose(v3, q, ver ? uno : cero);
       const rico = m.f.r.P[0].m === "rico" ? !(pt.seg >= rutaSwapSeg(m.f)) : false;
       IM.skid.setColorAt(m.idx.skid, col.set(m.f.vacio ? (m.fi === 3 ? SKID_RICO : SKID_POBRE) : rico ? SKID_RICO : SKID_POBRE));
       if (m.tipo) {
@@ -350,7 +354,7 @@ window.Recorrido = function (api) {
     a({ cota: 0, tit: "Óleo", pts: T_OLEO, txt: "En Óleo se le sacan los <b>distanciales</b> (los separadores que la sostienen sobre el skid) y una máquina le rola el friso del techo. Justo atrás está el box de retoques.", dato: "Línea extracción distanciales · estación C · 16 lugares" });
     if (!K) {
       a({ cota: 3.2, tit: "Sube a +3,2 m y pasa sobre el buffer", pts: T_L32, txt: "Apenas sale de Óleo, el Cronos sube a <b>+3,2 m</b> (el Level 3200) y avanza por arriba del buffer de las pickups. No pasa por el buffer ni por difusión.", dato: "Level 3200 (Layout Pintura sep. 2026)" });
-      a({ cota: 9, tit: "El elevador Montaje lo sube y cruza el túnel", pts: T_TUNEL, txt: "Al final, el <b>elevador Montaje</b> lo sube a la cota 9 y la carrocería cruza el túnel elevado hasta la nave de Montaje del Cronos. Acá termina su paso por Pintura.", dato: "CPU12 GR8 · elevador Montaje · al lado, el retorno de skid pobre (CPU4)" });
+      a({ cota: 9, tit: "El elevador Montaje lo sube y cruza el túnel", pts: T_TUNEL, txt: "Al final, el <b>elevador Montaje</b> lo sube a la cota 9. Ahí la carrocería deja el skid y se <b>cuelga de una percha</b> del transportador aéreo (el <i>convogliatore</i>), que la lleva por el túnel elevado hasta la nave de Montaje del Cronos. Acá termina su paso por Pintura.", dato: "CPU12 GR8 · elevador Montaje · plano 301-N9000: Elevador-Cargador y perchas del convogliatore Verniciatura/Montaggio · el skid vacío vuelve por el retorno de skid pobre (CPU4)" });
     } else {
       a({ cota: 0, tit: "Buffer KP1: se juntan cabina y caja", pts: T_BUFFER, txt: "Al salir de Óleo va al <b>buffer</b>: carriles de rodillos donde cabinas y cajas se acumulan, cada una en su skid pobre. Se lee el código QR de cada pieza. Avanza hasta la <b>mitad del buffer</b> y ahí <b>se ancla</b> con su pareja: una cabina con una caja del mismo color.", dato: "Transporte buffer CIEM (CPU13) · unos 30 skids ≈ 3,5 h" });
       a({ cota: 0, tit: "Las dos van por la línea de salida", pts: T_LINEA, txt: "Ya ancladas, salen del buffer por la <b>mesa transferidora</b>, que se mueve de costado y las pasa a la <b>línea de salida</b>: un transportador de rodillos junto al buffer que dobla y llega a la zona de difusión.", dato: "Actualización del layout KP1 (dibujo de Julian, oct. 2026) · posición de la mesa: a confirmar" });
@@ -415,7 +419,7 @@ window.Recorrido = function (api) {
     RT.punto(tourEstado.s, tourPt);
     carro.position.copy(W(tourPt.x, tourPt.y, 0)); carro.position.y = tourPt.z;
     carro.rotation.y = tourPt.ang;
-    colgT.visible = !!tourPt.dip; if (tourPt.dip) colgT.scale.y = Math.max(0.05, alto(9, RIEL_PENDULAR) - (tourPt.z + 1.35));
+    colgT.visible = !!tourPt.dip || !!tourPt.percha; if (colgT.visible) colgT.scale.y = Math.max(0.05, alto(9, tourPt.percha ? RIEL_PERCHA : RIEL_PENDULAR) - (tourPt.z + 1.35));
     const i = pasoDe(tourEstado.s), p = PASOS[i], T = tourEstado.tipo;
     const swapI = PASOS.findIndex(x => x.swap);
     const pobre = T === "pobre" || (T === "carroceria" && (i > swapI || (i === swapI && tourEstado.s > (p.s0 + p.s1) / 2)));
@@ -427,7 +431,7 @@ window.Recorrido = function (api) {
     cuerpo.visible = cargado; vid.visible = cargado && cuerpo.geometry === G_SEDAN;
     mCuerpo.color.set(tourPt.e === "pint" ? (tourEstado.modelo === "kp1" || T === "pobre" ? "#eef1f4" : "#c21f37") : EST[tourPt.e] || EST.chapa);
     mulaT.visible = !!p.mula;
-    cuerpo.position.y = p.mula ? 0.25 : 0; cSkid.visible = !p.mula || i < PASOS.length - 1;
+    cuerpo.position.y = p.mula ? 0.25 : 0; cSkid.visible = (!p.mula || i < PASOS.length - 1) && !tourPt.percha;
     // pareja KP1: aparece cuando la cabina llega a la mitad del buffer; después va 5,5 m detrás (en la mula, sobre el carro)
     const iBuf = PASOS.findIndex(x => x.tit.startsWith("Buffer KP1"));
     const verPar = T === "carroceria" && tourEstado.modelo === "kp1" && iBuf >= 0 && (i > iBuf || (i === iBuf && tourEstado.s > PASOS[iBuf].s1 - 0.6));
