@@ -137,7 +137,7 @@
   const tipos = { envolvente: C.envolvente, anexos: C.anexos, internos: C.internos, tabiques: C.tabiques };
   const muroCompleto = {}, muroCortado = {};
   // cortes: 3,5 m (ver la cota 0), 8,9 m (ver la cota 5,4) y 12,5 m (ver la cota 9)
-  const ALTURAS_CORTE = [N.corte_muros, 8.9, 12.5];
+  const ALTURAS_CORTE = [N.corte_muros, 8.9, 12.5, 23.5];   // 23,5 m: ver el piso técnico de +20
   for (const [t, color] of Object.entries(tipos)) {
     const destino = capa(t === "tabiques" ? "internos" : t);
     muroCompleto[t] = malla(geoMuros(N.muros[t], e), mat(color), true, t !== "tabiques");
@@ -158,7 +158,7 @@
   const colCompletas = new THREE.Group(), colCortadas = {};
   colCompletas.add(malla(geoColumnas(nave), mat(C.columnaNave), true, true), malla(geoColumnas(plat), mat(C.columnaPlat), true, false));
   capa("columnas").add(colCompletas);
-  for (const hc of [N.corte_muros, 8.9, 12.5]) {
+  for (const hc of ALTURAS_CORTE) {
     colCortadas[hc] = new THREE.Group();
     colCortadas[hc].add(malla(geoColumnas(recorte(nave, hc)), mat(C.columnaNave), true, true), malla(geoColumnas(recorte(plat, hc)), mat(C.columnaPlat), true, false));
     colCortadas[hc].visible = false;
@@ -632,11 +632,11 @@
   const estado = { piso: "todas", sep: 0, cortar: false, recorrido: false };   // recorrido: en el recorrido guiado se cortan muros en cota 0
   const CAPAS_COTA0 = ["calles", "internos", "interior", "detalle", "procesos", "vida"];
   const marcada = (n) => { const c = document.querySelector(`#capas input[data-capa="${n}"]`); return c ? c.checked : true; };
-  const ALTO_PISO = { todas: 0, 0: 0, 5: 5.4, 9: 9 };
+  const ALTO_PISO = { todas: 0, 0: 0, 5: 5.4, 9: 9, 20: 20 };
   function aplicarVista() {
     const p = estado.piso, sep = estado.sep;
     let hc = null;   // altura de corte de muros y columnas (null = completos)
-    if (p === "9") hc = 12.5; else if (p === "5" || estado.cortar || sep > 0 || (estado.recorrido && p === "0")) hc = N.corte_muros;
+    if (p === "9") hc = 12.5; else if (p === "20") hc = 23.5; else if (p === "5" || estado.cortar || sep > 0 || (estado.recorrido && p === "0")) hc = N.corte_muros;
     if (torresEscalera) torresEscalera.visible = !estado.recorrido && p === "todas" && sep === 0;   // con una cota sola o separada, las torres tapan la vista
     for (const t of Object.keys(tipos)) { muroCompleto[t].visible = hc === null; for (const h of ALTURAS_CORTE) muroCortado[t][h].visible = hc === h; }
     colCompletas.visible = hc === null;
@@ -648,15 +648,17 @@
     if (window.__detalle) window.__detalle.alto.visible = hc !== N.corte_muros;
     for (const o of altosQueSeCortan) o.visible = hc !== N.corte_muros;
     if (capas.cota9) capas.cota9.visible = (p === "todas" || p === "9") && marcada("cota9");
+    // piso técnico +20: solo o con los pisos separados (con todo junto taparía la cota 9 desde arriba)
+    if (capas.cota20) capas.cota20.visible = (p === "20" || (p === "todas" && sep > 0)) && marcada("cota20");
     if (capas.cota5) capas.cota5.visible = capas.cota3.visible = (p === "todas" || p === "5") && marcada("cota5");
-    if (capas.verticales) capas.verticales.visible = p !== "0" && marcada("verticales");
+    if (capas.verticales) capas.verticales.visible = p !== "0" && p !== "20" && marcada("verticales");
     if (capas.flujo_cotas) capas.flujo_cotas.visible = marcada("flujo_cotas");
     capas.techo.visible = marcada("techo") && p === "todas" && sep === 0;
     if (window.__cotas) window.__cotas.setSep(sep);
     document.querySelectorAll("#pisos button[data-piso]").forEach(b => b.classList.toggle("activo", b.dataset.piso === p));
     if (window.__recorrido) window.__recorrido.alCambiarVista(estado);
   }
-  const alturaPiso = (p) => (ALTO_PISO[p] || 0) + (p === "9" ? 2 : p === "5" ? 1 : 0) * estado.sep;
+  const alturaPiso = (p) => (ALTO_PISO[p] || 0) + (p === "20" ? 3 : p === "9" ? 2 : p === "5" ? 1 : 0) * estado.sep;
   function verPiso(p) {
     // la cámara pivota a la altura del piso elegido
     const dy = alturaPiso(p) - alturaPiso(estado.piso);
@@ -756,6 +758,7 @@
   });
   // menú "Ir a…": lugares del proceso por cota (x, y del plano; zoom)
   const LUGARES = [
+    ["Piso técnico +20", "20", [["Unidades de aire GTA (sobre las cabinas de esmalte)", 160, 56, 2.6], ["Extractores", 160, 40, 3.0], ["Depósito de filtros y repuestos", 172, 5, 3.0]]],
     ["Cota +9", "9", [["Ingreso desde Chapistería", 66, 118, 3], ["Preparación manual", 232, 97, 4.5], ["Pretratamiento", 112, 97, 2.2], ["Cataforesis", 36, 90.7, 3.5], ["Horno de cataforesis", 181, 90.7, 2.2],
       ["Bajo carrocería UBS & UBC", 164, 57.7, 3.2], ["Horno de fondo (pregelado)", 78, 57.6, 2.2], ["Estación I y acumulo lote colores", 55, 71, 2.6], ["Revisión de cataforesis", 190, 68, 2.4],
       ["Línea de esmalte", 200, 46, 2.4], ["Robots de esmalte (de cerca)", 199, 46, 8], ["Hornos de esmalte", 60, 46, 2.6], ["Revisión final", 63, 20, 2.6], ["Oficinas Pintura y baños", 156, 3, 4.0], ["Sala WCM, Blue Room y Capacitación", 168, 22, 4.0]]],
@@ -776,7 +779,7 @@
       // en cota 0 (y en cota 9, con muros a 12,5 m) las fachadas tapan: si el lugar queda a menos de 30 m de una, la cámara gira para mirar desde
       // adentro de la nave (si no, la pared tapa todo). n = normal hacia adentro de esa fachada, en coordenadas de la escena.
       let dTheta = 0;
-      if (piso === "0" || piso === "9") {
+      if (piso === "0" || piso === "9" || piso === "20") {
         const [dist, nx, nz] = [[x - minX, 1, 0], [maxX - x, -1, 0], [y - minY, 0, -1], [maxY - y, 0, 1]].sort((a, b) => a[0] - b[0])[0];
         if (dist < 30) {
           const dif = (a) => Math.atan2(Math.sin(a - esf.theta), Math.cos(a - esf.theta));

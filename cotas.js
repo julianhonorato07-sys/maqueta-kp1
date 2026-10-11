@@ -11,16 +11,16 @@ window.Cotas = function (api) {
   if (!D) return null;
 
   // ---------------------------------------------------------------- niveles y separación
-  const G = { 9: capa("cota9"), 5.4: capa("cota5"), 3.2: capa("cota3") };
+  const G = { 20: capa("cota20"), 9: capa("cota9"), 5.4: capa("cota5"), 3.2: capa("cota3") };
   const vert = capa("verticales");            // elevadores y montantes que unen cotas (se estiran al separar)
-  const KS = { 0: 0, 3.2: 0.5, 5.4: 1, 9: 2 };  // cuánto se despega cada cota por metro de "separar"
+  const KS = { 0: 0, 3.2: 0.5, 5.4: 1, 9: 2, 20: 3 };  // cuánto se despega cada cota por metro de "separar"
   let SEP = 0;
   const off = (n) => KS[n] * SEP;
   const alto = (n, h) => n + h + off(n);      // altura mostrada de un punto a h m sobre el piso de la cota n
   const verticales = [];                       // { obj, n0, h0, n1, h1 } → se reubican al cambiar SEP
   function setSep(v) {
     SEP = v;
-    for (const n of [9, 5.4, 3.2]) G[n].position.y = off(n);
+    for (const n of [20, 9, 5.4, 3.2]) G[n].position.y = off(n);
     for (const t of verticales) {
       const y0 = alto(t.n0, t.h0), y1 = alto(t.n1, t.h1);
       t.obj.position.y = y0; t.obj.scale.y = Math.max(0.001, (y1 - y0) / t.L);
@@ -966,7 +966,7 @@ window.Cotas = function (api) {
   // conductos de aire de las cabinas al techo de la nave y bandejas portacables sobre las filas de cabinas
   for (const { r } of nombres9.filter(e => e.etapa === "esmalte" || e.etapa === "fondo")) {
     const [x0, y0, x1, y1] = r;
-    for (let x = x0 + 3; x < x1 - 2; x += 10) { L9.cil("#b9c2ca", x, (y0 + y1) / 2 - 1.0, Z9 + 5.8, 17.4 - Z9 - 5.8, 0.42); L9.cil("#aab3bc", x + 1.5, (y0 + y1) / 2 + 1.0, Z9 + 5.8, 17.4 - Z9 - 5.8, 0.32); }
+    for (let x = x0 + 3; x < x1 - 2; x += 10) { L9.cil("#b9c2ca", x, (y0 + y1) / 2 - 1.0, Z9 + 5.8, 20.0 - Z9 - 5.8, 0.42); L9.cil("#aab3bc", x + 1.5, (y0 + y1) / 2 + 1.0, Z9 + 5.8, 20.0 - Z9 - 5.8, 0.32); }   // hasta el piso técnico +20
   }
   for (const y of [50.6, 39.2, 62.6]) { L9.caja("#9aa3ab", 24, y - 0.3, 250, y + 0.3, Z9 + 6.6, Z9 + 6.7); L9.caja("#e3a800", 24, y + 0.45, 250, y + 0.6, Z9 + 6.4, Z9 + 6.55); L9.caja("#2e5c9a", 24, y - 0.6, 250, y - 0.45, Z9 + 6.4, Z9 + 6.55); }
   // paneles de la SALA LIMPIA (capa A26: cerramiento de la zona de pintura UTE 3), blancos de 3,5 m
@@ -1027,6 +1027,37 @@ window.Cotas = function (api) {
   escalera(L5, 116.0, 87.8, 0, 5.4);
 
   L9.cerrar(); L5.cerrar(); L3.cerrar();
+
+  // ================================================================================================
+  // PISO TÉCNICO +20 (plano 301-N20 PLANTA EXISTENTE PINTURA, SharePoint UTE23; datos de etl/cota20.py → data/cota20.js)
+  // En la nave alta (x 96–252, techo a +29,15) arriba de las cabinas: unidades de tratamiento de aire (GTA), extractores,
+  // ventiladores y depósito de filtros y repuestos. Posiciones y tamaños en planta: del plano. Alturas de los equipos y piso de
+  // rejilla traslúcido: SUPUESTOS (el plano no los trae).
+  // ================================================================================================
+  if (window.COTA20) {
+    const C20 = window.COTA20, L20 = lote(G[20]), z = 20.0;
+    const [pa, pb, pc, pd] = C20.piso;
+    L20.caja(COL.rejilla, pa, pb, pc, pd, z - 0.2, z, { tr: 0.5 });
+    baranda(L20, [[pa, pd], [pc, pd]], z);
+    const COLOR = { gta: "#c9d3dd", media: "#aeb8c3", chica: "#9aa5b1" };
+    for (const [x0, y0, x1, y1, h, tipo] of C20.cajas) {
+      L20.caja(COLOR[tipo], x0, y0, x1, y1, z, z + h);
+      if (tipo === "gta") {   // unidad de aire: techo más oscuro y rejillas de toma en los lados largos
+        L20.caja("#8f9aa6", x0 + 0.1, y0 + 0.1, x1 - 0.1, y1 - 0.1, z + h, z + h + 0.1);
+        for (let t = y0 + 1; t < y1 - 0.8; t += 1.2) for (const x of [x0 - 0.02, x1 + 0.02]) L20.caja("#6c7a89", x - 0.02, t, x + 0.02, t + 0.7, z + 1.4, z + 3.2);
+      }
+    }
+    for (const [x0, y0, x1, y1] of C20.zonas) {   // depósitos marcados en el piso, con pallets de filtros
+      L20.pinta("#f2c94c", x0, y0, x1, y1, z + 0.01);
+      for (let x = x0 + 0.4; x < x1 - 1.2; x += 1.6) for (let y = y0 + 0.4; y < y1 - 1.0; y += 1.4) L20.caja("#e3e8ee", x, y, x + 1.2, y + 1.0, z, z + 1.1);
+    }
+    for (const [x, y, r] of C20.cils) L20.cil("#8a939d", x, y, z, 1.4, r);
+    L20.cerrar();
+    for (const [x, y, nom, niv] of C20.nombres) etiqueta(G[20], x, y, 26.0, nom, "plano 301-N20 · piso técnico +20", "#5d6d7e", niv);
+    etiqueta(G[20], 174, 30, 27.5, "PISO TÉCNICO +20 · EQUIPOS DE AIRE", "unidades de tratamiento de aire (GTA), extractores y depósito de filtros, arriba de las cabinas · plano 301-N20", "#5d6d7e", 1);
+    cartel(G[20], "COTA +20,00\nPISO TÉCNICO", 97.5, 40, z + 2.5, 6, 1.2, "+x", "#1f2a3a", "#ffffff", true);
+  }
+
 
   // ================================================================================================
   // 8) ANIMACIÓN: robots, mesas giratorias, elevadores y etiquetas
