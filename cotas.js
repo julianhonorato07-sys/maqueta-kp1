@@ -175,7 +175,11 @@ window.Cotas = function (api) {
   // huecos en las losas por donde pasan los elevadores (5,6 × 3,6 m, recortados al borde de cada losa)
   const hueco = (x, y, r) => { const [a, b, c, d] = r; const x0 = Math.max(a + 0.1, x - 2.8), x1 = Math.min(c - 0.1, x + 2.8), y0 = Math.max(b + 0.1, y - 1.8), y1 = Math.min(d - 0.1, y + 1.8); return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]; };
   const marcoHueco = (Lt, h, z) => { baranda(Lt, [h[0], h[1]], z, 1.1); baranda(Lt, [h[2], h[3]], z, 1.1); };   // los lados de entrada quedan libres
-  const H9 = [hueco(247.4, 57.7, [0.41, 0.41, 263.65, 81.53]), hueco(128.3, 15.5, [0.41, 0.41, 263.65, 81.53])];
+  // DOBLE ALTURA sobre el acopio / depósito de autos de cota 0 (Julian 10/10: "en esa parte no hay piso, se ve directo la cota 0"):
+  // borde del hueco = muro doble de la capa A08 del plano 301-N9000 (y 26,6 · x 179,6 · y 13,3 · x 251,7 · y 38,0 · x 96,3)
+  const VACIO9 = [[96.32, 26.59], [179.62, 26.59], [179.62, 13.31], [251.7, 13.31], [251.7, 38.06], [96.32, 38.06]];
+  const enVacio9 = (x, y) => (x > 96.32 && x < 179.62 && y > 26.59 && y < 38.06) || (x >= 179.62 && x < 251.7 && y > 13.31 && y < 38.06);
+  const H9 = [hueco(247.4, 57.7, [0.41, 0.41, 263.65, 81.53]), hueco(128.3, 15.5, [0.41, 0.41, 263.65, 81.53]), VACIO9];
   const HB9 = [hueco(251.5, 90.73, [0.41, 81.53, 263.65, 103.6]), hueco(13.8, 84.75, [0.41, 81.53, 263.65, 103.6])];
   const losa9 = losaPoligono(G[9], LOSA9, 9.0, 0.35, COL.losa, H9);
   losaPoligono(G[9], BANDA9, 9.0, 0.35, "#c3cbd2", [HUECO_SKIDS, ...HB9]);
@@ -197,7 +201,9 @@ window.Cotas = function (api) {
   losaPoligono(G[3.2], [[13.0, 83.2], [118.8, 83.2], [118.8, 86.3], [13.0, 86.3]], 3.2, 0.2, COL.rejilla);
   losaPoligono(G[3.2], rp(R3b), 3.2, 0.2, COL.rejilla, H3b);
   losaPoligono(G[3.2], rp(R3c), 3.2, 0.2, COL.rejilla, H3c);
-  for (const h of H9.concat(HB9)) marcoHueco(L9, h, 9.0);
+  for (const h of H9.concat(HB9)) if (h !== VACIO9) marcoHueco(L9, h, 9.0);
+  // baranda en todo el borde de la doble altura (en x 251,7 queda libre la llegada de la escalera, y 29,1–32,6)
+  baranda(L9, [[251.7, 29.13], [251.7, 13.31], [179.62, 13.31], [179.62, 26.59], [96.32, 26.59], [96.32, 38.06], [251.7, 38.06], [251.7, 32.64]], 9.0);
   for (const h of H5a.concat(H5b, H5c)) marcoHueco(L5, h, 5.4);
   for (const h of H3c) marcoHueco(L3, h, 3.2);
 
@@ -234,7 +240,7 @@ window.Cotas = function (api) {
     const enX = x1 - x0 > y1 - y0;
     Lt.pinta("#2e9d6a", enX ? x0 : x0 + 0.12, enX ? y0 + 0.12 : y0, enX ? x1 : x1 - 0.12, enX ? y1 - 0.12 : y1, z + 0.02);
   }
-  for (const [x0, y0, x1, y1] of [[24, 50.2, 250, 52.0], [24, 38.6, 258, 40.4], [26, 62.0, 135, 63.8], [136, 61.4, 205, 63.0], [100, 26.6, 255, 28.4], [3.6, 30, 5.4, 76], [100, 72.0, 104, 76.5]])
+  for (const [x0, y0, x1, y1] of [[24, 50.2, 250, 52.0], [24, 38.6, 258, 40.4], [26, 62.0, 135, 63.8], [136, 61.4, 205, 63.0], [3.6, 30, 5.4, 76], [100, 72.0, 104, 76.5]])
     senda(L9, x0, y0, x1, y1, 9.0);
   // pasos peatonales del plano (cebras) en x 97,9 · y 9,2 y x 123,1 · y 70,9
   for (const [cx, cy] of [[97.89, 7.6], [123.13, 68.0]]) for (let k = -3; k <= 3; k++) L9.pinta("#ffffff", cx - 1.6, cy + k * 0.45 - 0.15, cx + 1.6, cy + k * 0.45 + 0.15, 9.03);
@@ -571,9 +577,9 @@ window.Cotas = function (api) {
   // ---- OFICINAS Y SALAS DE LA FACHADA OESTE (plano 301-N9000 "PLANTA EXISTENTE PINTURA", SharePoint UTE23, bajado 10/10) ----
   // Julian 10/10: "creo que son oficinas y baños". El plano tiene un bloque pegado a la fachada (x 131,6–180,6 · y −0,9–6,1):
   // baños (depósito, WC, damas, caballeros), sala de reuniones, dirección e ingeniería pintura con sus escritorios; y adentro
-  // SALA WCM, BLUE ROOM y CAPACITACIÓN PINTURA, dentro de un recinto cerrado por un muro (y 26,6 · x 179,6 · y 13,3).
+  // SALA WCM, BLUE ROOM y CAPACITACIÓN PINTURA, al borde de la doble altura sobre el acopio (y 26,6 · x 179,6 · y 13,3).
   // Coincide con los instructivos de limpieza civil (ISCOT LC-PI-04-01/02: "Baño 3 cota 9.00 caballeros oficina", "Baño 4 damas").
-  // Altura de tabiques y muro del recinto 3 m, colores y forma de muebles y artefactos: SUPUESTOS (posiciones del plano).
+  // Altura de tabiques 3 m, colores y forma de muebles y artefactos: SUPUESTOS (posiciones del plano).
   {
     const z = Z9, H = 3.0, TAB = "#e3e8ee";
     const tab = (a, b, c, d) => L9.barra(TAB, a, b, c, d, 0.12, z, z + H);
@@ -623,9 +629,8 @@ window.Cotas = function (api) {
     sala([157.4, 20.0, 167.4, 26.0], "SALA WCM", "#dfe9f5", { puerta: "-y", pd: 162.88 });
     sala([169.06, 22.5, 175.82, 26.5], "BLUE ROOM", "#dbe7f7", { puerta: "-y", pd: 171.69 });
     sala([176.0, 11.23, 179.53, 23.77], "CAPACITACIÓN PINTURA", "#e3e8ee", { puerta: "-x", pd: 11.9 });
-    etiqueta(G[9], 167, 23, 16.5, "SALA WCM · BLUE ROOM · CAPACITACIÓN", "salas del recinto de oficinas (plano 301-N9000)", ET.sala, 2);
-    // muro del recinto de oficinas y salas
-    tab(96.32, 26.59, 179.62, 26.59); tab(179.62, 13.31, 179.62, 26.59); tab(180.19, 13.31, 251.61, 13.31);
+    etiqueta(G[9], 167, 23, 16.5, "SALA WCM · BLUE ROOM · CAPACITACIÓN", "junto a las oficinas, al borde de la doble altura (plano 301-N9000)", ET.sala, 2);
+    // (el muro doble del plano en y 26,6 / x 179,6 / y 13,3 es el borde de la doble altura: baranda, en la sección de losas)
   }
   // recinto del elevador de bajada de revisión final (A08: x 120,5–128,4 / 128,4–144,3; y 10–19,2)
   for (const [a, b, c, d] of [[120.5, 10.0, 144.3, 10.0], [120.5, 19.2, 144.3, 19.2], [120.5, 4.9, 120.5, 19.2]]) L9.barra("#cfd8e2", a, b, c, d, 0.15, Z9, Z9 + 3.2);
@@ -840,7 +845,7 @@ window.Cotas = function (api) {
     let k = 0;
     for (const c of api.N.columnas) {
       const [x, y, w, d, z0, z1] = c;
-      if (z0 > 0 || z1 < 12 || x < 3 || x > 261 || y < 2 || y > 80) continue;
+      if (z0 > 0 || z1 < 12 || x < 3 || x > 261 || y < 2 || y > 80 || enVacio9(x, y)) continue;
       if (k++ % 2) continue;
       const yy = y - d / 2 - 0.12;
       L9.bloque("#c0392b", x, yy, 0.22, 0.2, Z9 + 0.9, Z9 + 1.45);       // matafuego
